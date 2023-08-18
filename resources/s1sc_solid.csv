@@ -1,0 +1,18 @@
+﻿fuel_type,category,mmBtu_mton,kgCO2_mmBtu,gCH4_mmBtu,gN2O_mmBtu,kgCO2_mton,gCH4_mton,gN2O_mton
+Municipal Solid Waste,Other Fuels - Solid,10.97,90.7,32,4.2,994.28,350.53,46.3
+Petroleum Coke (Solid),Other Fuels - Solid,33.07,102.41,32,4.2,3386.3,1058.22,138.89
+Plastics,Other Fuels - Solid,41.89,75,32,4.2,3141.58,1340.41,176.37
+Tires,Other Fuels - Solid,30.86,85.97,32,4.2,2653.26,987.67,130.07
+Agricultural Byproducts,Biomass Fuels - Solid,9.09,118.17,32,4.2,1074.75,291.01,38.58
+Peat,Biomass Fuels - Solid,8.82,111.84,32,4.2,986.57,282.19,37.48
+Solid Byproducts,Biomass Fuels - Solid,11.45,105.51,32,4.2,1208.13,365.97,48.5
+Wood and Wood Residuals,Biomass Fuels - Solid,19.27,93.8,7.2,3.6,1807.79,138.89,69.45
+Anthracite Coal,Coal and Coke,27.66,103.69,11,1.6,2868.21,304.24,44.09
+Bituminous Coal,Coal and Coke,27.48,93.28,11,1.6,2562.87,302.03,44.09
+Sub-bituminous Coal,Coal and Coke,19.01,97.17,11,1.6,1847.47,209.44,30.86
+Lignite Coal,Coal and Coke,15.66,97.72,11,1.6,1531.11,171.96,25.35
+Mixed (Commercial Sector),Coal and Coke,23.58,94.27,11,1.6,2222.26,259.04,37.48
+Mixed (Electric Power Sector),Coal and Coke,21.75,95.52,11,1.6,2077.85,239.2,35.27
+Mixed (Industrial Coking),Coal and Coke,28.97,93.9,11,1.6,2720.5,318.57,46.3
+Mixed (Industrial Sector),Coal and Coke,24.64,94.67,11,1.6,2332.49,271.17,39.68
+Coal Coke,Coal and Coke,27.34,113.67,11,1.6,3107.41,300.93,44.09

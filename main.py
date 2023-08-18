@@ -26,37 +26,25 @@ def run_app():
     return
 
   #---Load states and configurations---#
-  st.snow()
+  # st.snow()
   run_app_config()
 
   with st.sidebar:
-    logout = st.button('Logout')
-    if logout:
-      st.session_state["authenticated"] = None
-      st.experimental_rerun()
-
     qwe = st.text_input('QWE')
 
   #---Start Hydra instance---#
   over_theme = {'txc_inactive': '#FFFFFF', 'txc_active':'#A9DEF9'}
   navbar_theme = {'txc_inactive': '#FFFFFF','txc_active':'grey','menu_background':'white','option_active':'blue'}
 
+  st.image("./resources/G1-long.png", use_column_width=True, width=None)
   app = hy.HydraApp(
-    title='Simple Multi-Page App',
-    favicon="🐙",
     hide_streamlit_markers=False,
-    use_banner_images=[
-      None,
-      "./resources/G1-long.png",
-      None,
-    ], 
-    banner_spacing=[1,60,1],
     use_navbar=True, 
     navbar_sticky=False,
     navbar_animation=True,
     navbar_theme=over_theme,
   )
-
+  
   #---Add apps from folder---#
   @app.addapp(is_home=True)
   def my_home(title='home'):
@@ -70,16 +58,39 @@ def run_app():
   def app3():
     hy.info('Hello from app 3, A.K.A, The Best 🥰')
 
-  @app.addapp(title='from app folder')
+  @app.addapp(title='from app folderr')
   def app4():
     from apps.home2 import main
     main()
 
+  @app.addapp(title='Logout')
+  def logout_button():
+    from apps.logout import logoutPage
+    logoutPage()
+
+  @app.addapp(title='Great heatmap')
+  def heatmapApp():
+    from apps.heatmap import heatmapPage
+    heatmapPage()
+
+  @app.addapp(title='Graph connect')
+  def barfiApp():
+    from apps.barfi import barfiPage
+    barfiPage()
+
+  #specify a custom loading app for a custom transition between apps, this includes a nice custom spinner
+  from apps._loading import MyLoadingApp
+  app.add_loader_app(MyLoadingApp(delay=0))
+
+    
   #---Optional, if you want to nest navigations---#
   complex_nav = {
     "Home": ['home'],
-    "app folder": ['from app folder'],
-    "bests": ['The Best', 'The Best 2']
+    "heat": ['Great heatmap'],
+    "graph": ["Graph connect"],
+    "app folder": ['from app folderr'],
+    "bests": ['The Best', 'The Best 2'],
+    "logout": ['Logout'],
   }
 
   app.run(complex_nav=complex_nav)
