@@ -78,6 +78,11 @@ def run_app():
     from apps.barfi import barfiPage
     barfiPage()
 
+  @app.addapp(title='Scope 1: Stationary Combustion')
+  def s1scApp():
+    from apps.s1sc_page import s1sc_Page
+    s1sc_Page()
+
   #specify a custom loading app for a custom transition between apps, this includes a nice custom spinner
   from apps._loading import MyLoadingApp
   app.add_loader_app(MyLoadingApp(delay=0))
@@ -86,6 +91,7 @@ def run_app():
   #---Optional, if you want to nest navigations---#
   complex_nav = {
     "Home": ['home'],
+    "Scope 1": ['Scope 1: Stationary Combustion'],
     "heat": ['Great heatmap'],
     "graph": ["Graph connect"],
     "app folder": ['from app folderr'],
