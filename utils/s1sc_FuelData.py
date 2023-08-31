@@ -131,7 +131,7 @@ class S1SC_Lookup_Cache(BaseModel):
 
 class FuelData(BaseModel):
     uuid: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the fuel data")
-    description: Optional[str] = Field(None, max_length=255)        
+    description: Optional[str] = Field(None, max_length=1600)        
     sector: str
     fuel_state: str  
     fuel_type: str
@@ -215,10 +215,10 @@ class FuelCalculatorTool(BaseModel):
         
         #--Calculate fuel-based--#
         table = f's1sc_{fuel.fuel_state}'
-        # factors = get_emission_factors(table, fuel.fuel_type)[0] # no cache support
         factors = self.cache.get_emission_factors(table, fuel.fuel_type)[0] # cache support
         relevant_factors = get_relevant_factors(factors, fuel.fuel_unit) # get relevant columns
         
+        #--Perform calculations for each gas--#
         emissions = {}
         for ghg, factor in relevant_factors.items():
             if fuel.fuel_consumption is not None:
@@ -229,8 +229,7 @@ class FuelCalculatorTool(BaseModel):
                     #-----------
                     print(f'Cannot get emission {ghg} for {fuel}') # 
                     #--------
-                
-        #--Perform calculations for each gas--#
+        
         def get_emission_value(emissions, ghg):
             for key, value in emissions.items():
                 if ghg.lower() in key.lower():
@@ -274,8 +273,8 @@ class FuelCalculatorTool(BaseModel):
             recon_score = None
         
         #--Final result--#            
-        calculation_result = FuelDataCalculation(
-            fuel_data=fuel,
+        calculated_emissions = FuelDataCalculation(
+            # fuel_data=fuel,
             emission_factors=relevant_factors,
             co2_emission=co2_emission,
             ch4_emission=ch4_emission,
@@ -287,7 +286,7 @@ class FuelCalculatorTool(BaseModel):
         )     
         
         key = len(self.calculated_emissions)
-        self.calculated_emissions[key] = {'fuel': fuel, 'calculation_result': calculation_result}
+        self.calculated_emissions[key] = {'fuel': fuel, 'calculated_emissions': calculated_emissions}
         
     def calculate_fuel_based_method(self, fuel_consumption: float, fuel_emission_factor: float) -> float:
         """Calculate emissions using the emission factor method (Eq1)"""
@@ -311,7 +310,7 @@ class FuelCalculatorTool(BaseModel):
         data = []
         for emission in self.calculated_emissions.values():
             fuel_data = emission['fuel'].model_dump()
-            calculation_data = emission['calculation_result'].model_dump()
+            calculation_data = emission['calculated_emissions'].model_dump()
             merged_data = {**fuel_data, **calculation_data}
             data.append(merged_data)
         return pd.DataFrame(data)

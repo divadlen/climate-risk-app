@@ -30,7 +30,7 @@ def s1sc_Page():
 
 
   st.title('Stationary Combustion')
-  tab1, tab2, tab3 = st.tabs(["Upload", "Run Analysis", "Coming soon"])
+  tab1, tab2, tab3 = st.tabs(["Upload", "Run Analysis", "Review"])
 
 
   with tab1:
@@ -107,14 +107,14 @@ def s1sc_Page():
               marginal='rug',
               hover_data=hdata,
             ).update_layout(title=c.upper())
-            figs[c] = fig
+            figs[c] = fig 
 
         for title, fig in figs.items():
           with st.expander(f'Show {title.upper()}'):
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True) 
 
 
-
+ 
 
 
 

@@ -26,22 +26,32 @@ def heatmapPage():
   mapbox_token = st.secrets['mapbox_token']
   px.set_mapbox_access_token(mapbox_token)
 
+  col1, col2 = st.columns([1,1])
+  with col1:
+    sel_year = st.selectbox('Select Scenario', df['Year'].unique())
+  with col2:
+    sel_scenario = st.selectbox('Select Scenario', df['Scenario'].unique())
+
+  hdata=['Country', 'Latitude', 'Longtitude', 'Exposure', 'Rating Grade', 'PD', 'Balance', 'LTV', 'Vulnerability', 'Year', 'Scenario']
+  temp = df[hdata]
+  temp = temp[temp['Scenario'] == sel_scenario]
+  temp = temp[temp['Year'] == sel_year]
 
   fig = px.density_mapbox(
-      df,
+      temp,
       lat='Latitude',
       lon='Longtitude',
       z='Exposure',
       radius=5,
-      color_continuous_scale= px.colors.diverging.RdBu,
-      hover_data=df.columns
+      color_continuous_scale= px.colors.diverging.RdYlGn_r,
+      hover_data=hdata
   )
-  fig.update_layout(height=800, template='plotly_dark')
+  fig.update_layout(title='', height=600, template='presentation')
 
-  with st.expander('Epic heatmap'):
+  with st.expander('Flood Risk Heatmap'):
     st.plotly_chart(fig, use_container_width=True)
 
-  with st.expander('Cool table'):
+  with st.expander('Show Table'):
     pandas_2_AgGrid(df, theme='streamlit')
 
 
@@ -104,7 +114,10 @@ def pandas_2_AgGrid(df: pd.DataFrame, theme:str='streamlit') -> AgGrid:
 
  # AG Grid Options
   gd  = GridOptionsBuilder.from_dataframe(df)
-  gd.configure_columns(df, cellStyle=cellstyle_jscode)
+  gd.configure_columns(
+    df, 
+    # cellStyle=cellstyle_jscode
+  )
   gd.configure_default_column(floatingFilter=True, selectable=False)
   gd.configure_pagination(enabled=True)
   grid_options = gd.build()
