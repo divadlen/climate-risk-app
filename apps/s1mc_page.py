@@ -4,30 +4,25 @@ from st_aggrid.grid_options_builder import GridOptionsBuilder
 
 import numpy as np
 import pandas as pd
-import json
 import logging
+import json
 from typing import List
-from supabase import create_client
 
 import plotly.express as px
 
-from utils.s1sc_FuelData import create_fuel_data, S1SC_Lookup_Cache, FuelData, FuelCalculatorTool
+from utils.s1mc_VehicleData import create_vehicle_data, S1MC_Lookup_Cache, VehicleData, S1MC_CalculatorTool
 from utils.utility import get_dataframe, convert_df, convert_warnings, convert_BaseModel, find_closest_category
 
-# Instantiate cache for emission lookup and state lookup
+def s1mc_Page():
+  if 'S1MC_Lookup_Cache' not in st.session_state:
+    st.session_state['S1MC_Lookup_Cache'] = S1MC_Lookup_Cache() 
+  if 's1mc_df' not in st.session_state: #
+    st.session_state['s1mc_df'] = None
+  if 'validated_s1mc_df' not in st.session_state:
+    st.session_state['validated_s1mc_df'] = None
+    st.session_state['validated_s1mc_warnings'] = []
 
-
-def s1sc_Page():
-  if 'S1SC_Lookup_Cache' not in st.session_state:
-    st.session_state['S1SC_Lookup_Cache'] = S1SC_Lookup_Cache()
-  if 's1sc_df' not in st.session_state: #
-    st.session_state['s1sc_df'] = None
-  if 'validated_s1sc_df' not in st.session_state:
-    st.session_state['validated_s1sc_df'] = None
-    st.session_state['validated_s1sc_warnings'] = []
-
-
-  st.title('Stationary Combustion')
+  st.title('Mobile Combustion')
   tab1, tab2, tab3 = st.tabs(["Upload", "Run Analysis", "Review"])
 
 
@@ -35,67 +30,69 @@ def s1sc_Page():
     with st.expander("Show Help"):
       st.markdown(help_md)
 
-      csv_str = convert_BaseModel(FuelData)
+      csv_str = convert_BaseModel(VehicleData)
       st.download_button(
-        label='Download empty Scope 1: Stationary Combustion form',
+        label='Download empty Scope 1: Mobile Combustion form',
         data=csv_str,
-        file_name='scope-1-stationary-combustion-form.csv',
+        file_name='scope-1-mobile-combustion-form.csv',
         mime='text/csv',
       )
     
     with st.expander("Upload a CSV file", expanded=True):
-      uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"], accept_multiple_files=False, help='CSV containing fuel type transactions for S1: Stationary Combustion')
+      uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"], accept_multiple_files=False, help='CSV containing vehicle usage data for S1: Mobile Combustion')
       
       if st.checkbox('Read selected csv files') and uploaded_file:
         data = pd.read_csv(uploaded_file)
         if data is not None:
-          df = get_dataframe(data) # cache it
-          st.session_state['s1sc_df'] = df
+          df = get_dataframe(data) 
+          st.session_state['s1mc_df'] = df
 
-    if st.session_state['s1sc_df'] is not None:
+    if st.session_state['s1mc_df'] is not None:
       with st.expander('Show uploaded table'):
-        pandas_2_AgGrid(st.session_state['s1sc_df'], theme='balham')
+        pandas_2_AgGrid(st.session_state['s1mc_df'], theme='balham')
 
-      if 'validated_s1sc' not in st.session_state:
-        st.session_state['validated_s1sc'] = False
+      if 'validated_s1mc' not in st.session_state:
+        st.session_state['validated_s1mc'] = False
       if st.button('Validate uploaded dataframe'):
-        st.session_state['validated_s1sc_df'], st.session_state['validated_s1sc_warnings'] = validate_s1sc_df(st.session_state['s1sc_df'])
-        st.session_state['validated_s1sc'] = True
+        st.session_state['validated_s1mc_df'], st.session_state['validated_s1mc_warnings'] = validate_s1mc_df(st.session_state['s1mc_df'])
+        st.session_state['validated_s1mc'] = True
 
 
-      if st.session_state['validated_s1sc']:
+      if st.session_state['validated_s1mc']:
         with st.expander('Show validation warnings'):
-          for warning in st.session_state['validated_s1sc_warnings']:
+          for warning in st.session_state['validated_s1mc_warnings']:
             st.warning(warning)
 
         with st.expander('Validated table', expanded=True):
-          pandas_2_AgGrid( st.session_state['validated_s1sc_df'], theme='balham' )
+          pandas_2_AgGrid( st.session_state['validated_s1mc_df'], theme='balham' )
 
           col1, col2 = st.columns([1,1])
           with col1:
-            csv_str = convert_df(st.session_state['validated_s1sc_df'])
+            csv_str = convert_df(st.session_state['validated_s1mc_df'])
             st.download_button('Download validated table as CSV', csv_str, file_name="validated_table.csv", mime="text/csv")
           with col2:
-            validation_warnings_str = convert_warnings(st.session_state['validated_s1sc_warnings'])
+            validation_warnings_str = convert_warnings(st.session_state['validated_s1mc_warnings'])
             st.download_button("Download warnings as TXT", validation_warnings_str, file_name="warnings.txt", mime="text/plain")
 
+
   with tab2:
-    if 's1sc_df' in st.session_state and st.session_state['s1sc_df'] is not None:
+    if 's1mc_df' in st.session_state and st.session_state['s1mc_df'] is not None:
       with st.expander('Show help'):
         st.markdown(analysis_md)
 
       with st.expander('Show table', expanded=True):
-        pandas_2_AgGrid(st.session_state['s1sc_df'], theme='balham', key='s1sc_df_tab2')
+        pandas_2_AgGrid(st.session_state['s1mc_df'], theme='balham', key='s1mc_df_tab2')
 
-      if 'analyzed_s1sc' not in st.session_state:
-        st.session_state['analyzed_s1sc'] = False
+      if 'analyzed_s1mc' not in st.session_state:
+        st.session_state['analyzed_s1mc'] = False
       if st.button('Analyze uploaded dataframe', help='Attempts to return calculation results for each row for table. Highly recommended to reupload a validated table before running analysis'):
-        st.session_state['analyzed_s1sc'] = True
+        st.session_state['analyzed_s1mc'] = True
 
-        cache = st.session_state['S1SC_Lookup_Cache']
-        FCT = FuelCalculatorTool(cache=cache)
-        FCT, warning_messages = df_to_FCT(st.session_state['s1sc_df'], fuel_calculator=FCT, cache=cache)
-        calculation_df = FCT_to_df(FCT)
+        cache = st.session_state['S1MC_Lookup_Cache']
+        calc = S1MC_CalculatorTool(cache=cache)
+
+        calc, warning_messages = df_2_calculator(st.session_state['s1mc_df'], calculator=calc, cache=cache)
+        calculation_df = calculator_2_df(calc)
 
         if warning_messages:
           with st.expander('Show analysis warnings'):
@@ -103,10 +100,9 @@ def s1sc_Page():
               st.warning(warning)
 
         with st.expander('Show results table'):  
+          st.write(calculation_df)
           pandas_2_AgGrid(calculation_df, theme='balham')
 
-        hdata = ['uuid', 'sector', 'fuel_state', 'fuel_type',	'fuel_consumption', 'fuel_unit', 'heating_value',	'fuel_spend',	'currency',	'co2_emission',	'ch4_emission',	'n2o_emission',	'fuel_based_co2e',	'spend_based_co2e',	'most_reliable_co2e',	'recon_score']
-        
         figs = {} 
         for c in calculation_df.columns:
           if calculation_df[c].dtype in [np.float64, np.int64]:
@@ -114,7 +110,7 @@ def s1sc_Page():
               calculation_df, 
               x=c, 
               marginal='rug',
-              hover_data=hdata,
+              hover_data=calculation_df.columns,
             ).update_layout(title=c.upper())
             figs[c] = fig 
 
@@ -123,23 +119,12 @@ def s1sc_Page():
             st.plotly_chart(fig, use_container_width=True) 
 
 
- 
 
 
 
 
 
-
-    # with st.expander('Inspect cache'):
-    #   st.write(st.session_state['S1SC_Lookup_Cache']._allowed_fuel_types_cache)
-      
-    #   st.write(st.session_state['S1SC_Lookup_Cache']._emission_factors_cache)
-    #   st.write(len(st.session_state['S1SC_Lookup_Cache']._emission_factors_cache))
-
-
-
-
-def validate_s1sc_df(df:pd.DataFrame): 
+def validate_s1mc_df(df:pd.DataFrame): 
   """ 
   Validates a pd.DF
   Returns:
@@ -147,13 +132,12 @@ def validate_s1sc_df(df:pd.DataFrame):
     - List of warnings
   """
   df = df.replace(np.nan, None)
-  cache = S1SC_Lookup_Cache()
+  cache = S1MC_Lookup_Cache()
   warning_messages = []
 
   expected_columns = [
-    'description', 'sector', 'fuel_state', 'fuel_type',
-    'fuel_consumption', 'fuel_unit', 'heating_value',
-    'fuel_spend', 'currency'
+    'description', 'vehicle_type', 'distance', 'distance_unit', 'vehicle_year',
+    'fuel_state', 'fuel_type', 'fuel_consumption', 'fuel_unit',
   ]
 
   # Identify missing and additional columns
@@ -173,36 +157,39 @@ def validate_s1sc_df(df:pd.DataFrame):
       if len(str(row['description'])) > 1200:
         warning_messages.append(f"Warning: Description exceeds 1200 characters in row {idx}.")
 
-    # validate sector
-    if 'sector' in df.columns:
-      valid_sectors = [
-        'Energy', 'Industrial', 'Construction', 
-        'Telecommunication', 'Transportation', 'Automobile',
-        'Real Estate', 'Consumer Goods', 'Professional Services', None
-      ]
-      if row['sector'] not in valid_sectors: # sectors is a predefined list of valid sectors
-        warning_messages.append(f"Warning: Invalid 'sector' value of '{row['sector']}' in row {idx}. Valid sectors: {valid_sectors}. Setting to None.")
-        df.loc[index, 'sector'] = None 
+    # validate vehicle type
+    if 'vehicle_type' in df.columns:
+      valid_vehicle_types = cache.get_allowed_vehicles()
 
-    # validate chemical state
-    if 'fuel_state' in df.columns:
-      valid_states = ['gas', 'liquid', 'solid']
-      if row['fuel_state'] not in valid_states:
-        warning_messages.append(f"Warning: Invalid 'fuel_state' value of '{row['fuel_state']}' in row {idx}. Valid states: {valid_states}. Setting to None.")
-        df.loc[index, 'fuel_state'] = None
+      if row['vehicle_type'] not in valid_vehicle_types:
+        corrected_vehicle = find_closest_category(row['vehicle_type'], valid_vehicle_types)
+        
+        if corrected_vehicle is not None: 
+          warning_messages.append(f"Warning: 'vehicle_type' value of '{row['vehicle_type']}' in row {idx} is corrected to '{corrected_vehicle}'. Accepted values: {valid_vehicle_types}.")
+          df.loc[index, 'vehicle_type'] = corrected_vehicle 
+        else:
+          warning_messages.append(f"Warning: Invalid 'vehicle_type' value of '{row['vehicle_type']}' in row {idx}. Accepted values in: {valid_vehicle_types}. Setting to None.")
+          df.loc[index, 'vehicle_type'] = None 
 
     # validate fuel type 
     if 'fuel_type' in df.columns:
       try:
-        valid_fuel_types = cache.get_allowed_fuel_types(row['fuel_state'])
+        valid_fuel_types = cache.get_allowed_fuel_types(row['vehicle_type'])
       except:
         valid_fuel_types = None
+      
       if valid_fuel_types is not None and row['fuel_type'] not in valid_fuel_types:
-        warning_messages.append(f"Warning: Invalid 'fuel_type' value of '{row['fuel_type']}' in row {idx}. Valid fuel type: {valid_fuel_types}. Setting to None.")
-        df.loc[index, 'fuel_type'] = None
+        corrected_fuel_type = find_closest_category(row['fuel_type'], valid_fuel_types)
+
+        if corrected_fuel_type is not None:
+          warning_messages.append(f"Warning: 'fuel_type' value of '{row['fuel_type']}' in row {idx} is corrected to '{corrected_fuel_type}'. Accepted fuel type for '{row['vehicle_type']}': {valid_fuel_types}.")
+          df.loc[index, 'fuel_type'] = corrected_fuel_type
+        else:
+          warning_messages.append(f"Warning: Invalid 'fuel_type' value of '{row['fuel_type']}' in row {idx}. Accepted fuel type for '{row['vehicle_type']}': {valid_fuel_types}. Setting to None.")
+          df.loc[index, 'fuel_type'] = None 
 
     # validate fuel unit
-    if 'fuel_unit' in df.columns:
+    if 'fuel_unit' and 'fuel_state' in df.columns:
       if row['fuel_state'] == 'gas':
         valid_fuel_unit = ['m3', 'mmBtu']
       elif row['fuel_state'] == 'liquid':
@@ -221,30 +208,10 @@ def validate_s1sc_df(df:pd.DataFrame):
         warning_messages.append(f"Warning: Invalid 'fuel_consumption' value of '{row['fuel_consumption']}' in row {idx}. Must be greater than 0. Setting to None.")
         df.loc[index, 'fuel_consumption'] = None
 
-    # validate heating value
-    if 'heating_value' in df.columns:
-      valid_heating_value = ['high', 'low', None]
-      if row['heating_value'] not in valid_heating_value:
-        warning_messages.append(f"Warning: Invalid 'heating_value' value of '{row['heating_value']}' in row {idx}. Valid heating value: {valid_heating_value}. Setting to None.")
-        df.loc[index, 'heating_value'] = None
-
-    # validate fuel spend
-    if 'fuel_spend' in df.columns:
-      if row['fuel_spend'] is not None and row['fuel_spend'] < 0:
-        warning_messages.append(f"Warning: Invalid 'fuel_spend' value of '{row['fuel_spend']}' in row {idx}. Must be greater than 0. Setting to None.")
-        df.loc[index, 'fuel_spend'] = None
-
-    # validate currency
-    if 'currency' in df.columns:
-      valid_currency = ['USD', 'MYR', 'SGD']
-      if row['currency'] is not None and row['currency'] not in valid_currency:
-        warning_messages.append(f"Warning: Invalid 'currency' value of '{row['currency']}' in row {idx}. Supported currency: {valid_currency}. Setting to None.")
-        df.loc[index, 'currency'] = None
-
   return df, warning_messages
-    
 
-def df_to_FCT(df, fuel_calculator: FuelCalculatorTool, cache: S1SC_Lookup_Cache):
+
+def df_2_calculator(df, calculator: S1MC_CalculatorTool, cache: S1MC_Lookup_Cache):
   df = df.replace(np.nan, None) # To allow Pydantic validation
   warning_messages=[]
 
@@ -254,34 +221,33 @@ def df_to_FCT(df, fuel_calculator: FuelCalculatorTool, cache: S1SC_Lookup_Cache)
 
   for index, row in df.iterrows():
     try:
-      fuel_data = create_fuel_data(
+      data = create_vehicle_data(
         cache=cache,
         description=row['description'],
-        sector=row['sector'],
-        fuel_state=row['fuel_state'],
+        vehicle_type=row['vehicle_type'],
+        distance=row['distance'],
+        distance_unit=row['distance_unit'],
         fuel_type=row['fuel_type'],
         fuel_consumption=row['fuel_consumption'],
         fuel_unit=row['fuel_unit'],
-        heating_value=row['heating_value'],
-        fuel_spend=row['fuel_spend'],
-        currency=row['currency']
       )
-      fuel_calculator.add_fuel_data(fuel_data)
+      calculator.add_vehicle_data(data)
+        
     except Exception as e:
-      warning_messages.append(f'Unable to add fuel data for row {index}. {e}')
+      warning_messages.append(f'Unable to add data for row {index}. {str(e)}')
       pass
 
     progress_pct = (index + 1) / nrows
     progress_bar.progress(progress_pct)
 
-  return fuel_calculator, warning_messages
+  return calculator, warning_messages
 
 
-def FCT_to_df(fuel_calculator_tool:FuelCalculatorTool):
+def calculator_2_df(calculator: S1MC_CalculatorTool):
   data = []
-  for emission in fuel_calculator_tool.calculated_emissions.values():
-    fuel_data = emission['fuel'].model_dump()
-    calculation_data = emission['calculation_result'].model_dump()
+  for emission in calculator.calculated_emissions.values():
+    fuel_data = emission['vehicle'].model_dump()
+    calculation_data = emission['calculated_emissions'].model_dump()
     combined_data = {**fuel_data, **calculation_data}
     data.append(combined_data)
   return pd.DataFrame(data)
@@ -312,7 +278,6 @@ def pandas_2_AgGrid(df: pd.DataFrame, theme:str='streamlit', key=None) -> AgGrid
  # AG Grid Options
   gd= GridOptionsBuilder.from_dataframe(df)
   gd.configure_columns(df, cellStyle=cellstyle_jscode)
-  # gd.configure_default_column(floatingFilter=True, selectable=False)
   gd.configure_pagination(enabled=True)
   
   grid_options = gd.build()
@@ -348,4 +313,3 @@ analysis_md = """
   - Will use uploaded data and not validated data to analyze. If you have used the validation feature, remember to reupload your modified data.
   - "Show results table" to display the raw output of the model
 """
-

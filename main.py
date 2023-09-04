@@ -1,18 +1,19 @@
 import streamlit as st
 import hydralit as hy
 
+from PIL import Image
 from app_config import run_app_config
 import apps
 
 st.set_page_config(
-  page_title="Ex-stream-ly Cool App",
+  page_title="Gecko Technologies Emission Calculation Service",
   page_icon="🧊",
   layout="wide",
   initial_sidebar_state="expanded",
   menu_items={
-    'Get Help': 'https://www.extremelycoolapp.com/help',
-    'Report a bug': "https://www.extremelycoolapp.com/bug",
-    'About': "# This is a header. This is an *extremely* cool app!",
+    'Get Help': 'https://www.geckointel.com',
+    'Report a bug': "https://geckointel.com/contact-us",
+    'About': "# Gecko Technologies. GHG Emission Calculation Service",
   }
 )
 
@@ -90,14 +91,14 @@ def run_app():
     s1sc_Page()
 
   @app.addapp(title='Scope 1: Mobile Combustion')
-  def s1scApp():
-    from apps.s1sc_page import s1sc_Page
-    s1sc_Page()
+  def s1mcApp():
+    from apps.s1mc_page import s1mc_Page
+    s1mc_Page()
 
   @app.addapp(title='Scope 2: Indirect Emissions')
-  def s1scApp():
-    from apps.s1sc_page import s1sc_Page
-    s1sc_Page()
+  def s2ieApp():
+    from apps.s2ie_page import s2ie_Page
+    s2ie_Page()
 
   #specify a custom loading app for a custom transition between apps, this includes a nice custom spinner
   from apps._loading import MyLoadingApp
