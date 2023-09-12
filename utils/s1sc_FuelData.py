@@ -12,6 +12,7 @@ from pydantic import root_validator, field_validator, model_validator
 from typing import Optional, Dict, Union, Any
 
 from supabase import create_client
+from .utility import find_closest_category
 
 
 supabase_url= st.secrets['supabase_url']
@@ -85,9 +86,14 @@ def create_fuel_data(cache, **kwargs):
 
     # Validate fuel state and type using fuel_type_cache
     allowed_fuel_types = cache.get_allowed_fuel_types(fuel_state, lookup=None)
-    if fuel_type not in allowed_fuel_types:
-        raise ValueError(f'Invalid fuel type for fuel state `{fuel_state}`. Allowed types in `{allowed_fuel_types}`')
-
+    if fuel_type is not None and fuel_type not in allowed_fuel_types:
+        corrected_fuel_type = find_closest_category(fuel_type, allowed_fuel_types)
+        if corrected_fuel_type is not None:
+            print(f'UPDATE: Input "{fuel_type}" has been corrected to "{corrected_fuel_type}"')
+            kwargs['fuel_type'] = corrected_fuel_type
+        else:
+            raise ValueError(f'Invalid fuel type "{fuel_type}" for fuel state "{fuel_state}". Allowed types in `{allowed_fuel_types}`')
+  
     # Create and return a FuelData instance
     return FuelData(**kwargs)
 

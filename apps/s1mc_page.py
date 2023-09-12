@@ -27,7 +27,7 @@ def s1mc_Page():
 
 
   with tab1:
-    with st.expander("Show Help"):
+    with st.expander("Show help"):
       st.markdown(help_md)
 
       csv_str = convert_BaseModel(VehicleData)
@@ -76,10 +76,13 @@ def s1mc_Page():
 
 
   with tab2:
-    if 's1mc_df' in st.session_state and st.session_state['s1mc_df'] is not None:
-      with st.expander('Show help'):
-        st.markdown(analysis_md)
+    with st.expander('Show help'):
+      st.markdown(analysis_md)
 
+    if 's1mc_df' not in st.session_state or st.session_state['s1mc_df'] is None:
+      st.info('Please upload a table at "Upload" tab to continue')
+
+    if 's1mc_df' in st.session_state and st.session_state['s1mc_df'] is not None:
       with st.expander('Show table', expanded=True):
         pandas_2_AgGrid(st.session_state['s1mc_df'], theme='balham', key='s1mc_df_tab2')
 
@@ -100,23 +103,22 @@ def s1mc_Page():
               st.warning(warning)
 
         with st.expander('Show results table'):  
-          st.write(calculation_df)
           pandas_2_AgGrid(calculation_df, theme='balham')
 
-        figs = {} 
-        for c in calculation_df.columns:
-          if calculation_df[c].dtype in [np.float64, np.int64]:
-            fig = px.histogram(
-              calculation_df, 
-              x=c, 
-              marginal='rug',
-              hover_data=calculation_df.columns,
-            ).update_layout(title=c.upper())
-            figs[c] = fig 
+        # figs = {} 
+        # for c in calculation_df.columns:
+        #   if calculation_df[c].dtype in [np.float64, np.int64]:
+        #     fig = px.histogram(
+        #       calculation_df, 
+        #       x=c, 
+        #       marginal='rug',
+        #       hover_data=calculation_df.columns,
+        #     ).update_layout(title=c.upper())
+        #     figs[c] = fig 
 
-        for title, fig in figs.items():
-          with st.expander(f'Show {title.upper()}'):
-            st.plotly_chart(fig, use_container_width=True) 
+        # for title, fig in figs.items():
+        #   with st.expander(f'Show {title.upper()}'):
+        #     st.plotly_chart(fig, use_container_width=True) 
 
 
 
@@ -136,7 +138,7 @@ def validate_s1mc_df(df:pd.DataFrame):
   warning_messages = []
 
   expected_columns = [
-    'description', 'vehicle_type', 'distance', 'distance_unit', 'vehicle_year',
+    'description', 'vehicle_type', 'distance', 'distance_unit',
     'fuel_state', 'fuel_type', 'fuel_consumption', 'fuel_unit',
   ]
 
@@ -150,6 +152,8 @@ def validate_s1mc_df(df:pd.DataFrame):
   if additional_columns:
     warning_messages.append(f"Warning: Additional columns {additional_columns}. These columns will be ignored.")
 
+  progress_bar = st.progress(0)
+  nrows = len(df)
   for index, row in df.iterrows():
     idx = index + 1
 
@@ -208,6 +212,9 @@ def validate_s1mc_df(df:pd.DataFrame):
         warning_messages.append(f"Warning: Invalid 'fuel_consumption' value of '{row['fuel_consumption']}' in row {idx}. Must be greater than 0. Setting to None.")
         df.loc[index, 'fuel_consumption'] = None
 
+    progress_pct = (index + 1) / nrows
+    progress_bar.progress(progress_pct)
+
   return df, warning_messages
 
 
@@ -234,7 +241,7 @@ def df_2_calculator(df, calculator: S1MC_CalculatorTool, cache: S1MC_Lookup_Cach
       calculator.add_vehicle_data(data)
         
     except Exception as e:
-      warning_messages.append(f'Unable to add data for row {index}. {str(e)}')
+      warning_messages.append(f'Unable to add data for row {index+1}. {str(e)}')
       pass
 
     progress_pct = (index + 1) / nrows
@@ -304,12 +311,14 @@ help_md = """
 - ##### Validating uploaded CSV file
   - Clicking button "Validate uploaded dataframe" is optional but recommended. 
   - Validation will pick up corrected spellings, updated fields, and warn about missing or incorrect values.
+    - Warning: Validation is not perfect! Sometimes it may incorrectly update values! EG: Liquified Petroleum Gas >> Petroleum (when it should be LPG). 
   - "Show validation warnings" or download its TXT file to perform audits on which row to update.
   - You may also choose to download the validated table and make modifications from there. Don't forget to reupload the modified table to the app.                   
 """
 
 analysis_md = """
 - ##### Analyzing uploaded data
+  - You are required to click "Analyze uploaded dataframe" to commit the analyzed result to the final dashboard. 
   - Will use uploaded data and not validated data to analyze. If you have used the validation feature, remember to reupload your modified data.
   - "Show results table" to display the raw output of the model
 """

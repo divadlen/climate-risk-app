@@ -102,7 +102,7 @@ def create_vehicle_data(cache, **kwargs):
     if distance_unit is None:
         kwargs['distance_unit'] = 'km'
     
-    allowed_vehicles = cache.get_allowed_vehicles(vehicle_type)
+    allowed_vehicles = cache.get_allowed_vehicles()
     if vehicle_type is not None and vehicle_type not in allowed_vehicles:
         corrected_vehicle = find_closest_category(vehicle_type, allowed_vehicles)
         if corrected_vehicle is not None:
@@ -192,7 +192,7 @@ class VehicleData(BaseModel):
     vehicle_type: str
     distance: Optional[float] = Field(None, ge=0)
     distance_unit: Optional[str] = Field(None)
-    vehicle_year: Optional[int] = Field(None)
+    # vehicle_year: Optional[int] = Field(None)
     
     fuel_state: Optional[str] = Field(None)
     fuel_type: Optional[str] = Field(None)
@@ -257,7 +257,7 @@ class EmissionResult(BaseModel):
 
 class S1MC_CalculatorTool(BaseModel):    
     cache: Union[S1MC_Lookup_Cache, Any] # added Any to support streamlit states
-    calculated_emissionss: Dict[int, Dict[str, Union[VehicleData, EmissionResult]]] = Field({})
+    calculated_emissions: Dict[int, Dict[str, Union[VehicleData, EmissionResult]]] = Field({})
     
     class Config:
         arbitrary_types_allowed = True
@@ -341,8 +341,8 @@ class S1MC_CalculatorTool(BaseModel):
                 recon_score=0
             )    
 
-        key = len(self.calculated_emissionss)
-        self.calculated_emissionss[key] = {'vehicle': v, 'calculated_emissions': calculated_emissions}
+        key = len(self.calculated_emissions)
+        self.calculated_emissions[key] = {'vehicle': v, 'calculated_emissions': calculated_emissions}
         
     def calculate_distance_based_method(self, distance:float, distance_emission_factor:float) -> float:
         return distance * distance_emission_factor
@@ -354,7 +354,7 @@ class S1MC_CalculatorTool(BaseModel):
     def get_total_co2e(self):
         total_co2e = 0
         
-        for emission in self.calculated_emissionss.values():
+        for emission in self.calculated_emissions.values():
             if emission['calculated_emissions'].most_reliable_co2e is not None:
                 total_co2e += emission['calculated_emissions'].most_reliable_co2e
 

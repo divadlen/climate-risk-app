@@ -30,12 +30,12 @@ def s2ie_Page():
   tab1, tab2, tab3 = st.tabs(["Upload", "Run Analysis", "Review"])
 
   with tab1:
-    with st.expander("Show Help"):
+    with st.expander("Show help"):
       st.markdown(help_md)
 
       csv_str = convert_BaseModel(S2_PurchasedPowerData)
       st.download_button(
-        label='Download empty Scope 2 form',
+        label='Download empty Scope 2: Indirect Emissions form',
         data=csv_str,
         file_name='scope-2-emission-form.csv',
         mime='text/csv',
@@ -81,6 +81,9 @@ def s2ie_Page():
     with st.expander('Show help'):
       st.markdown(analysis_md)
 
+    if 's2ie_df' not in st.session_state or st.session_state['s2ie_df'] is None:
+      st.info('Please upload a table at "Upload" tab to continue')
+
     if 's2ie_df' in st.session_state and st.session_state['s2ie_df'] is not None:
       with st.expander('Show table', expanded=True):
         pandas_2_AgGrid(st.session_state['s2ie_df'], theme='balham', key='s2ie_df_tab2')
@@ -105,20 +108,22 @@ def s2ie_Page():
         with st.expander('Show results table'):  
           pandas_2_AgGrid(calculation_df, theme='balham')
 
-        figs = {} 
-        for c in calculation_df.columns:
-          if calculation_df[c].dtype in [np.float64, np.int64]:
-            fig = px.histogram(
-              calculation_df, 
-              x=c, 
-              marginal='rug',
-              hover_data=calculation_df.columns,
-            ).update_layout(title=c.upper())
-            figs[c] = fig 
+        # figs = {} 
+        # for c in calculation_df.columns:
+        #   if calculation_df[c].dtype in [np.float64, np.int64]:
+        #     fig = px.histogram(
+        #       calculation_df, 
+        #       x=c, 
+        #       marginal='rug',
+        #       hover_data=calculation_df.columns,
+        #     ).update_layout(title=c.upper())
+        #     figs[c] = fig 
 
-        for title, fig in figs.items():
-          with st.expander(f'Show {title.upper()}'):
-            st.plotly_chart(fig, use_container_width=True) 
+        # for title, fig in figs.items():
+        #   with st.expander(f'Show {title.upper()}'):
+        #     st.plotly_chart(fig, use_container_width=True) 
+
+
 
 
 
@@ -163,7 +168,7 @@ def df_2_calculator(df, calculator: S2IE_CalculatorTool, cache: S2IE_Lookup_Cach
       calculator.add_power_data(data)
 
     except Exception as e:
-      warning_messages.append(f'Unable to add data for row {index}. {str(e)}')
+      warning_messages.append(f'Unable to add data for row {index+1}. {str(e)}')
       pass
 
     progress_pct = (index + 1) / nrows
@@ -213,6 +218,8 @@ def validate_s2ie_df(df:pd.DataFrame):
   if additional_columns:
     warning_messages.append(f"Warning: Additional columns {additional_columns}. These columns will be ignored.")
 
+  progress_bar = st.progress(0)
+  nrows = len(df)
   for index, row in df.iterrows():
     idx = index + 1
 
@@ -303,6 +310,9 @@ def validate_s2ie_df(df:pd.DataFrame):
         warning_messages.append(f"Warning: Invalid 'energy_consumption' value of '{energy_consumption}' in row {idx}. Must be greater than 0. Setting to None.")
         df.loc[index, 'energy_consumption'] = None
 
+    progress_pct = (index + 1) / nrows
+    progress_bar.progress(progress_pct)
+
   return df, warning_messages
 
 
@@ -357,12 +367,14 @@ help_md = """
 - ##### Validating uploaded CSV file
   - Clicking button "Validate uploaded dataframe" is optional but recommended. 
   - Validation will pick up corrected spellings, updated fields, and warn about missing or incorrect values.
+    - Warning: Validation is not perfect! Sometimes it may incorrectly update values! EG: Liquified Petroleum Gas >> Petroleum (when it should be LPG). 
   - "Show validation warnings" or download its TXT file to perform audits on which row to update.
   - You may also choose to download the validated table and make modifications from there. Don't forget to reupload the modified table to the app.                   
 """
 
 analysis_md = """
 - ##### Analyzing uploaded data
+  - You are required to click "Analyze uploaded dataframe" to commit the analyzed result to the final dashboard. 
   - Will use uploaded data and not validated data to analyze. If you have used the validation feature, remember to reupload your modified data.
   - "Show results table" to display the raw output of the model
 """

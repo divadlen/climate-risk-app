@@ -100,6 +100,16 @@ def run_app():
     from apps.s2ie_page import s2ie_Page
     s2ie_Page()
 
+  @app.addapp(title='Scope 3: Value Chain')
+  def s3vcApp():
+    from apps.s3vc_page import s3vc_Page
+    s3vc_Page()
+
+  @app.addapp(title='Dash V1')
+  def dashApp_v1():
+    from apps.dash_v1 import dash_Page_v1
+    dash_Page_v1()
+
   #specify a custom loading app for a custom transition between apps, this includes a nice custom spinner
   from apps._loading import MyLoadingApp
   app.add_loader_app(MyLoadingApp(delay=0))
@@ -108,9 +118,9 @@ def run_app():
   #---Optional, if you want to nest navigations---#
   complex_nav = {
     "Home": ['home'],
-    "Emissions Calculator": ['Scope 1: Stationary Combustion', 'Scope 1: Mobile Combustion', 'Scope 2: Indirect Emissions'],
+    "Emissions Calculator": ['Scope 1: Stationary Combustion', 'Scope 1: Mobile Combustion', 'Scope 2: Indirect Emissions', 'Scope 3: Value Chain'],
     "heat": ['Risk Heatmap'], 
-    "graph": ["Data"],
+    "Graphics": ["Data", "Dash V1"],
     #"app folder": ['from app folderr'],
     #"bests": ['The Best', 'The Best 2'],
     "logout": ['Logout'],
