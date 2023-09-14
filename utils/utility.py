@@ -1,13 +1,14 @@
 import streamlit as st
-import pandas as pd
 
+import pandas as pd
 import random
 from datetime import datetime
+
 from io import StringIO
 import re
 from typing import List, Optional, Dict, Any
-
 from fuzzywuzzy import process
+
 from supabase import create_client
 from utils.globals import COLUMN_SORT_ORDER
 
@@ -115,6 +116,9 @@ def convert_warnings(warnings: List):
   warnings_str = "\n".join(warnings)
   return warnings_str
 
+#---
+# Model Helpers
+#---
 def convert_BaseModel(cls, examples:bool=False, return_as_string:bool=True):
   """ 
   cls: Must be pydantic basemodel class
@@ -177,3 +181,9 @@ def convert_BaseModel(cls, examples:bool=False, return_as_string:bool=True):
     csv_str = csv_buffer.getvalue()
     return csv_str
   return df
+
+@st.cache_data 
+def get_cached_df(BaseModelCls): # cache still doesnt work with aggrid
+  return convert_BaseModel(BaseModelCls, examples=True, return_as_string=False)
+
+

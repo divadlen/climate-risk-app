@@ -14,6 +14,7 @@ supabase = create_client(supabase_url, supabase_anon_key)
 class GeoLocator:
     def __init__(self, df=None): 
         if df is None:
+            print('Building KDTree...')
             TABLE = 'locations_states'
             data = pd.DataFrame(supabase_query(TABLE, supabase_url, supabase_anon_key))
             self.df = data[ data['lat'].notna() & data['lon'].notna() ]

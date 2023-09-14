@@ -1,19 +1,15 @@
 import streamlit as st
-from st_aggrid import AgGrid, JsCode, GridUpdateMode
-from st_aggrid.grid_options_builder import GridOptionsBuilder
 
 import numpy as np
 import pandas as pd
 from datetime import datetime
 from dateutil import parser
-import logging
-import json
-from typing import List
 
 import plotly.express as px
 
 from utils.s2ie_PPD import create_ppd_data, S2IE_Lookup_Cache, S2_PurchasedPowerData, S2IE_CalculatorTool
 from utils.utility import get_dataframe, convert_df, convert_warnings, convert_BaseModel, find_closest_category
+from utils.display_utility import show_example_form, pandas_2_AgGrid
 from utils.geolocator import GeoLocator
 from utils.globals import LOCATION_ABBRV
 
@@ -30,21 +26,16 @@ def s2ie_Page():
   tab1, tab2, tab3 = st.tabs(["Upload", "Run Analysis", "Review"])
 
   with tab1:
-    with st.expander("Show help"):
-      st.markdown(help_md)
+    footer_md = """*(Highlighted columns with <Blank> are optional. Blue column indicates recommended default values)*"""
 
-      csv_str = convert_BaseModel(S2_PurchasedPowerData)
-      st.download_button(
-        label='Download empty Scope 2: Indirect Emissions form',
-        data=csv_str,
-        file_name='scope-2-emission-form.csv',
-        mime='text/csv',
-      )
+    with st.expander("Show help", expanded=True):
+      st.markdown(help_md)
+    show_example_form(S2_PurchasedPowerData, title='Show example form (S2: Indirect Emissions)', button_text='Get example form', filename='s2-indirect_emissions-example.csv', markdown=footer_md)
     
     with st.expander("Upload a CSV file", expanded=True):
       uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"], accept_multiple_files=False, help='CSV containing purchased power data for S2: Indirect Emissions')
       
-      if st.checkbox('Read selected csv files') and uploaded_file:
+      if st.checkbox('Read selected csv files', key='s2ie_check') and uploaded_file:
         data = pd.read_csv(uploaded_file)
         if data is not None:
           df = get_dataframe(data) 
@@ -72,9 +63,11 @@ def s2ie_Page():
           with col1:
             csv_str = convert_df(st.session_state['validated_s2ie_df'])
             st.download_button('Download validated table as CSV', csv_str, file_name="validated_table.csv", mime="text/csv")
-          with col2:
-            validation_warnings_str = convert_warnings(st.session_state['validated_s2ie_warnings'])
-            st.download_button("Download warnings as TXT", validation_warnings_str, file_name="warnings.txt", mime="text/plain")
+
+          if len(st.session_state['validated_s2ie_warnings']) > 1:
+            with col2:
+              validation_warnings_str = convert_warnings(st.session_state['validated_s2ie_warnings'])
+              st.download_button("Download warnings as TXT", validation_warnings_str, file_name="warnings.txt", mime="text/plain")
 
 
   with tab2:
@@ -134,6 +127,7 @@ def s2ie_Page():
 
 def df_2_calculator(df, calculator: S2IE_CalculatorTool, cache: S2IE_Lookup_Cache, geolocater: GeoLocator):
   df = df.replace(np.nan, None) # To allow Pydantic validation
+  df = df.replace('<Blank>', None)
   warning_messages=[]
 
   # Create progress bar
@@ -195,6 +189,7 @@ def validate_s2ie_df(df:pd.DataFrame):
     - df
     - List of warnings
   """
+  df = df.replace('<Blank>', None)
   df = df.replace(np.nan, None)
   cache = S2IE_Lookup_Cache()
   gl = GeoLocator()
@@ -315,46 +310,6 @@ def validate_s2ie_df(df:pd.DataFrame):
 
   return df, warning_messages
 
-
-def pandas_2_AgGrid(df: pd.DataFrame, theme:str='streamlit', key=None) -> AgGrid:
-  cellstyle_jscode = JsCode("""
-  function(params){
-      if (params.value == null || params.value === '') {
-          return {
-              'color': 'white',
-              'backgroundColor': 'red',
-          }
-      }
-  }
-  """)
-  custom_css={"#gridToolBar": {"padding-bottom": "0px !important"}} # allows page arrows to be shown
-
-  valid_themes= ['streamlit', 'alpine', 'balham', 'material']
-  if theme not in valid_themes:
-    raise Exception(f'Theme not in {valid_themes}')
-  
-  # check if column cell is in json or dict, then transform column to json literal string 
-  for col in df.columns:
-    if df[col].apply(lambda x: isinstance(x, dict)).any():
-      df[col] = df[col].apply(json.dumps)
-
- # AG Grid Options
-  gd= GridOptionsBuilder.from_dataframe(df)
-  gd.configure_columns(df, cellStyle=cellstyle_jscode)
-  gd.configure_pagination(enabled=True)
-  
-  grid_options = gd.build()
-  grid_response = AgGrid(
-    df, 
-    gridOptions=grid_options,
-    custom_css=custom_css,
-    height=600, 
-    theme=theme,
-    reload_data=True,
-    allow_unsafe_jscode=True,
-    key=key,
-  )
-  return grid_response['data']
 
 
 ## Markdowns

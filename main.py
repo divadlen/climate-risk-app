@@ -33,8 +33,9 @@ def run_app():
   with st.sidebar:
     qwe = st.text_input('QWE')
 
-    uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"], accept_multiple_files=False, help='CSV containinype transactions for S1: Stationary Combustion')
-
+    with st.expander('Show states'):
+      for key in st.session_state.keys():
+        st.write(key)
 
   #---Start Hydra instance---#
   over_theme = {'txc_inactive': '#FFFFFF', 'txc_active':'#004457'}

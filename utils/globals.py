@@ -53,7 +53,7 @@ SECTOR_TO_CATEGORY_IDX = {
   'Transportation': [3, 5, 6, 7],
   'Automobile': [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
   'Real Estate': [5, 6, 7, 13],
-  'Banking and Finance': [15]
+  'Banking and Finance': [6, 7, 15],
 }
 
 IDX_TO_CATEGORY_NAME = {
@@ -65,7 +65,7 @@ IDX_TO_CATEGORY_NAME = {
   6: 'Category 6 : Business and air travel',
   7: 'Category 7 : Employee commuting',
   8: 'Category 8 : Upstream leased assets',
-  9: 'Category 9 : Transportation & distribution of sold products',
+  9: 'Category 9 : Downstream distribution of sold products',
   10: 'Category 10 : Processing of sold products',
   11: 'Category 11 : Use of sold products',
   12: 'Category 12 : End-of-life treatment of sold products',

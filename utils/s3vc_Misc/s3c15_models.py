@@ -8,15 +8,11 @@ from dateutil import parser
 
 import pandas as pd
 import numpy as np
-import random
-from fuzzywuzzy import process
 
 from pydantic import BaseModel, Field
 from pydantic import model_validator
 from pydantic_core.core_schema import FieldValidationInfo
 from typing import Optional, Dict, List, Union, Tuple, ClassVar, Any
-
-from supabase import create_client
 
 
 #-----------
@@ -103,7 +99,7 @@ class S3C15_4_EmissionRemovals(S3C15_BaseAsset):
 class S3C15_5_SovereignDebt(S3C15_BaseAsset):
     financial_type: str = 'Corporate Finance'  
     asset_class: str = 'Sovereign Debt'
-    country_code: str = Field(max_length=2, description='Alpha-2 country code')
+    country_code: str = Field(default='MY', max_length=2, description='Alpha-2 country code')
     
     currency: str = Field(default='USD')
     outstanding_amount: float = Field(ge=0)

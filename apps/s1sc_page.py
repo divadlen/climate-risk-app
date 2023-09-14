@@ -1,18 +1,15 @@
 import streamlit as st
-from st_aggrid import AgGrid, JsCode, GridUpdateMode
-from st_aggrid.grid_options_builder import GridOptionsBuilder
 
 import numpy as np
 import pandas as pd
-import json
-import logging
-from typing import List
 from supabase import create_client
 
 import plotly.express as px
 
 from utils.s1sc_FuelData import create_fuel_data, S1SC_Lookup_Cache, FuelData, FuelCalculatorTool
-from utils.utility import get_dataframe, convert_df, convert_warnings, convert_BaseModel, find_closest_category
+from utils.utility import get_dataframe, convert_df, convert_warnings, find_closest_category
+from utils.display_utility import show_example_form, pandas_2_AgGrid
+
 
 # Instantiate cache for emission lookup and state lookup
 
@@ -32,21 +29,16 @@ def s1sc_Page():
 
 
   with tab1:
-    with st.expander("Show help"):
-      st.markdown(help_md)
+    footer_md = """*(Highlighted columns with <Blank> are optional. Blue column indicates recommended default values)*"""
 
-      csv_str = convert_BaseModel(FuelData)
-      st.download_button(
-        label='Download empty Scope 1: Stationary Combustion form',
-        data=csv_str,
-        file_name='scope-1-stationary-combustion-form.csv',
-        mime='text/csv',
-      )
+    with st.expander("Show help", expanded=True):
+      st.markdown(help_md)
+    show_example_form(FuelData, title='Show example form (S1: Stationary Combustion)', button_text='Get example form', filename='s1-stationary_combustion-example.csv', markdown=footer_md)
     
     with st.expander("Upload a CSV file", expanded=True):
       uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"], accept_multiple_files=False, help='CSV containing fuel type transactions for S1: Stationary Combustion')
       
-      if st.checkbox('Read selected csv files') and uploaded_file:
+      if st.checkbox('Read selected csv files', key='s1sc_check') and uploaded_file:
         data = pd.read_csv(uploaded_file)
         if data is not None:
           df = get_dataframe(data) # cache it
@@ -75,9 +67,12 @@ def s1sc_Page():
           with col1:
             csv_str = convert_df(st.session_state['validated_s1sc_df'])
             st.download_button('Download validated table as CSV', csv_str, file_name="validated_table.csv", mime="text/csv")
-          with col2:
-            validation_warnings_str = convert_warnings(st.session_state['validated_s1sc_warnings'])
-            st.download_button("Download warnings as TXT", validation_warnings_str, file_name="warnings.txt", mime="text/plain")
+
+          if len(st.session_state['validated_s2ie_warnings']) > 1:
+            with col2:
+              validation_warnings_str = convert_warnings(st.session_state['validated_s1sc_warnings'])
+              st.download_button("Download warnings as TXT", validation_warnings_str, file_name="warnings.txt", mime="text/plain")
+
 
   with tab2:
     with st.expander('Show help'):
@@ -134,6 +129,7 @@ def validate_s1sc_df(df:pd.DataFrame):
     - List of warnings
   """
   df = df.replace(np.nan, None)
+  df = df.replace('<Blank>', None)
   cache = S1SC_Lookup_Cache()
   warning_messages = []
 
@@ -261,6 +257,7 @@ def validate_s1sc_df(df:pd.DataFrame):
 
 def df_to_FCT(df, fuel_calculator: FuelCalculatorTool, cache: S1SC_Lookup_Cache):
   df = df.replace(np.nan, None) # To allow Pydantic validation
+  df = df.replace('<Blank>', None)
   warning_messages=[]
 
   # Create progress bar
@@ -302,46 +299,46 @@ def FCT_to_df(fuel_calculator_tool:FuelCalculatorTool):
   return pd.DataFrame(data)
 
 
-def pandas_2_AgGrid(df: pd.DataFrame, theme:str='streamlit', key=None) -> AgGrid:
-  cellstyle_jscode = JsCode("""
-  function(params){
-      if (params.value == null || params.value === '') {
-          return {
-              'color': 'white',
-              'backgroundColor': 'red',
-          }
-      }
-  }
-  """)
-  custom_css={"#gridToolBar": {"padding-bottom": "0px !important"}} # allows page arrows to be shown
+# def pandas_2_AgGrid(df: pd.DataFrame, theme:str='streamlit', key=None) -> AgGrid:
+#   cellstyle_jscode = JsCode("""
+#   function(params){
+#       if (params.value == null || params.value === '') {
+#           return {
+#               'color': 'white',
+#               'backgroundColor': 'red',
+#           }
+#       }
+#   }
+#   """)
+#   custom_css={"#gridToolBar": {"padding-bottom": "0px !important"}} # allows page arrows to be shown
 
-  valid_themes= ['streamlit', 'alpine', 'balham', 'material']
-  if theme not in valid_themes:
-    raise Exception(f'Theme not in {valid_themes}')
+#   valid_themes= ['streamlit', 'alpine', 'balham', 'material']
+#   if theme not in valid_themes:
+#     raise Exception(f'Theme not in {valid_themes}')
   
-  # check if column cell is in json or dict, then transform column to json literal string 
-  for col in df.columns:
-    if df[col].apply(lambda x: isinstance(x, dict)).any():
-      df[col] = df[col].apply(json.dumps)
+#   # check if column cell is in json or dict, then transform column to json literal string 
+#   for col in df.columns:
+#     if df[col].apply(lambda x: isinstance(x, dict)).any():
+#       df[col] = df[col].apply(json.dumps)
 
- # AG Grid Options
-  gd= GridOptionsBuilder.from_dataframe(df)
-  gd.configure_columns(df, cellStyle=cellstyle_jscode)
-  # gd.configure_default_column(floatingFilter=True, selectable=False)
-  gd.configure_pagination(enabled=True)
+#  # AG Grid Options
+#   gd= GridOptionsBuilder.from_dataframe(df)
+#   gd.configure_columns(df, cellStyle=cellstyle_jscode)
+#   # gd.configure_default_column(floatingFilter=True, selectable=False)
+#   gd.configure_pagination(enabled=True)
   
-  grid_options = gd.build()
-  grid_response = AgGrid(
-    df, 
-    gridOptions=grid_options,
-    custom_css=custom_css,
-    height=600, 
-    theme=theme,
-    reload_data=True,
-    allow_unsafe_jscode=True,
-    key=key,
-  )
-  return grid_response['data']
+#   grid_options = gd.build()
+#   grid_response = AgGrid(
+#     df, 
+#     gridOptions=grid_options,
+#     custom_css=custom_css,
+#     height=600, 
+#     theme=theme,
+#     reload_data=True,
+#     allow_unsafe_jscode=True,
+#     key=key,
+#   )
+#   return grid_response['data']
 
 
 ## Markdowns

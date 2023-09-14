@@ -189,15 +189,14 @@ class VehicleData(BaseModel):
     uuid: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
     description: Optional[str] = Field(None, max_length=1600)     
         
-    vehicle_type: str
+    vehicle_type: str = Field(default='car')
     distance: Optional[float] = Field(None, ge=0)
-    distance_unit: Optional[str] = Field(None)
-    # vehicle_year: Optional[int] = Field(None)
+    distance_unit: Optional[str] = Field(default='km')
     
-    fuel_state: Optional[str] = Field(None)
-    fuel_type: Optional[str] = Field(None)
+    fuel_state: Optional[str] = Field(default='liquid')
+    fuel_type: Optional[str] = Field(default='petrol')
     fuel_consumption: Optional[float] = Field(None, ge=0)
-    fuel_unit: Optional[str] = Field(None)
+    fuel_unit: Optional[str] = Field(default='litre')
 
     @model_validator(mode='before')
     def validate_vehicle_data(cls, values):

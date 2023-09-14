@@ -4,7 +4,6 @@ from datetime import datetime
 from dateutil import parser
 import pandas as pd
 import numpy as np
-import random
 import re
 import uuid
 
@@ -113,7 +112,7 @@ class S2IE_Lookup_Cache(BaseModel):
     _grid_emission_factors_cache: dict = {}
 
     def get_allowed_countries(self):
-        if self._allowed_countries_cache not in [{}, None]:
+        if 'countries' in self._allowed_countries_cache:
             return self._allowed_countries_cache['countries']
         
         TABLE = 'locations_country_code'
@@ -129,16 +128,18 @@ class S2IE_Lookup_Cache(BaseModel):
         if country in self._allowed_states_cache:
             return self._allowed_states_cache[country]
         
-        TABLE = 'locations_states'
-        query_builder = supabase.table(TABLE).select('state_name', 'country_name')
-        query_builder = query_builder.filter('country_name', 'eq', country)
-        response = query_builder.execute()
-        records = response.data
-        
-        if records not in [[], None]:
-            allowed_states = list(set(item['state_name'] for item in records))
-            self._allowed_states_cache[country] = allowed_states
-            return allowed_states
+        if country not in [None, [], np.nan]:
+          TABLE = 'locations_states'
+          query_builder = supabase.table(TABLE).select('state_name', 'country_name')
+          query_builder = query_builder.filter('country_name', 'eq', country)
+          response = query_builder.execute()
+          records = response.data
+          
+          if records not in [[], None]:
+              allowed_states = list(set(item['state_name'] for item in records))
+              self._allowed_states_cache[country] = allowed_states
+              return allowed_states
+          return None
         return None
     
     
@@ -175,7 +176,7 @@ class S2_PurchasedPowerData(BaseModel):
         
     branch: Optional[str] = Field(None, max_length=1600)
     department: Optional[str] = Field(None, max_length=255)    
-    owned: Optional[bool] = Field(None)
+    owned: Optional[bool] = Field(default=True)
         
     street_address_1: Optional[str] = Field(None, max_length=35)
     street_address_2: Optional[str] = Field(None, max_length=35)
@@ -188,11 +189,11 @@ class S2_PurchasedPowerData(BaseModel):
     
     date: Optional[Union[str, datetime]] = Field(None) 
     
-    energy_type: Optional[str] = Field(None)
+    energy_type: Optional[str] = Field(default='electric')
     energy_consumption: Optional[float] = Field(None, ge=0)
-    energy_unit: Optional[str] = Field(None)
+    energy_unit: Optional[str] = Field(default='kwh')
     energy_spend: Optional[float] = Field(None, ge=0)
-    currency: Optional[str] = Field(None)
+    currency: Optional[str] = Field(default='USD')
     energy_provider: Optional[str] = Field(None, max_length=99)
         
     @model_validator(mode='before')

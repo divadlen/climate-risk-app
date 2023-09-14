@@ -8,16 +8,16 @@ from utils.s3vc_Misc.s3c15_models import *
 #----------
 class S3C15_Calculator(BaseModel):    
     cache: Optional[Any] = None # added Any to support streamlit states
-    portfolio: Optional[Dict] = None
+    calculated_emissions: Optional[Dict] = None
     best_emissions: Dict[str,float] = {}
     total_emissions: float = 0.0
       
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.cache = self.cache or {}
-        self.portfolio = self.portfolio or {}
+        self.calculated_emissions = self.calculated_emissions or {}
 
-    def add_asset(self, asset: S3C15_BaseAsset):
+    def add_data(self, asset: S3C15_BaseAsset):
         try:
             if not isinstance(asset, S3C15_BaseAsset):
                 raise TypeError('Asset not of expected data type. Expect S3C15_BaseAsset.')
@@ -29,8 +29,8 @@ class S3C15_Calculator(BaseModel):
             
             # Create an EmissionResult object
             emission_result = res
-            idx = len(self.portfolio)
-            self.portfolio[idx] = {'asset': asset.model_dump(), 'calculated_emissions': emission_result}
+            idx = len(self.calculated_emissions)
+            self.calculated_emissions[idx] = {'asset': asset.model_dump(), 'calculated_emissions': emission_result}
             
         except TypeError as te:
             print(te)
@@ -71,8 +71,8 @@ class S3C15_Calculator(BaseModel):
         return res
 
     def _update_emissions_summary(self):
-        asset_uuid = self.portfolio[len(self.portfolio) - 1]['asset']['uuid']
-        metadata = self.portfolio[len(self.portfolio) - 1]['calculated_emissions']['metadata']
+        asset_uuid = self.calculated_emissions[len(self.calculated_emissions) - 1]['asset']['uuid']
+        metadata = self.calculated_emissions[len(self.calculated_emissions) - 1]['calculated_emissions']['metadata']
 
         # Extracting the emission with the lowest data quality
         emission_data = min(metadata, key=lambda x: x['data_quality'])
@@ -96,6 +96,13 @@ def create_metadata(calculation_name, emission_amount, fields_used, data_quality
         'fields_used': fields_used,
         'data_quality': data_quality
     }
+
+def create_s3c15_data(row, Model):
+    try:
+        return Model(**row)
+    except Exception as e:
+        raise e
+    
 
 
 #---
@@ -412,16 +419,16 @@ def calculator_test():
     calc = S3C15_Calculator()
 
     for _ in range(10):
-      calc.add_asset(random_asset(S3C15_1A_ListedEquity))
-      calc.add_asset(random_asset(S3C15_1B_UnlistedEquity))
-      calc.add_asset(random_asset(S3C15_1C_CorporateBonds))
-      calc.add_asset(random_asset(S3C15_1D_BusinessLoans))
-      calc.add_asset(random_asset(S3C15_1E_CommercialRealEstate))
-      calc.add_asset(random_asset(S3C15_2A_Mortgage))
-      calc.add_asset(random_asset(S3C15_2B_VehicleLoans))
-      calc.add_asset(random_asset(S3C15_3_ProjectFinance))
-      calc.add_asset(random_asset(S3C15_4_EmissionRemovals))
-      calc.add_asset(random_asset(S3C15_5_SovereignDebt))
+      calc.add_data(random_asset(S3C15_1A_ListedEquity))
+      calc.add_data(random_asset(S3C15_1B_UnlistedEquity))
+      calc.add_data(random_asset(S3C15_1C_CorporateBonds))
+      calc.add_data(random_asset(S3C15_1D_BusinessLoans))
+      calc.add_data(random_asset(S3C15_1E_CommercialRealEstate))
+      calc.add_data(random_asset(S3C15_2A_Mortgage))
+      calc.add_data(random_asset(S3C15_2B_VehicleLoans))
+      calc.add_data(random_asset(S3C15_3_ProjectFinance))
+      calc.add_data(random_asset(S3C15_4_EmissionRemovals))
+      calc.add_data(random_asset(S3C15_5_SovereignDebt))
 
     return calc
   

@@ -138,14 +138,14 @@ class S1SC_Lookup_Cache(BaseModel):
 class FuelData(BaseModel):
     uuid: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the fuel data")
     description: Optional[str] = Field(None, max_length=1600)        
-    sector: str
-    fuel_state: str  
-    fuel_type: str
+    sector: str = Field(default='energy')
+    fuel_state: str = Field(default='liquid')
+    fuel_type: str = Field(default='Petrol')
     fuel_consumption: Optional[float] = Field(None, ge=0)
-    fuel_unit: Optional[str] = Field(None)
+    fuel_unit: Optional[str] = Field(default='litre')
     heating_value: Optional[str] = Field(None)        
     fuel_spend: Optional[float] = Field(None, ge=0)
-    currency: Optional[str] = Field(None)    
+    currency: Optional[str] = Field(default='USD')    
 
     @model_validator(mode='before')
     def validate_fuel_data(cls, values):
