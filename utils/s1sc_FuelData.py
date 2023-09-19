@@ -292,7 +292,7 @@ class FuelCalculatorTool(BaseModel):
         )     
         
         key = len(self.calculated_emissions)
-        self.calculated_emissions[key] = {'fuel': fuel, 'calculated_emissions': calculated_emissions}
+        self.calculated_emissions[key] = {'input_data': fuel, 'calculated_emissions': calculated_emissions}
         
     def calculate_fuel_based_method(self, fuel_consumption: float, fuel_emission_factor: float) -> float:
         """Calculate emissions using the emission factor method (Eq1)"""

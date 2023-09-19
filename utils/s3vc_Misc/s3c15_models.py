@@ -83,7 +83,7 @@ class S3C15_3_ProjectFinance(S3C15_BaseAsset):
 
         
 class S3C15_4_EmissionRemovals(S3C15_BaseAsset):
-    financial_type:str = None
+    financial_type:str='Corporate Finance'
     company_name: str
     sector: str
     asset_class: str = 'Emission Removals'

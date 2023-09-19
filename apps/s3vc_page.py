@@ -12,8 +12,8 @@ from supabase import create_client
 
 import plotly.express as px
 
-from utils.globals import SECTOR_TO_CATEGORY_IDX, IDX_TO_CATEGORY_NAME
-from utils.utility import get_dataframe, convert_df, convert_warnings
+from utils.globals import SECTOR_TO_CATEGORY_IDX, IDX_TO_CATEGORY_NAME, ColorDiscrete
+from utils.utility import get_dataframe, convert_df, convert_warnings, create_line_simulation
 from utils.display_utility import show_example_form, pandas_2_AgGrid
 from utils.model_df_utility import df_to_calculator, calculator_to_df
 from utils.md_utility import markdown_insert_images
@@ -22,14 +22,12 @@ from utils.model_inferencer import ModelInferencer
 from utils.s3vc_Misc.s3_models import *
 from utils.s3vc_Misc.s3c15_models import *
 from utils.s3vc_Misc.s3c15_calculators import S3C15_Calculator, create_s3c15_data
-
+from utils.charting import initialize_plotly_themes, make_bar_chart, make_donut_chart, make_grouped_line_chart, make_sankey_chart
 
 
 def s3vc_Page(): 
-  # Inits
-  if 's3vc_df' not in st.session_state: 
-    st.session_state['s3vc_df'] = None
-
+  # inits already done in 'app_config()'
+  initialize_plotly_themes()
 
   st.title('Scope 3: Value Chain')  
   if not st.session_state.get('s3_settings'):
@@ -190,20 +188,21 @@ def s3vc_Page():
 
 
     with tab3:
-      st.write('wwws')
-      t1, t2 = st.tabs(['Upload & Validate', 'Analyze'])
+      t1, t2 = st.tabs(['Upload/Validate', 'Analyze uploads'])
 
-      with t1:
-        st.session_state['s3vc_dfs'] = {}
-        st.session_state['s3vc_warnings'] = {}
-        st.session_state['s3vc_calc_results'] = {}
+      with t1:        
+        st.info('*(For best results, upload only csv files containing matching fields from examples and keep edits to recommended default fields to minimum)*')
 
-        #---
-        with st.expander("Upload CSV files", expanded=True):
-          st.info('*(For best results, upload only csv files containing matching fields from examples and keep edits to recommended default fields to minimum)*')
+        with st.form('Upload CSV files'):
           uploaded_files = st.file_uploader("Upload CSV files", type=["csv"], accept_multiple_files=True, help='CSV containing any relevant Scope 3 data. Categories are automatically inferred')
 
-          if st.checkbox('Read selected csv files', key='s3vc_check') and uploaded_files:
+          if st.form_submit_button('Upload'):
+            # reset everything if button is clicked
+            st.session_state['s3vc_original_dfs'] = {}
+            st.session_state['s3vc_dfs'] = {}
+            st.session_state['s3vc_warnings'] = {}
+            st.session_state['s3vc_calc_results'] = {}
+
             # Inferencer and df inits
             m = ModelInferencer()
 
@@ -216,147 +215,191 @@ def s3vc_Page():
               'S3C15_2A_Mortgage','S3C15_2B_VehicleLoans',
               'S3C15_3_ProjectFinance','S3C15_4_EmissionRemovals','S3C15_5_SovereignDebt'
             ]
+            c14_models = []
+            c10_models = []
 
             # Loop through the uploaded files and convert to models
             for uploaded_file in uploaded_files:
               data = pd.read_csv(uploaded_file)
+
               if data is not None:
                 df = get_dataframe(data)
-                m.transform_df_to_model(data)
+
+                # Create models from df
+                m.transform_df_to_model(df)
 
                 # infer model from df
-                model_name = m.infer_model_from_df(df=data)['model']
-                Model = m.available_models[model_name]
+                inferred_model = m.infer_model_from_df(df=df)
+                if inferred_model is None:
+                  st.error(f'Uploaded file "{uploaded_file.name}" with columns {list(df.columns)} has no reliable matches. Please make sure you are submitting a file that closely resemble the examples.')
+                  continue
 
+                model_name = inferred_model['model']
+                Model = m.available_models[model_name]    
+            
                 # Choose calculator based on inferred model
                 if model_name in []:
                   pass 
-
                 elif model_name in c15_models:
                   calc = S3C15_Calculator()
                   creator = partial(create_s3c15_data, Model=Model)
-
                 else:
                   raise ValueError(f"Unknown model: {model_name}")
 
                 try:
-                  calc, warning_list = df_to_calculator(df, calculator=calc, creator=creator)
+                  calc, warning_list = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False)
                   result_df = calculator_to_df(calc)
+
                   if len(warning_list) > 0:
                     st.session_state['s3vc_warnings'][model_name] = warning_list
-        
+                  st.session_state['s3vc_original_dfs'][model_name] = df
                   st.session_state['s3vc_dfs'][model_name] = result_df
                   st.session_state['s3vc_calc_results'][model_name] = calc
                 
                 except Exception as e:
                   raise
-        #---
+        
+        #-Show uploaded dfs-#
+        if st.session_state['s3vc_original_dfs'] not in [{}]:
+          st.subheader('Review uploaded files')
 
-        if st.session_state['s3vc_dfs'] not in [{}]:
-          # st.write( st.session_state['s3vc_dfs'] )
-
-          for name, df in st.session_state['s3vc_dfs'].items(): # works
-            with st.expander(f'Show uploaded table ({name})'):
-              pandas_2_AgGrid(df, theme='balham')
-
-          st.write( st.session_state['s3vc_calc_results']  )
-          for name, calc_results in st.session_state['s3vc_calc_results'].items():
-            with st.expander(f'Show calculation results {name}'):
-              total_emissions = calc_results.get_total_emissions()
-              st.write(f'Total emissions: {total_emissions}')
+          for name, df in st.session_state['s3vc_original_dfs'].items(): # works
+            if len(df) > 0:
+              with st.expander(f'Show uploaded table ({name})'):
+                pandas_2_AgGrid(df, theme='balham', key=f's3_{name}_aggrid')
+          
+          st.info('If there are no issues with your uploaded files, you may proceed to **Analyze uploads** tab')
 
 
-        # if 'mi' in st.session_state:
-        #   with st.expander('ffdfd'):
-        #     st.write(st.session_state['mi'].model_instances)
+      with t2:
+        with st.expander('Show help'):
+          st.markdown('Hi')
 
-        #   with st.expander('wwerff'):
-        #     pass
+        if 's3vc_original_dfs' not in st.session_state or st.session_state['s3vc_original_dfs'] in [{}]:
+          st.info('Please upload at least one valid table at "Upload/Validate" tab to continue')
 
+        if 's3vc_original_dfs' in st.session_state and st.session_state['s3vc_original_dfs'] not in [{}]:
+          with st.expander('Show uploaded table', expanded=True):
+            for name, df in st.session_state['s3vc_original_dfs'].items():
+              pandas_2_AgGrid(df, theme='balham', height=300, key=f's3vc_og_{name}_aggrid')
+
+        if 'analyzed_s3vc' not in st.session_state:
+          st.session_state['analyzed_s3vc'] = False
+        
+        analyze_button = st.button('Analyze uploaded dataframes', help='Attempts to return calculation results for each row for table. Highly recommended to reupload a validated table before running analysis')
+        if analyze_button and st.session_state['s3vc_original_dfs'] not in [{}]:
+          st.session_state['analyzed_s3vc'] = True   
+          st.success('Uploaded Scope 3 data tables analyzed!')
+
+          if all(key in st.session_state for key in ['s3vc_warnings', 's3vc_dfs']) and st.session_state.get('analyzed_s3vc', True):
+            with st.expander('Show warnings'):
+              for name, warnings in st.session_state['s3vc_warnings'].items():
+                for warn in warnings:
+                  st.warning(f'{name}: {warn}')
             
-
-
-          # if 'validated_s2ie' not in st.session_state:
-          #   st.session_state['validated_s2ie'] = False
-          # if st.button('Validate uploaded dataframe'):
-          #   st.session_state['validated_s2ie_df'], st.session_state['validated_s2ie_warnings'] = validate_s2ie_df(st.session_state['s2ie_df'])
-          #   st.session_state['validated_s2ie'] = True
-
-          # if st.session_state['validated_s2ie']:
-          #   with st.expander('Show validation warnings'):
-          #     for warning in st.session_state['validated_s2ie_warnings']:
-          #       st.warning(warning)
-
-          #   with st.expander('Validated table', expanded=True):
-          #     pandas_2_AgGrid( st.session_state['validated_s2ie_df'], theme='balham' )
-
-          #     col1, col2 = st.columns([1,1])
-          #     with col1:
-          #       csv_str = convert_df(st.session_state['validated_s2ie_df'])
-          #       st.download_button('Download validated table as CSV', csv_str, file_name="validated_table.csv", mime="text/csv")
-
-          #     if len(st.session_state['validated_s2ie_warnings']) > 1:
-          #       with col2:
-          #         validation_warnings_str = convert_warnings(st.session_state['validated_s2ie_warnings'])
-          #         st.download_button("Download warnings as TXT", validation_warnings_str, file_name="warnings.txt", mime="text/plain")
-
-
-
-    
-    
-      # with st.expander('Show help'):
-      #   st.markdown(analysis_md)
-
-      # if 's3vc_df' not in st.session_state or st.session_state['s2ie_df'] is None:
-      #   st.info('Please upload a table at "Upload" tab to continue')
-
-      # if 's2ie_df' in st.session_state and st.session_state['s2ie_df'] is not None:
-      #   with st.expander('Show table', expanded=True):
-      #     pandas_2_AgGrid(st.session_state['s2ie_df'], theme='balham', key='s2ie_df_tab2')
-
-      #   if 'analyzed_s2ie' not in st.session_state:
-      #     st.session_state['analyzed_s2ie'] = False
-      #   if st.button('Analyze uploaded dataframe', help='Attempts to return calculation results for each row for table. Highly recommended to reupload a validated table before running analysis'):
-      #     st.session_state['analyzed_s2ie'] = True
-
-      #     cache = st.session_state['S2IE_Lookup_Cache']
-      #     gl = GeoLocator()
-      #     calc = S2IE_CalculatorTool(cache=cache)
-
-      #     calc, warning_messages = df_2_calculator(st.session_state['s2ie_df'], calculator=calc, cache=cache, geolocater=gl)
-      #     calculation_df = calculator_2_df(calc)
-
-      #     if warning_messages:
-      #       with st.expander('Show analysis warnings'):
-      #         for warning in warning_messages:
-      #           st.warning(warning)
-
-      #     with st.expander('Show results table'):  
-      #       pandas_2_AgGrid(calculation_df, theme='balham')
+            for name, df in st.session_state['s3vc_dfs'].items(): # might not need this
+              with st.expander(f'Show table for analyzed **{name}**'):
+                pandas_2_AgGrid(df, theme='balham', height=300, key=f's3vc_{name}_aggrid')
 
 
     with tab4:
-      st.header('Nothing here yet')
-      pass
+      st.subheader('Executive Insights')
+
+      if 's3vc_calc_results' in st.session_state and st.session_state['s3vc_calc_results'] != {}:
+        res_df = st.session_state['s3vc_calc_results']
+        res_df = calculators_2_df(res_df)
 
+        pandas_2_AgGrid(res_df) # 
 
+        fig1 = make_bar_chart(res_df, scope_col='scope', category_col='category', value_col='financed_emissions', theme='gecko5', height=300, watermark=True, legend=False, legend_dark=False)
+        st.plotly_chart(fig1, use_container_width=True)
 
+        fig2 = make_donut_chart(res_df, group_col='category', value_col='financed_emissions', center_text='Pie chart', legend=False, theme='gecko5')
+        st.plotly_chart(fig2, use_container_width=True)
 
+        fig3 = make_grouped_line_chart(res_df, group_col='category', value_col='financed_emissions', date_col='date', theme='gecko5', legend_dark=True)
+        st.plotly_chart(fig3, use_container_width=True)
 
 
+        #----------
+        ts= create_line_simulation()
+        st.write(ts)
+        
+        fig4 = make_grouped_line_chart(
+          ts, 
+          group_col='category', 
+          value_col='value', 
+          date_col='date', 
+          resample_freq='Q', 
+          stacked=False,
+          theme='google'
+        )
+        st.plotly_chart(fig4, use_container_width=True)
+        #-----------
 
+        fig5 = make_sankey_chart(res_df, hierarchy_col_list=['financial_type', 'category', 'sector'], theme='google')
+        st.plotly_chart(fig5, use_container_width=True)
 
 
 
 
 
 
+#---
+# Helpers
+#---
+def calculators_2_df(calculators):
+  """ 
+  calculators: dictionary of calculators
+    Example: 
+    calculators = {
+      'Scope1_MobileCombustion': calculator1,
+      'Scope2_IndirectEmissions': calculator2,
+      # ...
+    }
+  """
+  def get_first_number(d):
+    if isinstance(d, dict):
+      for value in d.values():
+        if isinstance(value, (int, float)):
+          return value
+    return np.nan
 
+  rows = []
+  for name, calculator in calculators.items():
+    scope = name.split('_')[0]  # Assuming the scope is the first part of the name
+    category = name.split('_')[-1]
 
+    if hasattr(calculator, 'calculated_emissions'):
+      for key, value in calculator.calculated_emissions.items():
 
+        # Initialize row
+        row = {
+          'scope': scope,
+          'category': category,
+        }
 
+        input_data = value.get('input_data', {})
+        for k, v in input_data.items():
+          if 'description' not in k.lower() and 'uuid' not in k.lower():
+            row[k] = v
 
+        emission_data = value.get('calculated_emissions', {})
+        for k, v in emission_data.items():
+          if isinstance( v, (int, float, str, bool)):
+            row[k] = v
+          elif isinstance( v, (dict,list )):
+            row[k] = get_first_number(v)
+          else:
+            print(f'Column {k} unable to retrieve valid value. {v} as {type(v)}')
 
+        rows.append(row)
+  
+  df = pd.DataFrame(rows)
+  for col in df.columns:
+    if df[col].apply(lambda x: isinstance(x, (dict, list))).any():
+      df[col] = df[col].apply(json.dumps)
+  return df
 
 
 
@@ -364,197 +407,16 @@ def s3vc_Page():
 
 
 
-      # with st.expander(f'Show guidelines for **Scope 3: {IDX_TO_CATEGORY_NAME[1]}**'):
-      #   example_df = convert_BaseModel( S3C15_2B_VehicleLoans, examples=True, return_as_string=False)
-      #   csv_str = convert_BaseModel( S3C15_2B_VehicleLoans, examples=True ) # replace "category" with name of class
 
 
-      #   cellstyle_jscode = JsCode("""
-      #   function(params){
-      #       if (params.value === '<Blank>') {
-      #           return {
-      #               'backgroundColor': 'teal',
-      #               'color': 'white'
-      #           }
-      #       } else {
-      #           return {
-      #               'color': 'black',
-      #               'backgroundColor': 'white',
-      #           }
-      #       }
-      #   }
-      #   """)
-      #   pandas_2_AgGrid(example_df, cellstyle_jscode=cellstyle_jscode, height=None)
 
 
-      #   st.download_button(
-      #     label=f'Get example Scope 3: Category 1 form',
-      #     data=csv_str,
-      #     file_name=f'scope-3-category-1-form.csv',
-      #     mime='text/csv'
-      #   )
 
 
-      # uploaded_files = st.file_uploader("Choose a CSV file", type="csv", accept_multiple_files=True)
 
-      # st.write(applicable_indices) # 
-      
-      # Track categories
-      # uploaded_categories = set()
-      # applicable_categories = set(applicable_indices)
 
-      # for uploaded_file in uploaded_files:
-      #   def infer_category():
-      #     pass 
 
-      #   inferred_category  = infer_category(uploaded_file)
-      #   if inferred_category in uploaded_categories:
-      #     st.warning(f'Multiple files for category {inferred_category} uploaded! Only the first will be used.')
-      #   else:
-      #     uploaded_categories.add(inferred_category)
 
-      #   if inferred_category in applicable_categories:
-      #     applicable_categories.remove(inferred_category)
-
-      # for remaining_category in applicable_categories:
-      #   with st.expander(f'Inputs for {IDX_TO_CATEGORY_NAME[remaining_category]}'):
-      #     st.write(f'{IDX_TO_CATEGORY_NAME[remaining_category]}')
-
-
-
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# def display_c1_guidelines():
-#   with st.expander('Show guidelines for **Scope 3: Category 1 : Purchased goods & services**'):
-#     pass
-
-# def display_c2_guidelines():
-#   with st.expander('Show guidelines for **Scope 3: Category 2 : Capital goods**'):
-#     pass
-
-# def display_c3_guidelines():
-#   with st.expander('Show guidelines for **Scope 3: Category 3 : Fuel- & energy-related activities (excluded in Scope 1 & 2)**'):
-#     pass
-
-# def display_c4_guidelines():
-#   with st.expander('Show guidelines for **Scope 3: Category 4 : Upstream transportation & distribution**'):
-#     pass
-
-# def display_c5_guidelines():
-#   with st.expander('Show guidelines for **Scope 3: Category 5 : Waste generated in operations**'):
-#     pass
-
-# def display_c6_guidelines():
-#   with st.expander('Show guidelines for **Scope 3: Category 6 : Business and air travel**'):
-#     pass
-
-# def display_c7_guidelines():
-#   with st.expander('Show guidelines for **Scope 3: Category 7 : Employee commuting**'):
-#     pass
-
-# def display_c8_guidelines():
-#   with st.expander('Show guidelines for **Scope 3: Category 8 : Upstream leased assets**'):
-#     pass
-
-# def display_c9_guidelines():
-#   with st.expander('Show guidelines for **Scope 3: Category 9 : Transportation & distribution of sold products**'):
-#     pass
-
-# def display_c10_guidelines():
-#   with st.expander('Show guidelines for **Scope 3: Category 10 : Processing of sold products**'):
-#     pass
-
-# def display_c11_guidelines():
-#   with st.expander('Show guidelines for **Scope 3: Category 11 : Use of sold products**'):
-#     pass
-
-# def display_c12_guidelines():
-#   with st.expander('Show guidelines for **Scope 3: Category 12 : End-of-life treatment of sold products**'):
-#     pass
-
-# def display_c13_guidelines():
-#   with st.expander('Show guidelines for **Scope 3: Category 13 : Downstream leased assets**'):
-#     pass
-
-# def display_c14_guidelines():
-#   with st.expander('Show guidelines for **Scope 3: Category 14 : Franchises**'):
-#     pass
-
-# def display_c15_guidelines():
-#   with st.expander('Show guidelines for **Scope 3: Category 15 : Investments**'):
-#    pass
-    
-
-# def show_example_form(BaseModelCls, title:str, button_text: str, filename: str, markdown:str=None, key=None):
-#     """ 
-#     BaseModelCls: 
-#       Pydantic BaseModel
-    
-#     title: 
-#       Title displayed on expander
-    
-#     button_text: 
-#       Text for download button WITHOUT csv extension
-    
-#     filename: 
-#       Default downloaded filename
-    
-#     markdown: 
-#       Optional, extra markdown to include below forms. 
-#     """
-
-#     with st.expander(title):
-#         csv_str = convert_BaseModel(BaseModelCls, examples=True)
-#         example_df = convert_BaseModel(BaseModelCls, examples=True, return_as_string=False)
-
-#         cellstyle_jscode = JsCode("""
-#         function(params){
-#             if (params.value === '<Blank>') {
-#                 return {
-#                     'backgroundColor': 'teal',
-#                     'color': 'white'
-#                 }
-#             } else if (typeof params.value === 'string' && !params.value.includes('EXAMPLE')) {
-#                 return {
-#                     'backgroundColor': 'paleturquoise',
-#                     'color': 'black'
-#                 }
-#             } else {
-#                 return {
-#                     'color': 'black',
-#                     'backgroundColor': 'white',
-#                 }
-#             }
-#         }
-#         """)
-#         pandas_2_AgGrid(example_df, cellstyle_jscode=cellstyle_jscode, height=None, key=key)
-
-#         st.download_button(
-#             label=button_text,
-#             data=csv_str,
-#             file_name=f'{filename}',
-#             mime='text/csv'
-#         )
-
-#         if markdown:
-#           st.markdown(markdown)
  
 
 #---

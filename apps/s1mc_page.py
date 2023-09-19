@@ -82,6 +82,7 @@ def s1mc_Page():
         st.session_state['analyzed_s1mc'] = False
       if st.button('Analyze uploaded dataframe', help='Attempts to return calculation results for each row for table. Highly recommended to reupload a validated table before running analysis'):
         st.session_state['analyzed_s1mc'] = True
+        st.success('Uploaded Scope 1 Mobile combustion data tables analyzed!')
 
         cache = st.session_state['S1MC_Lookup_Cache']
         calc = S1MC_CalculatorTool(cache=cache)
@@ -247,7 +248,7 @@ def df_2_calculator(df, calculator: S1MC_CalculatorTool, cache: S1MC_Lookup_Cach
 def calculator_2_df(calculator: S1MC_CalculatorTool):
   data = []
   for emission in calculator.calculated_emissions.values():
-    fuel_data = emission['vehicle'].model_dump()
+    fuel_data = emission['input_data'].model_dump()
     calculation_data = emission['calculated_emissions'].model_dump()
     combined_data = {**fuel_data, **calculation_data}
     data.append(combined_data)

@@ -30,7 +30,7 @@ class S3C15_Calculator(BaseModel):
             # Create an EmissionResult object
             emission_result = res
             idx = len(self.calculated_emissions)
-            self.calculated_emissions[idx] = {'asset': asset.model_dump(), 'calculated_emissions': emission_result}
+            self.calculated_emissions[idx] = {'input_data': asset.model_dump(), 'calculated_emissions': emission_result}
             
         except TypeError as te:
             print(te)
@@ -71,15 +71,22 @@ class S3C15_Calculator(BaseModel):
         return res
 
     def _update_emissions_summary(self):
-        asset_uuid = self.calculated_emissions[len(self.calculated_emissions) - 1]['asset']['uuid']
-        metadata = self.calculated_emissions[len(self.calculated_emissions) - 1]['calculated_emissions']['metadata']
+        try:
+            asset_uuid = self.calculated_emissions[len(self.calculated_emissions) - 1]['input_data']['uuid']
+            metadata = self.calculated_emissions[len(self.calculated_emissions) - 1]['calculated_emissions']['metadata']
 
-        # Extracting the emission with the lowest data quality
-        emission_data = min(metadata, key=lambda x: x['data_quality'])
-        emissions = emission_data['amount']
+            if not metadata:
+                raise ValueError("Metadata is empty")
+          
+            # Extracting the emission with the lowest data quality
+            emission_data = min(metadata, key=lambda x: x['data_quality'])
+            emissions = emission_data['amount']
 
-        self.best_emissions[asset_uuid] = emissions
-        self.total_emissions += emissions
+            self.best_emissions[asset_uuid] = emissions
+            self.total_emissions += emissions
+
+        except ValueError as e:
+          print(f"An error occurred: {e}")
 
     def get_emissions(self) -> Dict[str, float]:
         return self.best_emissions
@@ -88,7 +95,9 @@ class S3C15_Calculator(BaseModel):
         return self.total_emissions
     
 
-#-- Helper--#
+#---
+# Helper 
+#---
 def create_metadata(calculation_name, emission_amount, fields_used, data_quality):
     return {
         'calculation': calculation_name,
@@ -98,6 +107,18 @@ def create_metadata(calculation_name, emission_amount, fields_used, data_quality
     }
 
 def create_s3c15_data(row, Model):
+    """ 
+    Boilerplate used to create S3C15 Models from rows of a dataframe. 
+    Model( row.to_dict() ) is not reliable as using values from a df directly may not be compatible with Pydantic models
+
+    Params:
+    Model: 
+      The model that will be using row values to be created under (EG: S3C15_1A, S3C15_2A)
+
+    Recommended new params:
+      cache: Lookup cache dictionary to check for dupe entry
+      geolocator
+    """
     try:
         return Model(**row)
     except Exception as e:
@@ -105,12 +126,13 @@ def create_s3c15_data(row, Model):
     
 
 
-#---
-# Currently no support for verified reported emission auditing and economic-based emissions. 
-# This is because both are treated the same, and there is no quantitative field to make this distinction.
-# Physical emissions Will require averaged factors from sector, which is impractical and low score
-# Client only have 1200 chars to make their case in estimation description.
-#---
+""" 
+Currently no support for verified reported emission auditing and economic-based emissions. 
+This is because both are treated the same, and there is no quantitative field to make this distinction.
+Physical emissions Will require averaged factors from sector, which is impractical and low score
+Client only have 1200 chars to make their case in estimation description.
+"""
+
 def calc_S3C15_1A_ListedEquity(asset: S3C15_BaseAsset):
     financed_emissions={}
     data_quality =5

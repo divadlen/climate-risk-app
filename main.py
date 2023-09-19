@@ -2,8 +2,10 @@ import streamlit as st
 import hydralit as hy
 
 from PIL import Image
+
 from app_config import run_app_config
-import apps
+from utils.utility import get_deep_size, set_theme, reconcile_theme_config
+
 
 st.set_page_config(
   page_title="Gecko Technologies Emission Calculation Service",
@@ -27,30 +29,70 @@ def run_app():
     return
 
   #---Load states and configurations---#
-  # st.snow()
   run_app_config()
 
-  with st.sidebar:
-    qwe = st.text_input('QWE')
-
-    with st.expander('Show states'):
-      for key in st.session_state.keys():
-        st.write(key)
-
   #---Start Hydra instance---#
-  over_theme = {'txc_inactive': '#FFFFFF', 'txc_active':'#004457'}
-  navbar_theme = {'txc_inactive': '#FFFFFF','txc_active':'grey','menu_background':'#05F1E3','option_active':'#004457'}
+  hydra_theme = None # init hydra theme
+  navbar_theme_light = {
+    'txc_inactive': '#FFFFFF',
+    'txc_active':'grey',
+    'menu_background':'#05F1E3',
+    'option_active':'#004457'
+  }
+  navbar_theme_dark = {
+    'txc_inactive': '#ecc0d1',
+    'txc_active': 'black',  
+    'menu_background': '#39393a',  
+    'option_active': '#C4CEBC' 
+  }
 
   col1, col2, col3 = st.columns([1,2,1])
   with col2:
     st.image("./resources/G1-long.png", use_column_width=True, width=None)
+
+
+  # Initialize session_state if it doesn't exist
+  if 'theme_choice' not in st.session_state:
+    st.session_state.theme_choice = 'Light'
+  if 'theme_colors' not in st.session_state:
+    st.session_state.theme_colors = {}
+
+  with st.sidebar:
+    qwe = st.text_input('QWE') 
+
+    # st.session_state['theme_choice'] = st.radio('Choose theme', ['Dark', 'Light'], horizontal=True)
+
+    # set_theme() # Update the theme colors in session_state
+    # reconcile_theme_config() # Apply the theme
+    # if st.button("Apply theme", key="apply-theme-button"): # state has already been mutate during radio, does not refresh until user clicks anything else
+    #   pass 
+
+    with st.form(key='theme_form'):
+      st.session_state['theme_choice'] = st.radio('Choose theme', ['Dark', 'Light'], horizontal=True)  
+      submit_button = st.form_submit_button('Double click to apply theme')
+
+    if submit_button:
+      set_theme()  # Update the theme colors in session_state
+      reconcile_theme_config()  # Apply the theme
+
+    with st.expander('Show states'):
+      size_dict = {}
+      for key in st.session_state.keys():
+        size = get_deep_size(st.session_state[key])
+        size_dict[key] = size
+
+      # Sort by size
+      sorted_items = sorted(size_dict.items(), key=lambda x: x[1], reverse=True)
+      for key, size in sorted_items:
+        st.write(f"{key}: {size/1000} kb")
+
 
   app = hy.HydraApp(
     hide_streamlit_markers=False,
     use_navbar=True, 
     navbar_sticky=False,
     navbar_animation=True,
-    navbar_theme=over_theme,
+    navbar_theme=navbar_theme_dark,
   )
   
   #---Add apps from folder---#

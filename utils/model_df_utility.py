@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 
-def df_to_calculator(df:pd.DataFrame, calculator, creator):
+def df_to_calculator(df:pd.DataFrame, calculator, creator, progress_bar=True):
   """ 
   df: pd.DataFrame
 
@@ -12,15 +12,15 @@ def df_to_calculator(df:pd.DataFrame, calculator, creator):
     Example usage: `calc.add_data( row.to_dict() )`
 
   creator:
-    Validator function for rows. Passing `row.to_dict()` might end up creating a Model object that is incompatible
-    to the calculator. 
+    Validator function for rows. Passing `row.to_dict()` might end up creating a Model object that is incompatible to the calculator. 
     Example: `create_data_for_model(**kwargs) -> Model(**kwargs)`. Advised to use `partial(create_data)` as input param. 
   """
   df = df.replace('<Blank>', None)
   df = df.replace(np.nan, None)
 
-  progress_bar = st.progress(0)
-  nrows = len(df)
+  if progress_bar:
+    progress_bar = st.progress(0)
+    nrows = len(df)
 
   warning_messages = []
   for idx, row in df.iterrows():
@@ -30,9 +30,10 @@ def df_to_calculator(df:pd.DataFrame, calculator, creator):
     except Exception as e:
       warning_messages.append(f'Unable to add data for row {idx+1}. Traceback: {e}')
       pass
-      
-    progress_pct = (idx+1) / nrows
-    progress_bar.progress(progress_pct)
+    
+    if progress_bar:
+      progress_pct = (idx+1) / nrows
+      progress_bar.progress(progress_pct)
 
   return calculator, warning_messages
 
@@ -41,7 +42,7 @@ def calculator_to_df(calculator):
     """ 
     calculator: 
       Example: S2IE_Calculator, S1MC_Calculator
-      Calc output is expected to be built like this >> self.calculated_emissions[key] = {'purchased_power_data': ppd, 'calculated_emissions': calculated_emissions}
+      Calc output is expected to be built like this >> self.calculated_emissions[key] = {'input_data': ppd, 'calculated_emissions': calculated_emissions}
     """
     data = []
     
@@ -60,3 +61,5 @@ def calculator_to_df(calculator):
             data.append(combined_data)
     
     return pd.DataFrame(data)
+
+

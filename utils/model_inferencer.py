@@ -57,17 +57,26 @@ class ModelInferencer:
                 bfm['tiebreaker'] = tiebreaker
             best_fit_models.sort(key=lambda x:x['tiebreaker'], reverse=True)
                 
-        return best_fit_models[0]
+        if best_fit_models[0]['score'] > 1:
+          return best_fit_models[0]
+        
+        print(f'Dataframe contains only low probability matches. Score: {best_fit_models[0]["score"]}')
+        return None
 
     def transform_df_to_model(self, df: pd.DataFrame): 
         """ 
         Turns all rows in df into filled models. NO PROTECTION AGAINST DUPLICATE ENTRIES!
         """
-        model_name = self.infer_model_from_df(df)['model']
+        try:  
+            model_name = self.infer_model_from_df(df)['model']
+        except:
+            model_name = None
+
         if model_name:
             print(f'Discovered model {model_name}! Appending rows as model fields...\n')
             Model = self.available_models[model_name]
             
+            df = df.copy()
             df = df.replace('<Blank>', None)
             df = df.replace(np.nan, None)
             

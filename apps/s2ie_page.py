@@ -80,11 +80,12 @@ def s2ie_Page():
     if 's2ie_df' in st.session_state and st.session_state['s2ie_df'] is not None:
       with st.expander('Show table', expanded=True):
         pandas_2_AgGrid(st.session_state['s2ie_df'], theme='balham', key='s2ie_df_tab2')
-
+    
       if 'analyzed_s2ie' not in st.session_state:
         st.session_state['analyzed_s2ie'] = False
       if st.button('Analyze uploaded dataframe', help='Attempts to return calculation results for each row for table. Highly recommended to reupload a validated table before running analysis'):
         st.session_state['analyzed_s2ie'] = True
+        st.success('Uploaded Scope 2 data table analyzed!')
 
         cache = st.session_state['S2IE_Lookup_Cache']
         gl = GeoLocator()
@@ -93,28 +94,45 @@ def s2ie_Page():
         calc, warning_messages = df_2_calculator(st.session_state['s2ie_df'], calculator=calc, cache=cache, geolocater=gl)
         calculation_df = calculator_2_df(calc)
 
+        st.session_state['s2ie_calc_results'] = calc # save calulator in session state
+        st.session_state['s2ie_calc_results_df'] = calculation_df
+
         if warning_messages:
           with st.expander('Show analysis warnings'):
             for warning in warning_messages:
               st.warning(warning)
 
         with st.expander('Show results table'):  
-          pandas_2_AgGrid(calculation_df, theme='balham')
+          if len(calculation_df) > 0:
+            pandas_2_AgGrid(calculation_df, theme='balham')
+          else:
+            st.error('No dataframe discovered or built. Refer to analysis warnings to verify the issue.')
 
-        # figs = {} 
+
+  with tab3:
+    if 'analyzed_s2ie' not in st.session_state or st.session_state['analyzed_s2ie'] == False:
+      st.warning('You have not yet started the analysis for Scope 2. Go to **Upload** tab to upload your data, Click **Analyze** button in **Run analysis** tab to start.')
+    else:
+      st.subheader('Analysis Results')
+      if 's2ie_calc_results' in st.session_state:
+        calc = st.session_state['s2ie_calc_results']
+        calculation_df = st.session_state['s2ie_calc_results_df']
+
+        with st.expander('show results'):
+          st.write(calc.calculated_emissions) # 
+
+        co2e = calc.get_total_co2e()
+        st.plotly_chart( px.bar(x=['Scope 2'], y=[co2e]) ) 
+
+        # figs = {}
         # for c in calculation_df.columns:
         #   if calculation_df[c].dtype in [np.float64, np.int64]:
-        #     fig = px.histogram(
-        #       calculation_df, 
-        #       x=c, 
-        #       marginal='rug',
-        #       hover_data=calculation_df.columns,
-        #     ).update_layout(title=c.upper())
-        #     figs[c] = fig 
+        #     fig = px.histogram(calculation_df, x=c, marginal='rug', hover_data=calculation_df.columns).update_layout(title=c.upper())
+        #     figs[c] = fig
 
         # for title, fig in figs.items():
-        #   with st.expander(f'Show {title.upper()}'):
-        #     st.plotly_chart(fig, use_container_width=True) 
+        #   with st.expander(f'show {title.upper()}'):
+        #     st.plotly_chart(fig, use_container_width=True)
 
 
 
@@ -139,25 +157,7 @@ def df_2_calculator(df, calculator: S2IE_CalculatorTool, cache: S2IE_Lookup_Cach
       data = create_ppd_data(
         cache=cache,
         geolocater=geolocater,
-        description= row['description'],
-        branch= row['branch'],
-        department= row['department'],
-        owned= row['owned'],
-        street_address_1= row['street_address_1'],
-        street_address_2= row['street_address_2'],
-        city= row['city'],
-        state= row['state'],
-        country= row['country'],
-        postcode= row['postcode'],
-        lat = row['lat'],
-        lon = row['lon'],
-        date = row['date'],
-        energy_type = row['energy_type'],
-        energy_consumption = row['energy_consumption'],
-        energy_unit= row['energy_unit'],
-        energy_spend = row['energy_spend'],
-        currency = row['currency'],
-        energy_provider = row['energy_provider'],
+        row=row.to_dict(),
       )
       calculator.add_power_data(data)
 
@@ -174,7 +174,7 @@ def df_2_calculator(df, calculator: S2IE_CalculatorTool, cache: S2IE_Lookup_Cach
 def calculator_2_df(calculator: S2IE_CalculatorTool):
   data = []
   for emission in calculator.calculated_emissions.values():
-    ppd = emission['purchased_power_data'].model_dump()
+    ppd = emission['input_data'].model_dump()
     calculation_data = emission['calculated_emissions'].model_dump()
     combined_data = {**ppd, **calculation_data}
     data.append(combined_data)
@@ -219,7 +219,7 @@ def validate_s2ie_df(df:pd.DataFrame):
     idx = index + 1
 
     if 'description' in df.columns:
-      if len(str(row['description'])) > 1200:
+      if row['description'] is not None and len(str(row['description'])) > 1200:
         warning_messages.append(f"Warning: Description exceeds 1200 characters in row {idx}.")
 
     # validate location

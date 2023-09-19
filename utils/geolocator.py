@@ -4,12 +4,21 @@ import numpy as np
 from sklearn.neighbors import KDTree
 
 from supabase import create_client
-from .utility import supabase_query
+from utils.utility import supabase_query
+
+""" 
+Usage: 
+  Gets back row data of state and country that matched with *approximated* lat lon.
+  Initialize Geolocator before using it. You will build a map from 5k rows from database (query 2s, build 1s) and store it into memory. 
+  This means caching is no longer necessary.
+
+gl = Geolocator()
+location_row = gl.get_fields_from_latlon(1, 3)
+"""
 
 supabase_url= st.secrets['supabase_url']
 supabase_anon_key= st.secrets['supabase_anon_key']
 supabase = create_client(supabase_url, supabase_anon_key)
-
 
 class GeoLocator:
     def __init__(self, df=None): 

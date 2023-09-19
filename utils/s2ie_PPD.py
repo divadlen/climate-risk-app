@@ -378,7 +378,7 @@ class S2IE_CalculatorTool(BaseModel):
         )     
         
         key = len(self.calculated_emissions)
-        self.calculated_emissions[key] = {'purchased_power_data': ppd, 'calculated_emissions': calculated_emissions}
+        self.calculated_emissions[key] = {'input_data': ppd, 'calculated_emissions': calculated_emissions}
         
     def calculate_use_based_method(self, consumption: float, emission_factor: float) -> float:
         """Calculate emissions using the emission factor method (Eq1)"""
@@ -400,30 +400,43 @@ class S2IE_CalculatorTool(BaseModel):
     def to_df(self) -> pd.DataFrame:
         data = []
         for emission in self.calculated_emissions.values():
-            fuel_data = emission['fuel'].model_dump()
+            fuel_data = emission['input_data'].model_dump()
             calculation_data = emission['calculated_emissions'].model_dump()
             merged_data = {**fuel_data, **calculation_data}
             data.append(merged_data)
         return pd.DataFrame(data)
     
+#---
+# Creator
+#---
+def create_ppd_data(row, cache: S2IE_Lookup_Cache, geolocater: GeoLocator):
+    """ 
+    Boilerplate used to create S2 Models from rows of a dataframe. 
+    Model( row.to_dict() ) is not reliable as using values from a df directly may not be compatible with Pydantic models
 
-def create_ppd_data(cache: S2IE_Lookup_Cache, geolocater: GeoLocator, **kwargs):
-    lat = kwargs.get('lat')
-    lon = kwargs.get('lon')
+    Params:
+    cache:
+      Lookup cache dictionary to check for dupe entry
+
+    geolocator:
+      KDTree map for approximating latlon. 
+    """
+    lat = row.get('lat')
+    lon = row.get('lon')
     
-    # If lat and lon are provided, update kwargs with the values from get_fields_from_latlon
+    # If lat and lon are provided, update row with the values from get_fields_from_latlon
     if lat is not None and lon is not None:
         print(f'Lat lon values discovered. Will replace state and country values to the matching lat lon.')
         geo_fields = geolocater.get_fields_from_latlon(lat, lon)
-        kwargs.update({
+        row.update({
             'state': geo_fields.get('state_name'),
             'country': geo_fields.get('country_name'),
         })
     
-    city = kwargs.get('city')
-    state = kwargs.get('state')
-    country = kwargs.get('country')
-    postcode = kwargs.get('postcode')
+    city = row.get('city')
+    state = row.get('state')
+    country = row.get('country')
+    postcode = row.get('postcode')
     
     # fuzzy match might return unintentional results
     abbrv_map = {
@@ -444,7 +457,7 @@ def create_ppd_data(cache: S2IE_Lookup_Cache, geolocater: GeoLocator, **kwargs):
         
             if corrected_country not in [None]:
                 print(f'Country input "{country}" has been corrected to "{corrected_country}"')
-                kwargs['country'] = corrected_country
+                row['country'] = corrected_country
                 country = corrected_country
             else:
                 raise ValueError(f"Country {country} not found. Try using the full name of the country instead of alpha-2 or alpha-3 codes.")
@@ -459,9 +472,9 @@ def create_ppd_data(cache: S2IE_Lookup_Cache, geolocater: GeoLocator, **kwargs):
         
                 if corrected_state not in [None]:
                     print(f'State input "{state}" has been corrected to "{corrected_state}"')
-                    kwargs['state'] = corrected_state
+                    row['state'] = corrected_state
                     state = corrected_state
                 else:
                     raise ValueError(f"State {state} not found for {country}. Allowed states in {allowed_states}")
         
-    return S2_PurchasedPowerData(**kwargs)
+    return S2_PurchasedPowerData(**row)

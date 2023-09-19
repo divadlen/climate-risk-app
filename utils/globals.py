@@ -44,6 +44,16 @@ COLUMN_SORT_ORDER = [
 
 
 #--- USED BY S3VC --#
+SUPPORTED_FINANCIAL_TYPE = [
+  'Corporate Finance', 'Consumer Finance', 'Consumer Finance'
+]
+
+SUPPORTED_ASSET_CLASS = [
+  'Corporate Bonds', 'Listed Equity', 'Unlisted Equity', 'Business Loans', 'Commercial Real Estate', 
+  'Mortgage', 'Vehicle Loan',
+  'Emission Removal', 'Sovereign Debt',
+]
+
 # Mapping sectors to applicable categories by index
 SECTOR_TO_CATEGORY_IDX = {
   'Energy': [1, 4, 9, 11],
@@ -87,4 +97,8 @@ class ColorDiscrete:
   deloitte = ['#00A5DC', '#49276D', '#8A0000', '#007681', '#9A7227', '#84BE41', '#7C7474', '#D12F2F', '#F8931D', '#000000']
   nhk_jp = ['#E60012', '#579D1C', '#4B1E66', '#1B255E', '#1E4896', '#00A0E9', '#009944', '#6CBB5A', '#D1C000', '#E39800']
   abc_aus = ['#E14100', '#008C45', '#00AEEF', '#7600A1', '#80C342', '#005BB5', '#93C6E0', '#F15A29', '#DF7C00', '#00B5E2']
-  gecko_v1 = gecko_v1 = ['#D4B7CB',"#004457","#cc5a29", '#FFEB3B', "#53c6bb","#753c9c","#56e199","#857ca0","#edc49d", '#B97C68', "#6D3837", '#E3120B']
+  gecko_v1 = ['#D4B7CB',"#004457","#cc5a29", '#FFEB3B', "#53c6bb","#753c9c","#56e199","#857ca0","#edc49d", '#B97C68', "#6D3837", '#E3120B']
+
+  gecko7 = ['#004457', '#567583', '#9baab1', '#e2e2e2', '#b8e8e3', '#83ede3', '#05f1e3']
+  gecko5 = ['#004457', '#798f9a', '#e2e2e2', '#a0ebe3', '#05f1e3']
+  gecko3 = ['#004457', '#798f9a', '#05f1e3']

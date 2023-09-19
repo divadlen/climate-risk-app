@@ -1,6 +1,7 @@
 import streamlit as st
 
 import pandas as pd
+import numpy as np
 import random
 from datetime import datetime
 
@@ -9,6 +10,7 @@ import re
 from typing import List, Optional, Dict, Any
 from fuzzywuzzy import process
 
+import sys
 from supabase import create_client
 from utils.globals import COLUMN_SORT_ORDER
 
@@ -16,10 +18,43 @@ supabase_url= st.secrets['supabase_url']
 supabase_anon_key= st.secrets['supabase_anon_key']
 supabase = create_client(supabase_url, supabase_anon_key)
 
+
+#-----
+# Theming
+#-----
+def set_theme():
+    if st.session_state.theme_choice == 'Light':
+        st.session_state.theme_colors = {
+            'primaryColor': "#0b0c0b",
+            'backgroundColor': "#f5edec",
+            'secondaryBackgroundColor': "#ded2de",
+            'textColor':"#202d35"  
+       }
+        # st.session_state.theme_colors = {
+        #     'primaryColor': '#004457',
+        #     'backgroundColor': '#FFFFFF',
+        #     'secondaryBackgroundColor': '#E3E8E3',
+        #     'textColor': '#5A5A5A'
+        # }
+    else:
+        st.session_state.theme_colors = {
+            'primaryColor': '#e5f0d9',
+            'backgroundColor': '#000000',
+            'secondaryBackgroundColor': '#39393a',
+            'textColor': '#ecc0d1'
+        }
+
+def reconcile_theme_config():
+    keys = ['primaryColor', 'backgroundColor', 'secondaryBackgroundColor', 'textColor']
+    for key in keys:
+        if st._config.get_option(f'theme.{key}') != st.session_state.theme_colors.get(key, ''):
+            st._config.set_option(f'theme.{key}', st.session_state.theme_colors.get(key, ''))
+
+        
+
 #-----------------------
 # Helper functions
 #-----------------------
-
 def supabase_query(table:str, url:str, key:str, limit: Optional[int]=10000):
     supabase = create_client(url, key)
     query_builder = supabase.table(table).select("*")
@@ -103,6 +138,18 @@ def find_closest_category(input_str, allowed_list:list, threshold=80, abbrv_dict
         return closest_match
     else:
         return None 
+    
+
+def get_deep_size(obj):
+    """Get the size of each object"""
+    size = sys.getsizeof(obj)
+    if isinstance(obj, dict):
+        size += sum([get_deep_size(v) for v in obj.values()])
+        size += sum([get_deep_size(k) for k in obj.keys()])
+    elif isinstance(obj, list):
+        size += sum([get_deep_size(v) for v in obj])
+    return size
+
 
 #-------
 # Helper for download export
@@ -187,3 +234,30 @@ def get_cached_df(BaseModelCls): # cache still doesnt work with aggrid
   return convert_BaseModel(BaseModelCls, examples=True, return_as_string=False)
 
 
+#---
+# Simulator
+#----
+def create_line_simulation():
+    def random_timeseries(initial_value: float, volatility: float, count: int, trend: float = 0.0) -> list:
+        time_series = [initial_value]
+        for _ in range(count - 1):
+            next_value = time_series[-1] + initial_value * random.gauss(0.2, 0.4) * volatility + trend
+            time_series.append(next_value)
+        return time_series
+
+    
+    months = pd.date_range(start='2019-01-01', end='2021-12-01', freq='MS')
+    categories = [f'Category_{i+1}' for i in range(12)]
+    
+    values = []
+    for _ in categories:
+        cat_values = random_timeseries(initial_value=random.uniform(100,100), volatility=0.2, count=len(months), trend=2)
+        values.extend(cat_values)
+
+    data = {
+        'date': np.tile(months, len(categories)),
+        'category': np.repeat(categories, len(months)),
+        'value': values
+    }
+    df = pd.DataFrame(data)
+    return df

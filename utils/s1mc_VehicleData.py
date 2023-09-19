@@ -341,7 +341,7 @@ class S1MC_CalculatorTool(BaseModel):
             )    
 
         key = len(self.calculated_emissions)
-        self.calculated_emissions[key] = {'vehicle': v, 'calculated_emissions': calculated_emissions}
+        self.calculated_emissions[key] = {'input_data': v, 'calculated_emissions': calculated_emissions}
         
     def calculate_distance_based_method(self, distance:float, distance_emission_factor:float) -> float:
         return distance * distance_emission_factor

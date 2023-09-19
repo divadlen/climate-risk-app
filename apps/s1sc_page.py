@@ -51,8 +51,8 @@ def s1sc_Page():
       if 'validated_s1sc' not in st.session_state:
         st.session_state['validated_s1sc'] = False
       if st.button('Validate uploaded dataframe'):
-        st.session_state['validated_s1sc_df'], st.session_state['validated_s1sc_warnings'] = validate_s1sc_df(st.session_state['s1sc_df'])
         st.session_state['validated_s1sc'] = True
+        st.session_state['validated_s1sc_df'], st.session_state['validated_s1sc_warnings'] = validate_s1sc_df(st.session_state['s1sc_df'])
 
 
       if st.session_state['validated_s1sc']:
@@ -89,6 +89,7 @@ def s1sc_Page():
         st.session_state['analyzed_s1sc'] = False
       if st.button('Analyze uploaded dataframe', help='Attempts to return calculation results for each row for table. Highly recommended to reupload a validated table before running analysis'):
         st.session_state['analyzed_s1sc'] = True
+        st.success('Uploaded Scope 1: Stationary Combustion data tables analyzed!')
 
         cache = st.session_state['S1SC_Lookup_Cache']
         FCT = FuelCalculatorTool(cache=cache)
@@ -103,21 +104,6 @@ def s1sc_Page():
         with st.expander('Show results table'):  
           pandas_2_AgGrid(calculation_df, theme='balham')
 
-        # hdata = ['uuid', 'sector', 'fuel_state', 'fuel_type',	'fuel_consumption', 'fuel_unit', 'heating_value',	'fuel_spend',	'currency',	'co2_emission',	'ch4_emission',	'n2o_emission',	'fuel_based_co2e',	'spend_based_co2e',	'most_reliable_co2e',	'recon_score']
-        # figs = {} 
-        # for c in calculation_df.columns:
-        #   if calculation_df[c].dtype in [np.float64, np.int64]:
-        #     fig = px.histogram(
-        #       calculation_df, 
-        #       x=c, 
-        #       marginal='rug',
-        #       hover_data=hdata,
-        #     ).update_layout(title=c.upper())
-        #     figs[c] = fig 
-
-        # for title, fig in figs.items():
-        #   with st.expander(f'Show {title.upper()}'):
-        #     st.plotly_chart(fig, use_container_width=True) 
 
 
 
@@ -292,7 +278,7 @@ def df_to_FCT(df, fuel_calculator: FuelCalculatorTool, cache: S1SC_Lookup_Cache)
 def FCT_to_df(fuel_calculator_tool:FuelCalculatorTool):
   data = []
   for emission in fuel_calculator_tool.calculated_emissions.values():
-    fuel_data = emission['fuel'].model_dump()
+    fuel_data = emission['input_data'].model_dump()
     calculation_data = emission['calculated_emissions'].model_dump()
     combined_data = {**fuel_data, **calculation_data}
     data.append(combined_data)
