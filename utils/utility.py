@@ -12,12 +12,12 @@ from fuzzywuzzy import process
 
 import sys
 from supabase import create_client
+from supabase.lib.client_options import ClientOptions
+
 from utils.globals import COLUMN_SORT_ORDER
 
 supabase_url= st.secrets['supabase_url']
 supabase_anon_key= st.secrets['supabase_anon_key']
-supabase = create_client(supabase_url, supabase_anon_key)
-
 
 #-----
 # Theming
@@ -55,8 +55,13 @@ def reconcile_theme_config():
 #-----------------------
 # Helper functions
 #-----------------------
-def supabase_query(table:str, url:str, key:str, limit: Optional[int]=10000):
-    supabase = create_client(url, key)
+def supabase_query(table:str, url:str, key:str,  schema: Optional[str]=None, limit: Optional[int]=10000):
+    if schema:
+        opts = ClientOptions().replace(schema=schema)
+        supabase = create_client(url, key, options=opts)
+    else:
+        supabase = create_client(url, key)
+
     query_builder = supabase.table(table).select("*")
     if limit is not None:
         query_builder = query_builder.limit(limit)
@@ -69,6 +74,39 @@ def supabase_query(table:str, url:str, key:str, limit: Optional[int]=10000):
     if response.data in ([], None):
         print(f'No data found for `{table}`. Make sure RLS is turned off.')
     return response.data
+
+
+def supabase_query_v2(table, schema: Optional[str]=None, limit: Optional[int]=10000, **kwargs):
+    """ 
+    v2 lets you pass "column_name" = "value" as kwargs to filter
+
+    Example:
+      TABLE = 's1mc_gas'
+      kwargs= {'fuel_type': 'natural gas'} # search "natural gas" from column "fuel_type"
+    
+    supabase_query_v2(TABLE, **kwargs)
+    """
+    url = supabase_url
+    key = supabase_anon_key
+    if schema:
+        opts = ClientOptions().replace(schema=schema)
+        supabase = create_client(url, key, options=opts)
+    else:
+        supabase = create_client(url, key)
+    
+    query_builder = supabase.table(table).select('*')
+    for key, value in kwargs.items():
+        if value is not None:  # Only add filter if value is not None
+            query_builder = query_builder.filter(key, 'eq', value)
+            
+    if limit is not None:
+        query_builder = query_builder.limit(limit)
+    
+    try:
+        response = query_builder.execute()
+        return response.data
+    except Exception as e:
+        raise e
 
     
 def get_lookup(

@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from collections import Counter
 
 from utils.s3vc_Misc.s3_models import *
@@ -8,6 +9,32 @@ from utils.s3vc_Misc.s3c15_models import *
 class ModelInferencer:
     def __init__(self):
         self.available_models = {
+            # Non C15
+            'S3C1_PurchasedGoods': S3C1_PurchasedGoods,
+            'S3C2_CapitalGoods': S3C2_CapitalGoods,
+            'S3C3_EnergyRelated': S3C3_EnergyRelated,
+            'S3C4_UpstreamTransport': S3C4_UpstreamTransport,
+            'S3C5_WasteGenerated': S3C5_WasteGenerated,
+            
+            'S3C6_1_BusinessTravel': S3C6_1_BusinessTravel,
+            'S3C6_2_BusinessStay': S3C6_2_BusinessStay,
+            
+            'S3C7_EmployeeCommute': S3C7_EmployeeCommute,
+          
+            'S3C8_1_UpstreamLeasedEstate': S3C8_1_UpstreamLeasedEstate,
+            'S3C8_2_UpstreamLeasedAuto': S3C8_2_UpstreamLeasedAuto,
+
+            'S3C9_DownstreamTransport': S3C9_DownstreamTransport,
+            'S3C10_ProcessingProducts': S3C10_ProcessingProducts,
+            'S3C11_UseOfSold': S3C11_UseOfSold,
+            'S3C12_EOLTreatment': S3C12_EOLTreatment,
+
+            'S3C13_1_DownstreamLeasedEstate': S3C13_1_DownstreamLeasedEstate,
+            'S3C13_2_DownstreamLeasedAuto': S3C13_2_DownstreamLeasedAuto,             
+            
+            'S3C14_Franchise': S3C14_Franchise,
+
+            # C15 
             'S3C15_BaseAsset': S3C15_BaseAsset,
             'S3C15_1A_ListedEquity': S3C15_1A_ListedEquity,
             'S3C15_1B_UnlistedEquity': S3C15_1B_UnlistedEquity,
@@ -58,7 +85,7 @@ class ModelInferencer:
             best_fit_models.sort(key=lambda x:x['tiebreaker'], reverse=True)
                 
         if best_fit_models[0]['score'] > 1:
-          return best_fit_models[0]
+            return best_fit_models[0]
         
         print(f'Dataframe contains only low probability matches. Score: {best_fit_models[0]["score"]}')
         return None

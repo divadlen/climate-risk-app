@@ -11,35 +11,70 @@ LOCATION_ABBRV = {
 COLUMN_SORT_ORDER = [
   # Universal
   'uuid', 'date', 'description',
+  'employee_id', 'franchisee_id',
+  'product_name', 'product_class',
+  'distributor_name', 'process_name',
+
+  # counter
+  'lifetime_usage_freq', 'number_sold', 
+  'no_of_nights', 
+  'frequency', 'sampled_days',
+
+  # asset status
+  'leased_asset_name', 'leased_asset_type', 'ownership_status', 'ownership_share',
 
   # location
-  'country_code', 'country', 
-  'address', 'lat', 'lon',  
-  'branch', 'department', 'street_address_1', 'street_address_2', 'city', 'state', 'postcode',
+  'lat', 'lon',  
+  'country_code', 'country', 'state',
+  'address', 'address_from', 'address_to', 
+  'branch', 'department', 'street_address_1', 'street_address_2', 'city', 'postcode',
 
   # Company descriptions
   'financial_type', 'company_name', 'sector', 'asset_class', 'is_listed', 'owned',
 
+   # supplier descriptions
+  'supplier_name', 'purchased_quantity', 'quantity_unit', 'quantity_emission_factor', 'supplier_incurred_emissions',
+
   # vehicle descriptions
-  'vehicle_type',
+  'travel_mode', 'vehicle_type',
+
+  # freight descriptions
+  'freight_type', 'freight_weight',
 
   # fuel descriptions
-  'fuel_state', 'fuel_type', 'fuel_unit', 'fuel_consumption',  'heating_value', 'fuel_spend',
+  'fuel_state', 'fuel_type', 'fuel_unit', 
+  'fuel_use', 'fuel_per_use', 'fuel_consumption',  
+  'heating_value', 'fuel_spend',
 
   # energy descriptions
-  'energy_provider', 'energy_type', 'energy_unit', 'energy_consumption', 'energy_spend',
+  'energy_provider', 'energy_type', 'energy_unit', 
+  'energy_use', 'energy_per_use', 'energy_consumption', 
+  'energy_spend',
+
+  # electric descriptions
+  'electric_use', 'electric_per_use', 
+  'grid_emission_factor',
+
+  # refrigerant descriptions
+  'refrigerant_type', 'refrigerant_unit',
+  'refrigerant_use', 'refrigerant_per_use',
 
   # distance descriptions
   'distance_traveled', 'distance', 'distance_unit', 'distance_emission_factor', 
 
   # building descriptions
-  'building_energy_use', 'building_emission_factor', 'year_constructed',
+  'floor_area', 'area_unit', 'building_energy_use', 'building_emission_factor', 'year_constructed',
+
+  # waste descriptions
+  'waste_type', 'waste_quantity', 'waste_state', 'waste_unit', 'waste_treatment_method', 'waste_treatment_provider'
 
   # finances
   'currency', 'outstanding_amount', 'enterprise_value', 'total_equity', 'total_debt', 'total_government_debt', 'PPP_adj_GDP', 'property_value', 'value_at_origin', 
-  
-  # emissions
-  'attribution_share', 'reported_emissions', 'project_emissions', 'emissions_removed', 'production_emissions', 'consumption_emissions', 'emission_estimation_description',
+
+  # emission related
+  'attribution_share', 'reported_emissions', 'project_emissions', 'emissions_removed', 'production_emissions', 'consumption_emissions', 'estimated_emissions', 'emission_estimation_description',
+  'upstream_emission_factor', 'life_cycle_emission_factor', 'combustion_emission_factor', 'energy_loss_rate',
+  'hotel_emission_factor',
 ]
 
 
@@ -97,8 +132,23 @@ class ColorDiscrete:
   deloitte = ['#00A5DC', '#49276D', '#8A0000', '#007681', '#9A7227', '#84BE41', '#7C7474', '#D12F2F', '#F8931D', '#000000']
   nhk_jp = ['#E60012', '#579D1C', '#4B1E66', '#1B255E', '#1E4896', '#00A0E9', '#009944', '#6CBB5A', '#D1C000', '#E39800']
   abc_aus = ['#E14100', '#008C45', '#00AEEF', '#7600A1', '#80C342', '#005BB5', '#93C6E0', '#F15A29', '#DF7C00', '#00B5E2']
-  gecko_v1 = ['#D4B7CB',"#004457","#cc5a29", '#FFEB3B', "#53c6bb","#753c9c","#56e199","#857ca0","#edc49d", '#B97C68', "#6D3837", '#E3120B']
 
-  gecko7 = ['#004457', '#567583', '#9baab1', '#e2e2e2', '#b8e8e3', '#83ede3', '#05f1e3']
-  gecko5 = ['#004457', '#798f9a', '#e2e2e2', '#a0ebe3', '#05f1e3']
+  gecko7 = ['#004457', '#567583', '#9baab1', '#B5C0CB', '#b8e8e3', '#83ede3', '#05f1e3']
+  gecko5 = ['#004457', '#798f9a', '#B5C0CB', '#a0ebe3', '#05f1e3']
   gecko3 = ['#004457', '#798f9a', '#05f1e3']
+
+  gecko_v1 = [
+    '#00989d', '#ffa500', 
+    '#757D8e', 
+    '#00b800', '#7fe67f', 
+    '#e06666', '#674ea7', 
+    '#b4a7d6',
+   ]
+
+  gecko_v2 = [
+    '#07657F', '#4AA3B3', # blue
+    '#1EA66D', '#71C4A0', # green
+    '#D85252', '#E79797', # red
+    '#EB9A04', '#E6CC84', # yellow
+    '#553269', '#926BB2'  # purple
+  ]

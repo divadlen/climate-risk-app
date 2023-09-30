@@ -8,21 +8,25 @@ from functools import partial
 import json
 import logging
 from typing import List
-from supabase import create_client
 
 import plotly.express as px
 
-from utils.globals import SECTOR_TO_CATEGORY_IDX, IDX_TO_CATEGORY_NAME, ColorDiscrete
-from utils.utility import get_dataframe, convert_df, convert_warnings, create_line_simulation
+from utils.globals import SECTOR_TO_CATEGORY_IDX, IDX_TO_CATEGORY_NAME
+from utils.utility import get_dataframe, create_line_simulation
 from utils.display_utility import show_example_form, pandas_2_AgGrid
 from utils.model_df_utility import df_to_calculator, calculator_to_df
 from utils.md_utility import markdown_insert_images
 from utils.model_inferencer import ModelInferencer
 
 from utils.s3vc_Misc.s3_models import *
+from utils.s3vc_Misc.s3_cache import S3_Lookup_Cache
+from utils.s3vc_Misc.s3_calculators import S3_Calculator
+from utils.s3vc_Misc.s3_creators import *
+
 from utils.s3vc_Misc.s3c15_models import *
 from utils.s3vc_Misc.s3c15_calculators import S3C15_Calculator, create_s3c15_data
-from utils.charting import initialize_plotly_themes, make_bar_chart, make_donut_chart, make_grouped_line_chart, make_sankey_chart
+from utils.charting import initialize_plotly_themes \
+    ,make_bar_chart, make_donut_chart, make_grouped_line_chart, make_sankey_chart, make_sunburst_chart
 
 
 def s3vc_Page(): 
@@ -106,49 +110,58 @@ def s3vc_Page():
       t1, t2, t3, t4 = st.tabs(['Category 1-5', 'Category 6-10', 'Category 11-14', 'Category 15: Investments'])
       with t1:
         st.subheader("Category 1 : Purchased goods & services", anchor='S3C1_PurchasedGoods')
-        show_example_form(S3_BaseAsset, key='c1', title='Show example form (S3-C1: Purchased goods & services)', button_text='Get example form', filename='s3-c1-purchased_goods-example.csv', markdown=footer_md)
+        show_example_form(S3C1_PurchasedGoods, key='c1', title='Show example form (S3-C1: Purchased goods & services)', button_text='Get example form', filename='s3-c1-purchased_goods-example.csv', markdown=footer_md)
 
         st.subheader("Category 2 : Capital goods", anchor='S3C2_CapitalGoods')
-        show_example_form(S3_BaseAsset, key='c2', title='Show example form (S3-C2: Capital Goods)', button_text='Get example form', filename='s3-c2-capital_goods-example.csv', markdown=footer_md)
+        show_example_form(S3C2_CapitalGoods, key='c2', title='Show example form (S3-C2: Capital Goods)', button_text='Get example form', filename='s3-c2-capital_goods-example.csv', markdown=footer_md)
 
         st.subheader("Category 3 : Fuel- & energy-related activities (excluded in Scope 1 & 2)", anchor='S3C3_EnergyRelated')
-        show_example_form(S3_BaseAsset, key='c3', title='Show example form (S3-C3: Energy-related activities)', button_text='Get example form', filename='s3-c3-energy_related-example.csv', markdown=footer_md)
+        show_example_form(S3C3_EnergyRelated, key='c3', title='Show example form (S3-C3: Energy-related activities)', button_text='Get example form', filename='s3-c3-energy_related-example.csv', markdown=footer_md)
 
         st.subheader("Category 4 : Upstream transportation & distribution", anchor='S3C4_UpstreamTransport')
-        show_example_form(S3_BaseAsset, key='c4', title='Show example form (S3-C4: Upstream transportation and distribution)', button_text='Get example form', filename='s3-c4-upstream_transport-example.csv', markdown=footer_md)
+        show_example_form(S3C4_UpstreamTransport, key='c4', title='Show example form (S3-C4: Upstream transportation and distribution)', button_text='Get example form', filename='s3-c4-upstream_transport-example.csv', markdown=footer_md)
         
         st.subheader("Category 5 : Waste generated in operations", anchor='S3C5_WasteGenerated')
-        show_example_form(S3_BaseAsset, key='c5', title='Show example form (S3-C5: Waste generated in operations)', button_text='Get example form', filename='s3-c5-waste_generated-example.csv', markdown=footer_md)
+        show_example_form(S3C5_WasteGenerated, key='c5', title='Show example form (S3-C5: Waste generated in operations)', button_text='Get example form', filename='s3-c5-waste_generated-example.csv', markdown=footer_md)
 
       
       with t2:
-        st.subheader("Category 6 : Business and air travel", anchor='S3C6_BusinessTravel')
-        show_example_form(S3_BaseAsset, key='c6', title='Show example form (S3-C6: Business and air travel)', button_text='Get example form', filename='s3-c6-business_travel-example.csv', markdown=footer_md)
+        st.subheader("Category 6-1 : Business and air travel", anchor='S3C6_BusinessTravel')
+        show_example_form(S3C6_1_BusinessTravel, key='c6-1', title='Show example form (S3-C6: Business and air travel)', button_text='Get example form', filename='s3-c6-1-business_travel-example.csv', markdown=footer_md)
+        
+        st.subheader("Category 6-2 : Business stay", anchor='S3C6_BusinessStay')
+        show_example_form(S3C6_2_BusinessStay, key='c6-2', title='Show example form (S3-C6: Business stay)', button_text='Get example form', filename='s3-c6-2-business_stay-example.csv', markdown=footer_md)
 
         st.subheader("Category 7 : Employee commuting", anchor='S3C7_EmployeeCommute')
-        show_example_form(S3_BaseAsset, key='c7', title='Show example form (S3-C7: Employee commuting)', button_text='Get example form', filename='s3-c7-employee_commute-example.csv', markdown=footer_md)
+        show_example_form(S3C7_EmployeeCommute, key='c7', title='Show example form (S3-C7: Employee commuting)', button_text='Get example form', filename='s3-c7-employee_commute-example.csv', markdown=footer_md)
 
-        st.subheader("Category 8 : Upstream leased assets", anchor='S3C8_UpstreamLeased')
-        show_example_form(S3_BaseAsset, key='c8', title='Show example form (S3-C8: Upstream leased assets)', button_text='Get example form', filename='s3-c8-upstream_leased-example.csv', markdown=footer_md)
+        st.subheader("Category 8-1 : Upstream leased real estate", anchor='S3C8_UpstreamLeasedEstate')
+        show_example_form(S3C8_1_UpstreamLeasedEstate, key='c8-1', title='Show example form (S3-C8: Upstream leased estate)', button_text='Get example form', filename='s3-c8-upstream_leased_estate-example.csv', markdown=footer_md)
+
+        st.subheader("Category 8-2 : Upstream leased automobile / machines", anchor='S3C8_UpstreamLeasedAuto')
+        show_example_form(S3C8_2_UpstreamLeasedAuto, key='c8-2', title='Show example form (S3-C8: Upstream leased auto)', button_text='Get example form', filename='s3-c8-upstream_leased_auto-example.csv', markdown=footer_md)
 
         st.subheader("Category 9 : Downstream distribution of sold products", anchor='S3C9_DownstreamTransport')
-        show_example_form(S3_BaseAsset, key='c9', title='Show example form (S3-C9: Downstream distribution of sold products)', button_text='Get example form', filename='s3-c9-downstream_transport-example.csv', markdown=footer_md)
+        show_example_form(S3C9_DownstreamTransport, key='c9', title='Show example form (S3-C9: Downstream distribution of sold products)', button_text='Get example form', filename='s3-c9-downstream_transport-example.csv', markdown=footer_md)
 
         st.subheader("Category 10 : Processing of sold products", anchor='S3C10_ProcessingProducts')
-        show_example_form(S3_BaseAsset, key='c10', title='Show example form (S3-C10: Processing sold products)', button_text='Get example form', filename='s3-c10-processing_products-example.csv', markdown=footer_md)
+        show_example_form(S3C10_ProcessingProducts, key='c10', title='Show example form (S3-C10: Processing sold products)', button_text='Get example form', filename='s3-c10-processing_products-example.csv', markdown=footer_md)
 
       with t3:
         st.subheader("Category 11 : Use of sold products", anchor='S3C11_UseOfSold')
-        show_example_form(S3_BaseAsset, key='c11', title='Show example form (S3-C11: Use of sold products)', button_text='Get example form', filename='s3-c11-use_of_sold-example.csv', markdown=footer_md)
+        show_example_form(S3C11_UseOfSold, key='c11', title='Show example form (S3-C11: Use of sold products)', button_text='Get example form', filename='s3-c11-use_of_sold-example.csv', markdown=footer_md)
         
         st.subheader("Category 12 : End-of-life treatment of sold products", anchor='S3C12_EOLTreatment')
-        show_example_form(S3_BaseAsset, key='c12', title='Show example form (S3-C12: End-of-life treatment of sold products)', button_text='Get example form', filename='s3-c12-eol-treatment-example.csv', markdown=footer_md)
+        show_example_form(S3C12_EOLTreatment, key='c12', title='Show example form (S3-C12: End-of-life treatment of sold products)', button_text='Get example form', filename='s3-c12-eol-treatment-example.csv', markdown=footer_md)
 
-        st.subheader("Category 13 : Downstream leased assets", anchor='S3C13_DownstreamLeased')
-        show_example_form(S3_BaseAsset, key='c13', title='Show example form (S3-C13: Downstream leased assets)', button_text='Get example form', filename='s3-c13-downstream_leased-example.csv', markdown=footer_md)
+        st.subheader("Category 13-1 : Downstream leased estate", anchor='S3C13_DownstreamLeasedEstate')
+        show_example_form(S3C13_1_DownstreamLeasedEstate, key='c13-1', title='Show example form (S3-C13: Downstream leased estate)', button_text='Get example form', filename='s3-c13-downstream_leased_estate-example.csv', markdown=footer_md)
+
+        st.subheader("Category 13-2 : Downstream leased automobile / machines", anchor='S3C13_DownstreamLeasedAuto')
+        show_example_form(S3C13_2_DownstreamLeasedAuto, key='c13-2', title='Show example form (S3-C13: Downstream leased auto)', button_text='Get example form', filename='s3-c13-downstream_leased_auto-example.csv', markdown=footer_md)
 
         st.subheader("Category 14 : Franchises", anchor='S3C14_Franchise')
-        show_example_form(S3_BaseAsset, key='c14', title='Show example form (S3-C14: Franchise)', button_text='Get example form', filename='s3-c14-franchise-example.csv', markdown=footer_md)
+        show_example_form(S3C14_Franchise, key='c14', title='Show example form (S3-C14: Franchise)', button_text='Get example form', filename='s3-c14-franchise-example.csv', markdown=footer_md)
 
 
       with t4:
@@ -199,15 +212,14 @@ def s3vc_Page():
           if st.form_submit_button('Upload'):
             # reset everything if button is clicked
             st.session_state['s3vc_original_dfs'] = {}
-            st.session_state['s3vc_dfs'] = {}
+            st.session_state['s3vc_result_dfs'] = {}
             st.session_state['s3vc_warnings'] = {}
             st.session_state['s3vc_calc_results'] = {}
 
             # Inferencer and df inits
-            m = ModelInferencer()
-
-            # creator inits
-            partial_create_s3c15_data = partial(create_s3c15_data)
+            modinf = ModelInferencer()
+            gl = GeoLocator()
+            cache = S3_Lookup_Cache()
 
             # available models
             c15_models = [
@@ -215,8 +227,6 @@ def s3vc_Page():
               'S3C15_2A_Mortgage','S3C15_2B_VehicleLoans',
               'S3C15_3_ProjectFinance','S3C15_4_EmissionRemovals','S3C15_5_SovereignDebt'
             ]
-            c14_models = []
-            c10_models = []
 
             # Loop through the uploaded files and convert to models
             for uploaded_file in uploaded_files:
@@ -225,26 +235,53 @@ def s3vc_Page():
               if data is not None:
                 df = get_dataframe(data)
 
-                # Create models from df
-                m.transform_df_to_model(df)
+                # Create models from df (why??)
+                # modinf.transform_df_to_model(df)
 
                 # infer model from df
-                inferred_model = m.infer_model_from_df(df=df)
+                inferred_model = modinf.infer_model_from_df(df=df)
                 if inferred_model is None:
                   st.error(f'Uploaded file "{uploaded_file.name}" with columns {list(df.columns)} has no reliable matches. Please make sure you are submitting a file that closely resemble the examples.')
                   continue
 
                 model_name = inferred_model['model']
-                Model = m.available_models[model_name]    
+                Model = modinf.available_models[model_name]    
             
                 # Choose calculator based on inferred model
-                if model_name in []:
-                  pass 
-                elif model_name in c15_models:
+                if model_name in c15_models:
                   calc = S3C15_Calculator()
-                  creator = partial(create_s3c15_data, Model=Model)
+                  creator = partial(create_s3c15_data, Model=Model) # creator function to pass df rows as Pydantic Models to Calculator
+
                 else:
-                  raise ValueError(f"Unknown model: {model_name}")
+                  CREATOR_FUNCTIONS = {
+                      'S3C1_PurchasedGoods': partial( create_s3c1_data, Model=Model, cache=cache ),
+                      'S3C2_CapitalGoods': partial( create_s3c2_data, Model=Model, cache=cache ),
+                      'S3C3_EnergyRelated': partial( create_s3c3_data, Model=Model, cache=cache ),
+                      'S3C4_UpstreamTransport': partial( create_s3c4_data, Model=Model, cache=cache ),
+                      'S3C5_WasteGenerated': partial( create_s3c5_data, Model=Model, cache=cache ),
+                      
+                      'S3C6_1_BusinessTravel': partial( create_s3c6_1_data, Model=Model, cache=cache ),
+                      'S3C6_2_BusinessStay': partial( create_s3c6_2_data, Model=Model, cache=cache ),
+                      
+                      'S3C7_EmployeeCommute': partial( create_s3c7_data, Model=Model, cache=cache ),
+                    
+                      'S3C8_1_UpstreamLeasedEstate': partial( create_s3c8_1_data, Model=Model, cache=cache, geolocator=gl ),
+                      'S3C8_2_UpstreamLeasedAuto': partial( create_s3c8_2_data, Model=Model, cache=cache ),
+
+                      'S3C9_DownstreamTransport':partial( create_s3c9_data, Model=Model, cache=cache ),
+                      'S3C10_ProcessingProducts': partial( create_s3c10_data, Model=Model, cache=cache ),
+                      'S3C11_UseOfSold': partial( create_s3c11_data, Model=Model, cache=cache ),
+                      'S3C12_EOLTreatment': partial( create_s3c12_data, Model=Model, cache=cache ),
+
+                      'S3C13_1_DownstreamLeasedEstate': partial( create_s3c13_1_data, Model=Model, cache=cache, geolocator=gl ),
+                      'S3C13_2_DownstreamLeasedAuto': partial( create_s3c13_2_data, Model=Model, cache=cache ),             
+                      
+                      'S3C14_Franchise': partial( create_s3c14_data, Model=Model, cache=cache, geolocator=gl ),
+                  }
+
+                  calc = S3_Calculator(cache=cache)
+                  creator = CREATOR_FUNCTIONS[model_name]
+                  
 
                 try:
                   calc, warning_list = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False)
@@ -252,8 +289,9 @@ def s3vc_Page():
 
                   if len(warning_list) > 0:
                     st.session_state['s3vc_warnings'][model_name] = warning_list
+
                   st.session_state['s3vc_original_dfs'][model_name] = df
-                  st.session_state['s3vc_dfs'][model_name] = result_df
+                  st.session_state['s3vc_result_dfs'][model_name] = result_df
                   st.session_state['s3vc_calc_results'][model_name] = calc
                 
                 except Exception as e:
@@ -297,7 +335,7 @@ def s3vc_Page():
                 for warn in warnings:
                   st.warning(f'{name}: {warn}')
             
-            for name, df in st.session_state['s3vc_dfs'].items(): # might not need this
+            for name, df in st.session_state['s3vc_result_dfs'].items(): # might not need this
               with st.expander(f'Show table for analyzed **{name}**'):
                 pandas_2_AgGrid(df, theme='balham', height=300, key=f's3vc_{name}_aggrid')
 
@@ -306,40 +344,50 @@ def s3vc_Page():
       st.subheader('Executive Insights')
 
       if 's3vc_calc_results' in st.session_state and st.session_state['s3vc_calc_results'] != {}:
-        res_df = st.session_state['s3vc_calc_results']
-        res_df = calculators_2_df(res_df)
+        res_df = st.session_state['s3vc_calc_results'] # key: Model name, val: Calculator
+        res_df = calculators_2_df(res_df) # convert each k/v to df
 
+        
+
+
+        st.write(res_df) # 
         pandas_2_AgGrid(res_df) # 
 
-        fig1 = make_bar_chart(res_df, scope_col='scope', category_col='category', value_col='financed_emissions', theme='gecko5', height=300, watermark=True, legend=False, legend_dark=False)
-        st.plotly_chart(fig1, use_container_width=True)
-
-        fig2 = make_donut_chart(res_df, group_col='category', value_col='financed_emissions', center_text='Pie chart', legend=False, theme='gecko5')
-        st.plotly_chart(fig2, use_container_width=True)
-
-        fig3 = make_grouped_line_chart(res_df, group_col='category', value_col='financed_emissions', date_col='date', theme='gecko5', legend_dark=True)
-        st.plotly_chart(fig3, use_container_width=True)
 
 
-        #----------
-        ts= create_line_simulation()
-        st.write(ts)
+
+        # fig1 = make_bar_chart(res_df, title='Reported Emissions', scope_col='scope', category_col='category', value_col='financed_emissions', theme='gecko5', height=300, watermark=True, legend=True, legend_dark=False)
+        # st.plotly_chart(fig1, use_container_width=True)
+
+        # fig2 = make_donut_chart(res_df, group_col='category', value_col='financed_emissions', center_text='<b>Emissions by Category</b>', legend=True, theme='gecko5')
+        # st.plotly_chart(fig2, use_container_width=True)
+
+        # fig3 = make_grouped_line_chart(res_df, group_col='category', value_col='financed_emissions', date_col='date', theme='gecko5', legend=True, legend_dark=True)
+        # st.plotly_chart(fig3, use_container_width=True)
+
+
+        # #----------
+        # ts= create_line_simulation()
+        # st.write(ts)
         
-        fig4 = make_grouped_line_chart(
-          ts, 
-          group_col='category', 
-          value_col='value', 
-          date_col='date', 
-          resample_freq='Q', 
-          stacked=False,
-          theme='google'
-        )
-        st.plotly_chart(fig4, use_container_width=True)
-        #-----------
+        # fig4 = make_grouped_line_chart(
+        #   ts, 
+        #   group_col='category', 
+        #   value_col='value', 
+        #   date_col='date', 
+        #   resample_freq='Q', 
+        #   stacked=False,
+        #   theme='gecko_v2',
+        #   legend=True
+        # )
+        # st.plotly_chart(fig4, use_container_width=True)
+        # #-----------
 
-        fig5 = make_sankey_chart(res_df, hierarchy_col_list=['financial_type', 'category', 'sector'], theme='google')
-        st.plotly_chart(fig5, use_container_width=True)
+        # fig5 = make_sankey_chart(res_df, hierarchy_col_list=['financial_type', 'category', 'sector'], title='Financed Emissions Flow', value_col='financed_emissions', theme='google')
+        # st.plotly_chart(fig5, use_container_width=True)
 
+        # fig6 = make_sunburst_chart(res_df, hierarchy_list=['financial_type', 'category'], root='<b>Emissions Subset</b>', value_col='financed_emissions', theme='gecko7')
+        # st.plotly_chart(fig6, use_container_width=True)
 
 
 
@@ -388,8 +436,10 @@ def calculators_2_df(calculators):
         for k, v in emission_data.items():
           if isinstance( v, (int, float, str, bool)):
             row[k] = v
-          elif isinstance( v, (dict,list )):
+          elif isinstance( v, (dict)):
             row[k] = get_first_number(v)
+          elif isinstance( v, list ):
+            row[k] = v[0]
           else:
             print(f'Column {k} unable to retrieve valid value. {v} as {type(v)}')
 

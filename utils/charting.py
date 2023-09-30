@@ -88,6 +88,24 @@ def initialize_plotly_themes():
             'yaxis': {'gridcolor': 'grey'},
         }
     )
+    pio.templates["gecko_v1"] = go.layout.Template(
+        layout={
+            'colorway': ColorDiscrete.gecko_v1,
+            'plot_bgcolor': 'rgba(0,0,0,0)',
+            'paper_bgcolor': 'rgba(0,0,0,0)',
+            'xaxis': {'gridcolor': 'grey'},
+            'yaxis': {'gridcolor': 'grey'},
+        }
+    )
+    pio.templates["gecko_v2"] = go.layout.Template(
+        layout={
+            'colorway': ColorDiscrete.gecko_v2,
+            'plot_bgcolor': 'rgba(0,0,0,0)',
+            'paper_bgcolor': 'rgba(0,0,0,0)',
+            'xaxis': {'gridcolor': 'grey'},
+            'yaxis': {'gridcolor': 'grey'},
+        }
+    )
 
 
 #---
@@ -209,7 +227,8 @@ def make_donut_chart(
         customdata=grouped_data['percent'],
         textinfo='label+percent',
         insidetextorientation='horizontal',
-        texttemplate="<b>%{label}</b>:<br>%{value:.2f}<br>%{customdata:.2f}%",
+        # texttemplate="<b>%{label}</b>:<br>%{value:.2f}<br>%{customdata:.2f}%",
+        texttemplate="<br>%{value:.2f}<br>%{customdata:.2f}%",
         sort=False,
     )])
     
@@ -416,3 +435,39 @@ def make_sankey_chart(
     
     return fig
 
+
+def make_sunburst_chart(
+    df, 
+    hierarchy_list: list = [], 
+    value_col: str = None, 
+    root: str = 'Placeholder', 
+    percentage: bool = False, 
+    theme: str = None,
+    watermark = True,
+):
+    # Create a copy of the DataFrame to avoid modifying the original
+    df = df.copy()
+    
+    # Add a root node to the DataFrame
+    df['root'] = root
+    
+    # If percentage is True, calculate the percentage values
+    if percentage:
+        total = df[value_col].sum()
+        df['percentage'] = round(100 * df[value_col] / total, 2)
+        value_col = 'percentage'
+    
+    # Create the sunburst chart
+    fig = px.sunburst(
+        df, 
+        path=['root'] + hierarchy_list,  # Add the root to the hierarchy list
+        values=value_col
+    )
+    
+    # Apply the theme if specified
+    if theme:
+        fig.update_layout(template=theme)
+    if watermark:
+        fig.update_layout(images=watermark_settings())
+    
+    return fig
