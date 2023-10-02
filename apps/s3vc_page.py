@@ -30,9 +30,6 @@ from utils.charting import initialize_plotly_themes \
 
 
 def s3vc_Page(): 
-  # inits already done in 'app_config()'
-  initialize_plotly_themes()
-
   st.title('Scope 3: Value Chain')  
   if not st.session_state.get('s3_settings'):
     with st.form(key='scope_3_config'):
@@ -106,7 +103,6 @@ def s3vc_Page():
         st.markdown(table_of_contents_md)
       st.divider()
 
-      # REMEMBER TO CHANGE THE BASE ASSETS
       t1, t2, t3, t4 = st.tabs(['Category 1-5', 'Category 6-10', 'Category 11-14', 'Category 15: Investments'])
       with t1:
         st.subheader("Category 1 : Purchased goods & services", anchor='S3C1_PurchasedGoods')
@@ -229,14 +225,14 @@ def s3vc_Page():
             ]
 
             # Loop through the uploaded files and convert to models
+            progress_bar = st.progress(0)
+            nfiles = len(uploaded_files)
+            progress_idx = 1
+            
             for uploaded_file in uploaded_files:
               data = pd.read_csv(uploaded_file)
-
               if data is not None:
                 df = get_dataframe(data)
-
-                # Create models from df (why??)
-                # modinf.transform_df_to_model(df)
 
                 # infer model from df
                 inferred_model = modinf.infer_model_from_df(df=df)
@@ -278,11 +274,9 @@ def s3vc_Page():
                       
                       'S3C14_Franchise': partial( create_s3c14_data, Model=Model, cache=cache, geolocator=gl ),
                   }
-
                   calc = S3_Calculator(cache=cache)
                   creator = CREATOR_FUNCTIONS[model_name]
                   
-
                 try:
                   calc, warning_list = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False)
                   result_df = calculator_to_df(calc)
@@ -297,6 +291,11 @@ def s3vc_Page():
                 except Exception as e:
                   raise
         
+                # update progress bar
+                progress_pct = progress_idx / nfiles
+                progress_bar.progress(progress_pct)
+                progress_idx += 1
+
         #-Show uploaded dfs-#
         if st.session_state['s3vc_original_dfs'] not in [{}]:
           st.subheader('Review uploaded files')
@@ -426,20 +425,24 @@ def calculators_2_df(calculators):
           'scope': scope,
           'category': category,
         }
-
         input_data = value.get('input_data', {})
+
         for k, v in input_data.items():
           if 'description' not in k.lower() and 'uuid' not in k.lower():
             row[k] = v
 
         emission_data = value.get('calculated_emissions', {})
+
         for k, v in emission_data.items():
           if isinstance( v, (int, float, str, bool)):
             row[k] = v
           elif isinstance( v, (dict)):
             row[k] = get_first_number(v)
           elif isinstance( v, list ):
-            row[k] = v[0]
+            try:
+              row[k] = v[0]
+            except:
+              row[k] = {}
           else:
             print(f'Column {k} unable to retrieve valid value. {v} as {type(v)}')
 
@@ -449,6 +452,7 @@ def calculators_2_df(calculators):
   for col in df.columns:
     if df[col].apply(lambda x: isinstance(x, (dict, list))).any():
       df[col] = df[col].apply(json.dumps)
+
   return df
 
 

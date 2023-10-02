@@ -5,6 +5,7 @@ import numpy as np
 import random
 from datetime import datetime
 
+from PIL import Image
 from io import StringIO
 import re
 from typing import List, Optional, Dict, Any
@@ -22,6 +23,8 @@ supabase_anon_key= st.secrets['supabase_anon_key']
 #-----
 # Theming
 #-----
+import os 
+
 def set_theme():
     if st.session_state.theme_choice == 'Light':
         st.session_state.theme_colors = {
@@ -29,13 +32,20 @@ def set_theme():
             'backgroundColor': "#f5edec",
             'secondaryBackgroundColor': "#ded2de",
             'textColor':"#202d35"  
-       }
-        # st.session_state.theme_colors = {
-        #     'primaryColor': '#004457',
-        #     'backgroundColor': '#FFFFFF',
-        #     'secondaryBackgroundColor': '#E3E8E3',
-        #     'textColor': '#5A5A5A'
-        # }
+        }
+    
+        image_path = "./resources/BlackShortText_Logo_Horizontal-long.png"
+        if os.path.exists(image_path):
+            st.session_state.watermark_settings = [dict(
+                source= Image.open(image_path),
+                xref="paper", yref="paper",
+                x=0.98, y=0.02,
+                sizex=0.20, sizey=0.20, opacity= 0.25,
+                xanchor="right", yanchor="bottom"
+            )]
+        else:
+            st.error(f"File not found: {image_path}")      
+
     else:
         st.session_state.theme_colors = {
             'primaryColor': '#e5f0d9',
@@ -44,7 +54,22 @@ def set_theme():
             'textColor': '#ecc0d1'
         }
 
+        image_path = "./resources/WhiteShortText_Logo_Horizontal-long.png"
+        if os.path.exists(image_path):
+            st.session_state.watermark_settings = [dict(
+                source= Image.open(image_path),
+                xref="paper", yref="paper",
+                x=0.98, y=0.02,
+                sizex=0.20, sizey=0.20, opacity= 0.25,
+                xanchor="right", yanchor="bottom"
+            )]
+        else:
+            st.error(f"File not found: {image_path}")
+
+
 def reconcile_theme_config():
+    set_theme()
+    
     keys = ['primaryColor', 'backgroundColor', 'secondaryBackgroundColor', 'textColor']
     for key in keys:
         if st._config.get_option(f'theme.{key}') != st.session_state.theme_colors.get(key, ''):

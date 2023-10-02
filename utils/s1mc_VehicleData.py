@@ -7,6 +7,8 @@ import uuid
 import pandas as pd
 import numpy as np
 from collections import Counter
+from datetime import datetime
+from dateutil import parser
 
 from pydantic import BaseModel, Field
 from pydantic import model_validator
@@ -187,6 +189,7 @@ class S1MC_Lookup_Cache(BaseModel):
 
 class VehicleData(BaseModel):
     uuid: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
+    date: Optional[Union[datetime, str]] = Field(None) 
     description: Optional[str] = Field(None, max_length=1600)     
         
     vehicle_type: str = Field(default='car')
@@ -208,6 +211,19 @@ class VehicleData(BaseModel):
         fuel_type = values.get('fuel_type')
         fuel_consumption = values.get('fuel_consumption')
         fuel_unit = values.get('fuel_unit')
+
+        # validate date
+        date = values.get('date')
+        if date is None:
+            values['date'] = datetime.now().strftime('%Y-%m-%d')
+        elif type(date) in [datetime]:
+            values['date'] = date.strftime('%Y-%m-%d')
+        else:
+            try:
+                parsed_date = parser.parse(date)
+                values['date'] = parsed_date.strftime('%Y-%m-%d')
+            except:
+                raise ValueError('Invalid date format. Try inputing in YYYY-MM-DD')
         
         # validate state
         valid_states = ['gas', 'liquid', 'solid', None]
@@ -341,7 +357,8 @@ class S1MC_CalculatorTool(BaseModel):
             )    
 
         key = len(self.calculated_emissions)
-        self.calculated_emissions[key] = {'input_data': v, 'calculated_emissions': calculated_emissions}
+        # self.calculated_emissions[key] = {'input_data': v, 'calculated_emissions': calculated_emissions}
+        self.calculated_emissions[key] = {'input_data': v.model_dump(), 'calculated_emissions': calculated_emissions.model_dump()}
         
     def calculate_distance_based_method(self, distance:float, distance_emission_factor:float) -> float:
         return distance * distance_emission_factor

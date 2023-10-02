@@ -1,3 +1,5 @@
+import streamlit as st
+
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -5,26 +7,17 @@ import plotly.io as pio
 
 import numpy as np
 import pandas as pd
+import re
 
 from typing import Union
 from typing import Optional
-from PIL import Image
-
 from utils.globals import ColorDiscrete
 
 #---
 # chart config
 #---
-GECKO_LOGO = Image.open("./resources/BlackShortText_Logo_Horizontal-long.png")
-
 def watermark_settings():
-    return [dict(
-        source= GECKO_LOGO,
-        xref="paper", yref="paper",
-        x=0.98, y=0.02,
-        sizex=0.20, sizey=0.20, opacity= 0.25,
-        xanchor="right", yanchor="bottom"
-    )]
+    return st.session_state.watermark_settings
 
 def legend_settings_dark(orientation='v', max_per_row=7):
     settings = dict(
@@ -41,9 +34,6 @@ def legend_settings_dark(orientation='v', max_per_row=7):
         borderwidth=1,
         orientation=orientation,
     )
-    # if orientation == 'h':
-    #     settings['traceorder'] = 'grouped'
-    #     settings['tracegroupgap'] = max_per_row
     return settings
 
 
@@ -109,6 +99,17 @@ def initialize_plotly_themes():
 
 
 #---
+# Helper
+#---
+def sort_str_column_numeric(df, column_name, ascending=True):
+    """Sorts a DataFrame based on a string column that contains numeric values."""
+    df['SortKey'] = df[column_name].apply(lambda x: int(re.search(r'\d+', x).group()) if re.search(r'\d+', x) else 0)
+    df.sort_values('SortKey', inplace=True, ascending=ascending)
+    df.drop('SortKey', axis=1, inplace=True)
+    return df
+
+
+#---
 # Charting
 #---
 def make_bar_chart(
@@ -125,7 +126,10 @@ def make_bar_chart(
     width: Optional[int] = None, 
     watermark=True,
     legend: bool = True,
-    legend_dark: bool= False
+    legend_dark: bool= False,
+    horizontal_legend=False,
+    legend_sort_numeric=False,
+    auto_adjust_height=False
 ):
     # Initialize figure
     fig = go.Figure()
@@ -136,7 +140,6 @@ def make_bar_chart(
         group_cols.append(year_col)
     if category_col:
         group_cols.append(category_col)
-        
     if group_cols:
         grouped_df = df.groupby(group_cols).agg({value_col: aggregation}).reset_index()
     else:
@@ -150,6 +153,10 @@ def make_bar_chart(
     if percent:
         total_value = grouped_df[value_col].sum()
         grouped_df[value_col] = 100 * grouped_df[value_col] / total_value
+
+    # String columns get sorted weirdly in legend
+    if legend_sort_numeric:
+        grouped_df = sort_str_column_numeric(grouped_df, category_col, ascending=False)
     
     # Create the plot
     for cat in grouped_df[category_col].unique() if category_col else [None]:
@@ -189,6 +196,15 @@ def make_bar_chart(
     if legend_dark:
         fig.update_layout(legend = legend_settings_dark())
     
+    if horizontal_legend:
+        fig.update_layout(title_y=1, legend=dict(orientation='h', x=0.5, y=1, xanchor='center', yanchor='bottom'))
+
+    if auto_adjust_height:
+        height = 300
+        nuniq = len( grouped_df[category_col].unique() )
+        height += nuniq * 30
+        fig.update_layout(height=height)
+  
     return fig
 
 

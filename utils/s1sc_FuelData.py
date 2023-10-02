@@ -6,6 +6,8 @@ import uuid
 
 import pandas as pd
 import numpy as np
+from datetime import datetime
+from dateutil import parser
 
 from pydantic import BaseModel, Field, constr
 from pydantic import root_validator, field_validator, model_validator
@@ -137,7 +139,9 @@ class S1SC_Lookup_Cache(BaseModel):
 
 class FuelData(BaseModel):
     uuid: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the fuel data")
-    description: Optional[str] = Field(None, max_length=1600)        
+    date: Optional[Union[datetime, str]] = Field(None) 
+    description: Optional[str] = Field(None, max_length=1600)     
+
     sector: str = Field(default='energy')
     fuel_state: str = Field(default='liquid')
     fuel_type: str = Field(default='Petrol')
@@ -156,6 +160,19 @@ class FuelData(BaseModel):
         heating_value = values.get('heating_value')
         fuel_spend = values.get('fuel_spend')
         currency = values.get('currency')
+
+        # validate date
+        date = values.get('date')
+        if date is None:
+            values['date'] = datetime.now().strftime('%Y-%m-%d')
+        elif type(date) in [datetime]:
+            values['date'] = date.strftime('%Y-%m-%d')
+        else:
+            try:
+                parsed_date = parser.parse(date)
+                values['date'] = parsed_date.strftime('%Y-%m-%d')
+            except:
+                raise ValueError('Invalid date format. Try inputing in YYYY-MM-DD')
 
         # validate state
         valid_states = ['gas', 'liquid', 'solid']
@@ -292,7 +309,8 @@ class FuelCalculatorTool(BaseModel):
         )     
         
         key = len(self.calculated_emissions)
-        self.calculated_emissions[key] = {'input_data': fuel, 'calculated_emissions': calculated_emissions}
+        # self.calculated_emissions[key] = {'input_data': fuel, 'calculated_emissions': calculated_emissions}
+        self.calculated_emissions[key] = {'input_data': fuel.model_dump(), 'calculated_emissions': calculated_emissions.model_dump()}
         
     def calculate_fuel_based_method(self, fuel_consumption: float, fuel_emission_factor: float) -> float:
         """Calculate emissions using the emission factor method (Eq1)"""

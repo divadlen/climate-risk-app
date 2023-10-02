@@ -9,9 +9,8 @@ import plotly.express as px
 from utils.s1sc_FuelData import create_fuel_data, S1SC_Lookup_Cache, FuelData, FuelCalculatorTool
 from utils.utility import get_dataframe, convert_df, convert_warnings, find_closest_category
 from utils.display_utility import show_example_form, pandas_2_AgGrid
+from utils.model_df_utility import calculator_to_df
 
-
-# Instantiate cache for emission lookup and state lookup
 
 
 def s1sc_Page():
@@ -61,17 +60,18 @@ def s1sc_Page():
             st.warning(warning)
 
         with st.expander('Validated table', expanded=True):
-          pandas_2_AgGrid( st.session_state['validated_s1sc_df'], theme='balham' )
+          pandas_2_AgGrid( st.session_state['validated_s1sc_df'], theme='balham', key='validated_s1sc_df_tab1')
 
           col1, col2 = st.columns([1,1])
           with col1:
             csv_str = convert_df(st.session_state['validated_s1sc_df'])
             st.download_button('Download validated table as CSV', csv_str, file_name="validated_table.csv", mime="text/csv")
 
-          if len(st.session_state['validated_s2ie_warnings']) > 1:
+          if len(st.session_state['validated_s1sc_warnings']) > 1:
             with col2:
               validation_warnings_str = convert_warnings(st.session_state['validated_s1sc_warnings'])
               st.download_button("Download warnings as TXT", validation_warnings_str, file_name="warnings.txt", mime="text/plain")
+          st.info('It is recommended you download the validated table, make modifications, and replace the original uploaded file with the validated table for better accuracy.')
 
 
   with tab2:
@@ -89,12 +89,16 @@ def s1sc_Page():
         st.session_state['analyzed_s1sc'] = False
       if st.button('Analyze uploaded dataframe', help='Attempts to return calculation results for each row for table. Highly recommended to reupload a validated table before running analysis'):
         st.session_state['analyzed_s1sc'] = True
-        st.success('Uploaded Scope 1: Stationary Combustion data tables analyzed!')
 
         cache = st.session_state['S1SC_Lookup_Cache']
         FCT = FuelCalculatorTool(cache=cache)
         FCT, warning_messages = df_to_FCT(st.session_state['s1sc_df'], fuel_calculator=FCT, cache=cache)
-        calculation_df = FCT_to_df(FCT)
+        calculation_df = calculator_to_df(FCT)
+
+        if 's1de_calc_results' in st.session_state:
+          st.session_state['s1de_calc_results']['S1SC_StationaryCombustion'] = FCT # add results to app global
+
+        st.success('Uploaded Scope 1: Stationary Combustion data tables analyzed!')
 
         if warning_messages:
           with st.expander('Show analysis warnings'):

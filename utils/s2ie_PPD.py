@@ -378,7 +378,8 @@ class S2IE_CalculatorTool(BaseModel):
         )     
         
         key = len(self.calculated_emissions)
-        self.calculated_emissions[key] = {'input_data': ppd, 'calculated_emissions': calculated_emissions}
+        # self.calculated_emissions[key] = {'input_data': ppd, 'calculated_emissions': calculated_emissions}
+        self.calculated_emissions[key] = {'input_data': ppd.model_dump(), 'calculated_emissions': calculated_emissions.model_dump()}
         
     def calculate_use_based_method(self, consumption: float, emission_factor: float) -> float:
         """Calculate emissions using the emission factor method (Eq1)"""

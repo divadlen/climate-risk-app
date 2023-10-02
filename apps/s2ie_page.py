@@ -10,6 +10,8 @@ import plotly.express as px
 from utils.s2ie_PPD import create_ppd_data, S2IE_Lookup_Cache, S2_PurchasedPowerData, S2IE_CalculatorTool
 from utils.utility import get_dataframe, convert_df, convert_warnings, convert_BaseModel, find_closest_category
 from utils.display_utility import show_example_form, pandas_2_AgGrid
+from utils.model_df_utility import calculator_to_df
+
 from utils.geolocator import GeoLocator
 from utils.globals import LOCATION_ABBRV
 
@@ -43,7 +45,7 @@ def s2ie_Page():
 
     if st.session_state['s2ie_df'] is not None:
       with st.expander('Show uploaded table'):
-        pandas_2_AgGrid(st.session_state['s2ie_df'], theme='balham')
+        pandas_2_AgGrid(st.session_state['s2ie_df'], theme='balham', key='s2ie_df_tab1')
 
       if 'validated_s2ie' not in st.session_state:
         st.session_state['validated_s2ie'] = False
@@ -57,7 +59,7 @@ def s2ie_Page():
             st.warning(warning)
 
         with st.expander('Validated table', expanded=True):
-          pandas_2_AgGrid( st.session_state['validated_s2ie_df'], theme='balham' )
+          pandas_2_AgGrid( st.session_state['validated_s2ie_df'], theme='balham', key='validated_s2ie_df_tab1')
 
           col1, col2 = st.columns([1,1])
           with col1:
@@ -68,6 +70,7 @@ def s2ie_Page():
             with col2:
               validation_warnings_str = convert_warnings(st.session_state['validated_s2ie_warnings'])
               st.download_button("Download warnings as TXT", validation_warnings_str, file_name="warnings.txt", mime="text/plain")
+          st.info('It is recommended you download the validated table, make modifications, and replace the original uploaded file with the validated table for better accuracy.')
 
 
   with tab2:
@@ -85,16 +88,16 @@ def s2ie_Page():
         st.session_state['analyzed_s2ie'] = False
       if st.button('Analyze uploaded dataframe', help='Attempts to return calculation results for each row for table. Highly recommended to reupload a validated table before running analysis'):
         st.session_state['analyzed_s2ie'] = True
-        st.success('Uploaded Scope 2 data table analyzed!')
 
         cache = st.session_state['S2IE_Lookup_Cache']
         gl = GeoLocator()
         calc = S2IE_CalculatorTool(cache=cache)
 
         calc, warning_messages = df_2_calculator(st.session_state['s2ie_df'], calculator=calc, cache=cache, geolocater=gl)
-        calculation_df = calculator_2_df(calc)
+        calculation_df = calculator_to_df(calc)
 
-        st.session_state['s2ie_calc_results'] = calc # save calulator in session state
+        if 's2ie_calc_results' in st.session_state:
+          st.session_state['s2ie_calc_results']['S2IE_IndirectEmissions'] = calc # save calulator in session state
         st.session_state['s2ie_calc_results_df'] = calculation_df
 
         if warning_messages:
@@ -105,6 +108,7 @@ def s2ie_Page():
         with st.expander('Show results table'):  
           if len(calculation_df) > 0:
             pandas_2_AgGrid(calculation_df, theme='balham')
+            st.success('Uploaded Scope 2 data table analyzed!')
           else:
             st.error('No dataframe discovered or built. Refer to analysis warnings to verify the issue.')
 
@@ -115,14 +119,14 @@ def s2ie_Page():
     else:
       st.subheader('Analysis Results')
       if 's2ie_calc_results' in st.session_state:
-        calc = st.session_state['s2ie_calc_results']
+        calc = st.session_state['s2ie_calc_results']['S2IE_IndirectEmissions']
         calculation_df = st.session_state['s2ie_calc_results_df']
 
-        with st.expander('show results'):
-          st.write(calc.calculated_emissions) # 
+        # with st.expander('show results'):
+        #   st.write(calc.calculated_emissions) # 
 
-        co2e = calc.get_total_co2e()
-        st.plotly_chart( px.bar(x=['Scope 2'], y=[co2e]) ) 
+        # co2e = calc.get_total_co2e()
+        # st.plotly_chart( px.bar(x=['Scope 2'], y=[co2e]) ) 
 
         # figs = {}
         # for c in calculation_df.columns:

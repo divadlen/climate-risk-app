@@ -51,11 +51,7 @@ def run_app():
     st.image("./resources/G1-long.png", use_column_width=True, width=None)
 
 
-  # Initialize session_state if it doesn't exist
-  if 'theme_choice' not in st.session_state:
-    st.session_state.theme_choice = 'Light'
-  if 'theme_colors' not in st.session_state:
-    st.session_state.theme_colors = {}
+
 
   with st.sidebar:
     qwe = st.text_input('QWE') 
@@ -72,7 +68,6 @@ def run_app():
       submit_button = st.form_submit_button('Double click to apply theme')
 
     if submit_button:
-      set_theme()  # Update the theme colors in session_state
       reconcile_theme_config()  # Apply the theme
 
     with st.expander('Show states'):
@@ -94,19 +89,15 @@ def run_app():
     navbar_animation=True,
     navbar_theme=navbar_theme_dark,
   )
-  
+
+  #specify a custom loading app for a custom transition between apps, this includes a nice custom spinner
+  from apps._loading import MyLoadingApp
+  app.add_loader_app(MyLoadingApp(delay=0))
+
   #---Add apps from folder---#
   @app.addapp(is_home=True)
   def my_home(title='home'):
     hy.info('Hello from Home!')
-
-  @app.addapp(title='Data')
-  def app2():
-    hy.info('Hello from app 2')
-
-  @app.addapp(title='The Best', icon="🥰")
-  def app3():
-    hy.info('Hello from app 3, A.K.A, The Best 🥰')
 
   @app.addapp(title='from app folderr')
   def app4():
@@ -128,6 +119,7 @@ def run_app():
     from apps.barfi import barfiPage
     barfiPage()
 
+
   @app.addapp(title='Scope 1: Stationary Combustion')
   def s1scApp():
     from apps.s1sc_page import s1sc_Page
@@ -148,24 +140,25 @@ def run_app():
     from apps.s3vc_page import s3vc_Page
     s3vc_Page()
 
+
+  @app.addapp(title='Overall Dashboard')
+  def main_dash():
+    from apps.main_dash import main_dash_Page
+    main_dash_Page()
+
   @app.addapp(title='Dash V1')
   def dashApp_v1():
     from apps.dash_v1 import dash_Page_v1
     dash_Page_v1()
 
-  #specify a custom loading app for a custom transition between apps, this includes a nice custom spinner
-  from apps._loading import MyLoadingApp
-  app.add_loader_app(MyLoadingApp(delay=0))
 
     
   #---Optional, if you want to nest navigations---#
   complex_nav = {
     "Home": ['home'],
     "Emissions Calculator": ['Scope 1: Stationary Combustion', 'Scope 1: Mobile Combustion', 'Scope 2: Indirect Emissions', 'Scope 3: Value Chain'],
-    "heat": ['Risk Heatmap'], 
-    "Graphics": ["Data", "Dash V1"],
-    #"app folder": ['from app folderr'],
-    #"bests": ['The Best', 'The Best 2'],
+    # "heat": ['Risk Heatmap'], 
+    "Graphics": ["Overall Dashboard", "Dash V1"],
     "logout": ['Logout'],
   }
 

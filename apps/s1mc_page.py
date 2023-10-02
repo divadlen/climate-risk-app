@@ -8,13 +8,17 @@ import plotly.express as px
 from utils.s1mc_VehicleData import create_vehicle_data, S1MC_Lookup_Cache, VehicleData, S1MC_CalculatorTool
 from utils.utility import get_dataframe, convert_df, convert_warnings, find_closest_category
 from utils.display_utility import show_example_form, pandas_2_AgGrid
+from utils.model_df_utility import calculator_to_df
+
 
 
 def s1mc_Page():
   if 'S1MC_Lookup_Cache' not in st.session_state:
     st.session_state['S1MC_Lookup_Cache'] = S1MC_Lookup_Cache() 
+  
   if 's1mc_df' not in st.session_state: #
     st.session_state['s1mc_df'] = None
+  
   if 'validated_s1mc_df' not in st.session_state:
     st.session_state['validated_s1mc_df'] = None
     st.session_state['validated_s1mc_warnings'] = []
@@ -65,6 +69,7 @@ def s1mc_Page():
           with col2:
             validation_warnings_str = convert_warnings(st.session_state['validated_s1mc_warnings'])
             st.download_button("Download warnings as TXT", validation_warnings_str, file_name="warnings.txt", mime="text/plain")
+          st.info('It is recommended you download the validated table, make modifications, and replace the original uploaded file with the validated table for better accuracy.')
 
 
   with tab2:
@@ -82,13 +87,16 @@ def s1mc_Page():
         st.session_state['analyzed_s1mc'] = False
       if st.button('Analyze uploaded dataframe', help='Attempts to return calculation results for each row for table. Highly recommended to reupload a validated table before running analysis'):
         st.session_state['analyzed_s1mc'] = True
-        st.success('Uploaded Scope 1 Mobile combustion data tables analyzed!')
-
+        
         cache = st.session_state['S1MC_Lookup_Cache']
         calc = S1MC_CalculatorTool(cache=cache)
-
         calc, warning_messages = df_2_calculator(st.session_state['s1mc_df'], calculator=calc, cache=cache)
-        calculation_df = calculator_2_df(calc)
+        calculation_df = calculator_to_df(calc)
+
+        if 's1de_calc_results' in st.session_state:
+          st.session_state['s1de_calc_results']['S1MC_MobileCombustion'] = calc # add results to app global
+
+        st.success('Scope 1 Mobile combustion data tables analyzed and submitted!')
 
         if warning_messages:
           with st.expander('Show analysis warnings'):
@@ -163,7 +171,7 @@ def validate_s1mc_df(df:pd.DataFrame):
         corrected_vehicle = find_closest_category(row['vehicle_type'], valid_vehicle_types)
         
         if corrected_vehicle is not None: 
-          warning_messages.append(f"Warning: 'vehicle_type' value of '{row['vehicle_type']}' in row {idx} is corrected to '{corrected_vehicle}'. Accepted values: {valid_vehicle_types}.")
+          warning_messages.append(f"UPDATE: 'vehicle_type' value of '{row['vehicle_type']}' in row {idx} is corrected to '{corrected_vehicle}'. Accepted values: {valid_vehicle_types}.")
           df.loc[index, 'vehicle_type'] = corrected_vehicle 
         else:
           warning_messages.append(f"Warning: Invalid 'vehicle_type' value of '{row['vehicle_type']}' in row {idx}. Accepted values in: {valid_vehicle_types}. Setting to None.")
@@ -180,7 +188,7 @@ def validate_s1mc_df(df:pd.DataFrame):
         corrected_fuel_type = find_closest_category(row['fuel_type'], valid_fuel_types)
 
         if corrected_fuel_type is not None:
-          warning_messages.append(f"Warning: 'fuel_type' value of '{row['fuel_type']}' in row {idx} is corrected to '{corrected_fuel_type}'. Accepted fuel type for '{row['vehicle_type']}': {valid_fuel_types}.")
+          warning_messages.append(f"UPDATE: 'fuel_type' value of '{row['fuel_type']}' in row {idx} is corrected to '{corrected_fuel_type}'. Accepted fuel type for '{row['vehicle_type']}': {valid_fuel_types}.")
           df.loc[index, 'fuel_type'] = corrected_fuel_type
         else:
           warning_messages.append(f"Warning: Invalid 'fuel_type' value of '{row['fuel_type']}' in row {idx}. Accepted fuel type for '{row['vehicle_type']}': {valid_fuel_types}. Setting to None.")
