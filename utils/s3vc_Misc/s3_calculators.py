@@ -397,26 +397,6 @@ def calc_S3C8_UpstreamLeased(data: Union[S3C8_1_UpstreamLeasedEstate, S3C8_2_Ups
                 data_quality -= 2
                 metadata.append(create_metadata('physical_emissions', total_co2e, ['electric_use', 'grid_emission_factor'], data_quality))
 
-    # if isinstance(data, S3C8_1_UpstreamLeasedEstate):  
-    #     f1 = ['country', 'state', 'electric_use']  
-    #     if all(getattr(data, field, None) is not None for field in f1): 
-    #         TABLE = 's2ie_gef'
-    #         factors = cache.get_grid_emission_factors(table=TABLE, country=data.country, state=data.state)
-    #         relevant_factors =  get_relevant_factors(factors, unit='kwh')
-    #         total_co2e = calculate_co2e(relevant_factors, unit_value=data.electric_use)
-
-    #         f2 = ['refrigerant_use',  'refrigerant_type']
-    #         if all(getattr(data, field, None) is not None for field in f2): 
-    #             factors = cache.get_refrigerant_gwp(refrigerant_type=data.refrigerant_type)
-    #             refrigerant_gwp = factors['gwp_100yr']
-    #             refrigerant_co2e = data.refrigerant_use * refrigerant_gwp
-    #             total_co2e += refrigerant_co2e
-    #             f1 += f2
-                
-    #         emission_result['physical_emissions'] = total_co2e
-    #         data_quality -= 2
-    #         metadata.append( create_metadata('physical_emissions', total_co2e, f1, data_quality) )   
-
         f2 = ['reported_emissions']
         if all(getattr(data, field, None) is not None for field in f2): 
             total_co2e = data.reported_emissions

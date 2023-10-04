@@ -221,7 +221,8 @@ def make_donut_chart(
     theme=None, 
     watermark=True,
     legend=True,
-    legend_dark=False
+    legend_dark=False,
+    horizontal_legend=False
 ):
     # Group the data
     grouped_data = df.groupby(group_col).agg({value_col: 'sum'}).reset_index()
@@ -264,6 +265,8 @@ def make_donut_chart(
         fig.update_layout(showlegend=False)
     if legend_dark:
         fig.update_layout(legend = legend_settings_dark())
+    if horizontal_legend:
+        fig.update_layout(title_y=1, legend=dict(orientation='h', x=0.5, y=1, xanchor='center', yanchor='bottom'))
 
     return fig
 

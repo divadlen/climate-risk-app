@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from collections import Counter
 
+from utils.s1de_Misc.s1_models import *
 from utils.s3vc_Misc.s3_models import *
 from utils.s3vc_Misc.s3c15_models import *
 
@@ -9,7 +10,12 @@ from utils.s3vc_Misc.s3c15_models import *
 class ModelInferencer:
     def __init__(self):
         self.available_models = {
-            # Non C15
+            # S1 
+            'S1_FugitiveEmission': S1_FugitiveEmission,
+            'S1_MobileCombustion': S1_MobileCombustion,
+            'S1_StationaryCombustion': S1_StationaryCombustion,
+
+            # S3 Non C15
             'S3C1_PurchasedGoods': S3C1_PurchasedGoods,
             'S3C2_CapitalGoods': S3C2_CapitalGoods,
             'S3C3_EnergyRelated': S3C3_EnergyRelated,
@@ -34,7 +40,7 @@ class ModelInferencer:
             
             'S3C14_Franchise': S3C14_Franchise,
 
-            # C15 
+            # S3 C15 
             'S3C15_BaseAsset': S3C15_BaseAsset,
             'S3C15_1A_ListedEquity': S3C15_1A_ListedEquity,
             'S3C15_1B_UnlistedEquity': S3C15_1B_UnlistedEquity,

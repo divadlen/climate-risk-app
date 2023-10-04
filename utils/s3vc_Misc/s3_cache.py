@@ -1,9 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Dict, Union, Tuple, ClassVar, Any
-
 from utils.utility import find_closest_category, supabase_query_v2
-from utils.geolocator import GeoLocator
-from utils.s3vc_Misc.s3_models import S3_BaseModel
 
 
 #-----

@@ -56,7 +56,7 @@ def pandas_2_AgGrid(df: pd.DataFrame, cellstyle_jscode=None, theme:str='streamli
   )
   return grid_response['data']
 
-def show_example_form(BaseModelCls, title:str, button_text: str, filename: str, markdown:str=None, key=None):
+def show_example_form(BaseModelCls, title:str, button_text: str, filename: str, markdown:str=None, key=None, expanded=False):
     """ 
     BaseModelCls: 
       Pydantic BaseModel
@@ -74,7 +74,7 @@ def show_example_form(BaseModelCls, title:str, button_text: str, filename: str, 
       Optional, extra markdown to include below forms. 
     """
 
-    with st.expander(title):
+    with st.expander(title, expanded=expanded):
         csv_str = convert_BaseModel(BaseModelCls, examples=True)
         # example_df = convert_BaseModel(BaseModelCls, examples=True, return_as_string=False)
         example_df = get_cached_df(BaseModelCls) # cache doesnt work with aggrid

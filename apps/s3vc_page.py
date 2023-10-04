@@ -217,6 +217,10 @@ def s3vc_Page():
             gl = GeoLocator()
             cache = S3_Lookup_Cache()
 
+            s1_models = [
+              'S1_FugitiveEmission', 'S1_MobileCombustion', 'S1_StationaryCombustion'
+            ]
+
             # available models
             c15_models = [
               'S3C15_BaseAsset','S3C15_1A_ListedEquity','S3C15_1B_UnlistedEquity','S3C15_1C_CorporateBonds','S3C15_1D_BusinessLoans','S3C15_1E_CommercialRealEstate',
@@ -244,6 +248,10 @@ def s3vc_Page():
                 Model = modinf.available_models[model_name]    
             
                 # Choose calculator based on inferred model
+                if model_name in s1_models:
+                  st.error(f'Uploaded file "{uploaded_file.name}" with columns {list(df.columns)} should be submitted to Scope 1. Skipping...')
+                  continue
+
                 if model_name in c15_models:
                   calc = S3C15_Calculator()
                   creator = partial(create_s3c15_data, Model=Model) # creator function to pass df rows as Pydantic Models to Calculator
@@ -328,7 +336,7 @@ def s3vc_Page():
           st.session_state['analyzed_s3vc'] = True   
           st.success('Uploaded Scope 3 data tables analyzed!')
 
-          if all(key in st.session_state for key in ['s3vc_warnings', 's3vc_dfs']) and st.session_state.get('analyzed_s3vc', True):
+          if all(key in st.session_state for key in ['s3vc_warnings', 's3vc_original_dfs']) and st.session_state.get('analyzed_s3vc', True):
             with st.expander('Show warnings'):
               for name, warnings in st.session_state['s3vc_warnings'].items():
                 for warn in warnings:

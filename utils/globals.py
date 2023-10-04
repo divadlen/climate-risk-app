@@ -13,7 +13,9 @@ COLUMN_SORT_ORDER = [
   'uuid', 'date', 'description',
   'employee_id', 'franchisee_id',
   'product_name', 'product_class',
-  'distributor_name', 'process_name',
+  'distributor_name', 
+  'process_name',
+  'equipment_name',
 
   # counter
   'lifetime_usage_freq', 'number_sold', 
@@ -57,6 +59,7 @@ COLUMN_SORT_ORDER = [
 
   # refrigerant descriptions
   'refrigerant_type', 'refrigerant_unit',
+  'refrigerant_capacity',
   'refrigerant_use', 'refrigerant_per_use',
 
   # distance descriptions
@@ -75,6 +78,10 @@ COLUMN_SORT_ORDER = [
   'attribution_share', 'reported_emissions', 'project_emissions', 'emissions_removed', 'production_emissions', 'consumption_emissions', 'estimated_emissions', 'emission_estimation_description',
   'upstream_emission_factor', 'life_cycle_emission_factor', 'combustion_emission_factor', 'energy_loss_rate',
   'hotel_emission_factor',
+
+  # refrigerant related
+  'install_loss_rate', 'annual_leak_rate', 'recovery_rate', 
+  'number_of_year',
 ]
 
 
