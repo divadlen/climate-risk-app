@@ -1,20 +1,17 @@
 import streamlit as st
 from streamlit import session_state as state
-from st_aggrid import AgGrid, JsCode, GridUpdateMode
-from st_aggrid.grid_options_builder import GridOptionsBuilder
+from st_aggrid import JsCode
 import streamlit_antd_components as sac
 
 import numpy as np
 import pandas as pd
 from functools import partial
-import json
-import logging
 from typing import List
 
 import plotly.express as px
 
 from utils.globals import SECTOR_TO_CATEGORY_IDX, IDX_TO_CATEGORY_NAME
-from utils.utility import get_dataframe, create_line_simulation
+from utils.utility import get_dataframe
 from utils.display_utility import show_example_form, pandas_2_AgGrid
 from utils.model_df_utility import df_to_calculator, calculator_to_df, calculators_2_df
 from utils.md_utility import markdown_insert_images
@@ -27,8 +24,6 @@ from utils.s3vc_Misc.s3_creators import *
 
 from utils.s3vc_Misc.s3c15_models import *
 from utils.s3vc_Misc.s3c15_calculators import S3C15_Calculator, create_s3c15_data
-from utils.charting import initialize_plotly_themes \
-    ,make_bar_chart, make_donut_chart, make_grouped_line_chart, make_sankey_chart, make_sunburst_chart
 
 
 def s3vc_Page(): 
@@ -408,67 +403,6 @@ def s3vc_Page():
 #---
 # Helpers
 #---
-# def calculators_2_df(calculators):
-#   """ 
-#   calculators: dictionary of calculators
-#     Example: 
-#     calculators = {
-#       'Scope1_MobileCombustion': calculator1,
-#       'Scope2_IndirectEmissions': calculator2,
-#       # ...
-#     }
-#   """
-#   def get_first_number(d):
-#     if isinstance(d, dict):
-#       for value in d.values():
-#         if isinstance(value, (int, float)):
-#           return value
-#     return np.nan
-
-#   rows = []
-#   for name, calculator in calculators.items():
-#     scope = name.split('_')[0]  # Assuming the scope is the first part of the name
-#     category = name.split('_')[-1]
-
-#     if hasattr(calculator, 'calculated_emissions'):
-#       for key, value in calculator.calculated_emissions.items():
-
-#         # Initialize row
-#         row = {
-#           'scope': scope,
-#           'category': category,
-#         }
-#         input_data = value.get('input_data', {})
-
-#         for k, v in input_data.items():
-#           if 'description' not in k.lower() and 'uuid' not in k.lower():
-#             row[k] = v
-
-#         emission_data = value.get('calculated_emissions', {})
-
-#         for k, v in emission_data.items():
-#           if isinstance( v, (int, float, str, bool)):
-#             row[k] = v
-#           elif isinstance( v, (dict)):
-#             row[k] = get_first_number(v)
-#           elif isinstance( v, list ):
-#             try:
-#               row[k] = v[0]
-#             except:
-#               row[k] = {}
-#           else:
-#             print(f'Column {k} unable to retrieve valid value. {v} as {type(v)}')
-
-#         rows.append(row)
-  
-#   df = pd.DataFrame(rows)
-#   for col in df.columns:
-#     if df[col].apply(lambda x: isinstance(x, (dict, list))).any():
-#       df[col] = df[col].apply(json.dumps)
-
-#   return df
-
-
 def emissionOverviewPart(df):      
     from streamlit_extras.metric_cards import style_metric_cards
     import plotly.graph_objects as go

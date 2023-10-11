@@ -4,14 +4,9 @@ import streamlit_antd_components as sac
 
 import numpy as np
 import pandas as pd
-import random
-from datetime import datetime
-from dateutil import parser
 
 from functools import partial
 import plotly.express as px
-
-from utils.s2ie_PPD import create_ppd_data, S2IE_Lookup_Cache, S2_PurchasedPowerData, S2IE_CalculatorTool
 
 from utils.s2ie_Misc.s2_models import S2_PurchasedPower
 from utils.s2ie_Misc.s2_calculators import S2_Calculator
@@ -24,7 +19,6 @@ from utils.display_utility import show_example_form, pandas_2_AgGrid
 from utils.md_utility import markdown_insert_images
 from utils.model_df_utility import calculator_to_df, df_to_calculator, calculators_2_df
 from utils.geolocator import GeoLocator
-from utils.globals import LOCATION_ABBRV
 
 
 def s2ie_Page():

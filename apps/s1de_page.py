@@ -1,21 +1,16 @@
 import streamlit as st
 from streamlit import session_state as state
-
 import streamlit_antd_components as sac
-from streamlit_elements import elements, mui, html
 
 import numpy as np
 import pandas as pd
 import random
 from functools import partial
-import json
-import logging
 from typing import List
 
 import plotly.express as px
 
-from utils.globals import SECTOR_TO_CATEGORY_IDX, IDX_TO_CATEGORY_NAME
-from utils.utility import get_dataframe, create_line_simulation
+from utils.utility import get_dataframe
 from utils.display_utility import show_example_form, pandas_2_AgGrid
 from utils.model_df_utility import df_to_calculator, calculator_to_df, calculators_2_df
 from utils.md_utility import markdown_insert_images
@@ -26,7 +21,6 @@ from utils.s1de_Misc.s1_calculators import S1_Calculator
 from utils.s1de_Misc.s1_creators import *
 
 from utils.s3vc_Misc.s3_cache import S3_Lookup_Cache
-from utils.charting import initialize_plotly_themes 
 
 
 def s1de_Page(): 

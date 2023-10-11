@@ -72,13 +72,13 @@ def AuthApp():
         if state.last_account_creation and current_time - state.last_account_creation < timedelta(minutes=1):
           st.error('Only one account can be created per minute.')
           return
-        else:
-          state.last_account_creation = current_time
 
         # register attempt
         with st.spinner():
-          if register_user(username, password, email_address):
+          registration_success = register_user(username, password, email_address)
+          if registration_success:
             st.success('User registered successfully')
+            state.last_account_creation = current_time  # Set the timestamp only upon successful account creation
           else:
             st.error('Registration failed')
 
