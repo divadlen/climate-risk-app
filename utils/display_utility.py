@@ -53,6 +53,7 @@ def pandas_2_AgGrid(df: pd.DataFrame, cellstyle_jscode=None, theme:str='streamli
     reload_data=True,
     allow_unsafe_jscode=True,
     key=key,
+    enable_enterprise_modules=False # 
   )
   return grid_response['data']
 
