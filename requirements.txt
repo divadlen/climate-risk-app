@@ -15,5 +15,5 @@ pydantic_core==2.4.0
 supabase==1.0.4
 
 fuzzywuzzy==0.18.0
-spacy==3.6.0
-https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.6.0/en_core_web_md-3.6.0-py3-none-any.whl
+#spacy==3.6.0
+#https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.6.0/en_core_web_md-3.6.0-py3-none-any.whl
