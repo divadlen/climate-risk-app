@@ -224,12 +224,6 @@ def s1de_Page():
         res_df = st.session_state['s1de_calc_results'] # key: Model name, val: Calculator
         res_df = calculators_2_df(res_df) # convert each k/v to df
 
-        st.write( state.s1de_warnings )
-        st.write( state.s1de_original_dfs )
-        st.write( state.s1de_result_dfs )
-        st.write( state.s1de_calc_results )
-        st.write( res_df )
-
         emissionOverviewPart(df=res_df)
 
         st.write('')

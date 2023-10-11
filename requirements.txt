@@ -4,6 +4,7 @@ streamlit-aggrid==0.3.4.post3
 streamlit-antd-components==0.2.1
 streamlit-authenticator==0.2.2
 streamlit-sortables==0.2.0
+streamlit-extras==0.3.2
 hydralit==1.0.14
 hydralit-components==1.0.10
 
