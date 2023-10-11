@@ -1,13 +1,14 @@
 import streamlit as st
 import hydralit as hy
+from PIL import Image
 
 from app_config import run_app_config
 from utils.utility import get_deep_size, reconcile_theme_config
 
-
+icon = Image.open("./resources/GreenLogo_ico.ico")
 st.set_page_config(
   page_title="Gecko Technologies Emission Calculation Service",
-  page_icon="🧊",
+  page_icon=icon,
   layout="wide",
   initial_sidebar_state="expanded",
   menu_items={
