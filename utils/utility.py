@@ -34,17 +34,19 @@ def set_theme():
             'textColor':"#202d35"  
         }
     
-        image_path = "./resources/BlackShortText_Logo_Horizontal-long.png"
-        if os.path.exists(image_path):
+        watermark_path = "./resources/BlackShortText_Logo_Horizontal-long.png"
+        if os.path.exists(watermark_path):
             st.session_state.watermark_settings = [dict(
-                source= Image.open(image_path),
+                source= Image.open(watermark_path),
                 xref="paper", yref="paper",
                 x=0.98, y=0.02,
                 sizex=0.20, sizey=0.20, opacity= 0.25,
                 xanchor="right", yanchor="bottom"
             )]
         else:
-            st.error(f"File not found: {image_path}")      
+            st.error(f"File not found: {watermark_path}")     
+
+        st.session_state.sidebar_logo_path = "./resources/BlackText_Logo_Horizontal.png"
 
     else:
         st.session_state.theme_colors = {
@@ -53,18 +55,19 @@ def set_theme():
             'secondaryBackgroundColor': '#39393a',
             'textColor': '#ecc0d1'
         }
+        st.session_state.sidebar_logo_path = "./resources/BlackText_Logo_Horizontal.png"
 
-        image_path = "./resources/WhiteShortText_Logo_Horizontal-long.png"
-        if os.path.exists(image_path):
+        watermark_path = "./resources/WhiteShortText_Logo_Horizontal-long.png"
+        if os.path.exists(watermark_path):
             st.session_state.watermark_settings = [dict(
-                source= Image.open(image_path),
+                source= Image.open(watermark_path),
                 xref="paper", yref="paper",
                 x=0.98, y=0.02,
                 sizex=0.20, sizey=0.20, opacity= 0.25,
                 xanchor="right", yanchor="bottom"
             )]
         else:
-            st.error(f"File not found: {image_path}")
+            st.error(f"File not found: {watermark_path}")
 
 
 def reconcile_theme_config():
@@ -284,7 +287,7 @@ def convert_BaseModel(cls, examples:bool=False, return_as_string:bool=True):
     # Add example rows
     for _ in range(5):
       example_row = create_random_row(cls)
-      df = pd.concat([df, pd.DataFrame([example_row])], axis=0)
+      df = pd.concat([df, pd.DataFrame([example_row])], axis=0, ignore_index=True) # ignore index to avoid pandas complaining about all-NA entries concat
 
   # Sort columns according to globals
   df = df[[col for col in COLUMN_SORT_ORDER if col in df.columns]] 
