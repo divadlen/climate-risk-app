@@ -173,6 +173,10 @@ def get_lookup(
         raise e
 
 
+def clamp(n, minn=1, maxn=5):
+  return max(min(maxn, n), minn)
+
+
 @st.cache_data
 def get_dataframe(data):
   return pd.DataFrame(data)

@@ -1,7 +1,8 @@
 import streamlit as st
-from st_aggrid import AgGrid, JsCode, GridUpdateMode
-from st_aggrid.grid_options_builder import GridOptionsBuilder
+from streamlit import session_state as state
+
 import streamlit_antd_components as sac
+from streamlit_elements import elements, mui, html
 
 import numpy as np
 import pandas as pd
@@ -16,7 +17,7 @@ import plotly.express as px
 from utils.globals import SECTOR_TO_CATEGORY_IDX, IDX_TO_CATEGORY_NAME
 from utils.utility import get_dataframe, create_line_simulation
 from utils.display_utility import show_example_form, pandas_2_AgGrid
-from utils.model_df_utility import df_to_calculator, calculator_to_df
+from utils.model_df_utility import df_to_calculator, calculator_to_df, calculators_2_df
 from utils.md_utility import markdown_insert_images
 from utils.model_inferencer import ModelInferencer
 
@@ -38,32 +39,32 @@ def s1de_Page():
     st.session_state['validated_s1sc_warnings'] = []
 
 
-  st.title('Stationary Combustion')
+  st.title('Scope 1: Direct Emissions')
   tab1, tab2, tab3 = st.tabs(['Get Forms/Guidelines', 'Submit & Review', 'Analysis'])
 
   with tab1:
     st.subheader('User Guide')
 
-
-    download_desc = 'Click on the links in Table of Contents to redirect you to the recommended tables to fill. Download the example forms. Each transaction counts as a row.'
-    fill_desc = 'Each form is represented as CSV, each row is one transaction. Example: in "Mobile Combustion" file, each vehicle/machine counts as one row. Details at "More help" and "Visual help"'
-
-    sac.steps(
-      items=[
-        sac.StepsItem(title='Download relevant forms', subtitle='', description=download_desc),
-        sac.StepsItem(title='Fill relevant forms', subtitle='', description=fill_desc),
-        sac.StepsItem(title='Upload relevant forms', subtitle='', description='BB'),
-        sac.StepsItem(title='Validate & submit forms', subtitle='', description='CC'),
-      ], 
-      format_func='title',
-      direction='vertical',
-    )
-    
     with st.expander('Show help', expanded=True):
-      st.markdown("abc")
+      download_desc = 'Click on the links in Table of Contents to redirect you to the recommended tables to fill. Download the example forms. Each transaction counts as a row.'
+      fill_desc = 'Each form is represented as CSV, each row is one transaction. Example: in "Mobile Combustion" file, each vehicle/machine counts as one row. Details at "More help" and "Visual help"'
+      upload_desc = 'In "Submit & Review" tab, drag and drop your csv files in the upload window.'
+      validate_desc = 'In "Submit & Review" tab, go to "Analyze uploads" to verify your uploaded files. From there, our AI validator will simulate the results of your submitted files.'
+
+      sac.steps(
+        items=[
+          sac.StepsItem(title='Download relevant forms', subtitle='', description=download_desc),
+          sac.StepsItem(title='Fill relevant forms', subtitle='', description=fill_desc),
+          sac.StepsItem(title='Upload relevant forms', subtitle='', description=upload_desc),
+          sac.StepsItem(title='Validate & submit forms', subtitle='', description=validate_desc),
+        ], 
+        format_func='title',
+        direction='vertical',
+      )
+    
 
     with st.expander('Visual help'):
-      with open("resources/mds/s3vc_general_guide.md", "r") as gmd:
+      with open("resources/mds/s1sc-general-guide-1.md", "r") as gmd:
         readme = gmd.read()
       readme = markdown_insert_images(readme)
       st.markdown(readme, unsafe_allow_html=True) 
@@ -124,7 +125,7 @@ def s1de_Page():
 
           # Inferencer and df inits
           modinf = ModelInferencer()
-          cache = S3_Lookup_Cache()
+          cache = st.session_state['S1SC_Lookup_Cache']
 
           s1_models = [
             'S1_FugitiveEmission', 'S1_MobileCombustion', 'S1_StationaryCombustion'
@@ -180,12 +181,15 @@ def s1de_Page():
               # update progress bar
               progress_pct = progress_idx / nfiles
               progress_bar.progress(progress_pct)
-              progress_idx += 1
+              progress_idx += 1 
 
 
       with t2:
-        with st.expander('Show help'):
-          st.markdown('Hi')
+        with st.expander('Show help', expanded=False):
+          with open("resources/mds/s1sc-validation-guide-1.md", "r") as gmd:
+            readme = gmd.read()
+          readme = markdown_insert_images(readme) 
+          st.markdown(readme, unsafe_allow_html=True) 
 
         if 's1de_original_dfs' not in st.session_state or st.session_state['s1de_original_dfs'] in [{}]:
           st.info('Please upload at least one valid table at "Upload/Validate" tab to continue')
@@ -193,15 +197,18 @@ def s1de_Page():
         if 's1de_original_dfs' in st.session_state and st.session_state['s1de_original_dfs'] not in [{}]:
           with st.expander('Show uploaded table', expanded=True):
             for name, df in st.session_state['s1de_original_dfs'].items():
-              pandas_2_AgGrid(df, theme='balham', height=300, key=f's1de_og_{name}_aggrid')
+              pandas_2_AgGrid(df.head(20), theme='balham', height=300, key=f's1de_og_{name}_aggrid')
 
-        if 'analyzed_s3vc' not in st.session_state:
+        if 'analyzed_s1de' not in st.session_state:
           st.session_state['analyzed_s1de'] = False
         
-        analyze_button = st.button('Analyze uploaded dataframes', help='Attempts to return calculation results for each row for table. Highly recommended to reupload a validated table before running analysis')
+        analyze_button = st.button('Validate uploaded dataframes', help='Attempts to return calculation results for each row for table.')
         if analyze_button and st.session_state['s1de_original_dfs'] not in [{}]:
           st.session_state['analyzed_s1de'] = True   
-          st.success('Uploaded Scope 3 data tables analyzed!')
+          st.success('Uploaded Scope 1 data tables analyzed!')
+          
+          st.divider()
+          st.subheader('Validation Results')
 
           if all(key in st.session_state for key in ['s1de_warnings', 's1de_original_dfs']) and st.session_state.get('analyzed_s1de', True):
             with st.expander('Show warnings'):
@@ -209,81 +216,170 @@ def s1de_Page():
                 for warn in warnings:
                   st.warning(f'{name}: {warn}')
             
-            for name, df in st.session_state['s1de_result_dfs'].items(): # might not need this
+            for name, df in st.session_state['s1de_result_dfs'].items():
               with st.expander(f'Show table for analyzed **{name}**'):
                 pandas_2_AgGrid(df, theme='balham', height=300, key=f's1de_{name}_aggrid')
 
 
     with tab3:
       st.subheader('Executive Insights')
+      if 's1de_calc_results' not in st.session_state or st.session_state['s1de_calc_results'] == {}:
+        st.error('Nothing to display here. Have you uploaded or analyzed your uploaded files?')
 
       if 's1de_calc_results' in st.session_state and st.session_state['s1de_calc_results'] != {}:
         res_df = st.session_state['s1de_calc_results'] # key: Model name, val: Calculator
         res_df = calculators_2_df(res_df) # convert each k/v to df
 
-        st.write(res_df) # 
+        st.write( state.s1de_warnings )
+        st.write( state.s1de_original_dfs )
+        st.write( state.s1de_result_dfs )
+        st.write( state.s1de_calc_results )
+        st.write( res_df )
+
+        emissionOverviewPart(df=res_df)
+
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+
+
+        
 
 
 
-def calculators_2_df(calculators):
-  """ 
-  calculators: dictionary of calculators
-    Example: 
-    calculators = {
-      'Scope1_MobileCombustion': calculator1,
-      'Scope2_IndirectEmissions': calculator2,
-      # ...
-    }
-  """
-  def get_first_number(d):
-    if isinstance(d, dict):
-      for value in d.values():
-        if isinstance(value, (int, float)):
-          return value
-    return np.nan
 
-  rows = []
-  for name, calculator in calculators.items():
-    scope = name.split('_')[0]  # Assuming the scope is the first part of the name
-    category = name.split('_')[-1]
 
-    if hasattr(calculator, 'calculated_emissions'):
-      for key, value in calculator.calculated_emissions.items():
 
-        # Initialize row
-        row = {
-          'scope': scope,
-          'category': category,
-        }
-        input_data = value.get('input_data', {})
 
-        for k, v in input_data.items():
-          if 'description' not in k.lower() and 'uuid' not in k.lower():
-            row[k] = v
 
-        emission_data = value.get('calculated_emissions', {})
 
-        for k, v in emission_data.items():
-          if isinstance( v, (int, float, str, bool)):
-            row[k] = v
-          elif isinstance( v, (dict)):
-            row[k] = get_first_number(v)
-          elif isinstance( v, list ):
-            try:
-              row[k] = v[0]
-            except:
-              row[k] = {}
-          else:
-            print(f'Column {k} unable to retrieve valid value. {v} as {type(v)}')
 
-        rows.append(row)
-  
-  df = pd.DataFrame(rows)
-  for col in df.columns:
-    if df[col].apply(lambda x: isinstance(x, (dict, list))).any():
-      df[col] = df[col].apply(json.dumps)
 
-  return df
+
+def emissionOverviewPart(df):      
+    from streamlit_extras.metric_cards import style_metric_cards
+    import plotly.graph_objects as go
+
+    def format_metric(value) -> str:
+        import math
+        if value <= 0:
+            return "0 g CO2e"
+        elif value < 1:
+            return f"{value * 1000:.0f} g CO2e"
+        elif value < 1000:  # Less than 1 Ton
+            return f"{value:.2f} Kg CO2e"
+        elif value < 1e6:  # Less than 1 million
+            return f"{value / 1000:.2f} Ton CO2e"
+        elif value < 1e9:  # Less than 1 billion
+            return f"{value / 1e6:.2f}K Ton CO2e"
+        elif value < 1e12:  # Less than 1 trillion
+            return f"{value / 1e9:.2f}M Ton CO2e"
+        elif value < 1e15:  # Less than 1 quadrillion
+            return f"{value / 1e12:.2f}B Ton CO2e"
+        else:
+            exponent = int(math.log10(value))
+            return f"{value / 10**exponent:.2f}e{exponent} Ton CO2e"
+
+    # Global styling
+    style_metric_cards(background_color='#D6D6D6', border_left_color='#28104E', border_radius_px=60)
+
+    c1,c2,c3 = st.columns([1,1,1])
+    with c1: 
+      total_mc = df[df['category_name'] == 'C0: Mobile Combustion']['emission_result'].sum()
+      st.metric(label="Mobile Combustion", value=format_metric(total_mc))
+    with c2:
+      total_sc = df[df['category_name'] == 'C0: Stationary Combustion']['emission_result'].sum()
+      st.metric(label="Stationary Combustion", value=format_metric(total_sc))
+    with c3:
+      total_fe = df[df['category_name'] == 'C0: Fugitive Emission']['emission_result'].sum()
+      st.metric(label="Fugitive Emissions", value=format_metric(total_fe))
+    st.divider()
+
+    st.subheader('Top contributors')
+
+    c1, c2 = st.columns([1, 3])
+    with c1:
+      selected_group = st.selectbox('Select group', options=['fuel_type', 'vehicle_type'])
+
+    # Group DataFrame by selected option, sum, then sort
+    grouped_df = df.groupby(selected_group)['emission_result'].sum().reset_index()
+    sorted_df = grouped_df.sort_values('emission_result', ascending=False)
+    sorted_df['delta'] = round( sorted_df['emission_result'].pct_change(-1).fillna(0) * 100, 2)
+
+    # Limit to top 10 and combine the rest as 'Others'
+    top_10_df = sorted_df.head(10)
+    others_sum = sorted_df.iloc[10:]['emission_result'].sum()
+    others_delta = sorted_df.iloc[9]['emission_result'] - others_sum if len(sorted_df) > 10 else 0
+    others_df = pd.DataFrame({selected_group: ['Others'], 'emission_result': [others_sum], 'delta': [others_delta]})
+    top_10_df = pd.concat([top_10_df, others_df], ignore_index=True)
+
+    with c1:
+      for index, row in top_10_df.head(5).iterrows():
+        st.metric(label=f"{row[selected_group]} Emissions", value=format_metric(row['emission_result']), delta=f"{row['delta']}%")
+
+    # Vertical Bar Chart with Cumulative Sum
+    total_emission = top_10_df['emission_result'].sum()
+    top_10_df['cum_sum'] = top_10_df['emission_result'].cumsum()
+    top_10_df['cum_sum_percent'] = (top_10_df['cum_sum'] / total_emission) * 100
+
+    fig = go.Figure()
+    for index, row in top_10_df.iterrows():
+      fig.add_trace(go.Bar(
+        x=[row[selected_group]],  # x should be a list or array
+        y=[row['emission_result']],  # y should also be a list or array
+        name=str(row[selected_group]),
+        yaxis='y1'
+      ))
+
+    # Cumulative Sum Line
+    fig.add_trace(go.Scatter(
+      x=top_10_df[selected_group],
+      y=top_10_df['cum_sum_percent'],
+      mode='lines+markers',
+      name='Cumulative Sum (%)',
+      yaxis='y2'
+    ))
+
+    # Update layout
+    fig.update_layout(
+      title='',
+      xaxis_title=f'<b>{selected_group}</b>',
+      yaxis=dict(title='<b>Emission Result</b>'),
+      yaxis2=dict(
+        title='<b>Cumulative Sum (%)</b>',
+        overlaying='y',
+        side='right',
+        range=[0, 100]
+      ),
+      height=800,
+      template='google',
+      legend=dict(
+        orientation='h', title=None,
+        x=0.5, y=1, xanchor='center', yanchor='bottom'
+      ),
+      showlegend=True
+    )
+    
+    with c2:
+      st.plotly_chart(fig, use_container_width=True)
+
+          
 
 
 
@@ -327,3 +423,39 @@ analysis_md = """
 """
 
 footer_md = """*(Highlighted columns with <Blank> are optional. Blue column indicates recommended default values)*"""
+
+
+
+
+
+# def MaterialUIPart(df):
+#   """ 
+#   Material UI not supporting streamlit local elements.
+#   """
+#   from streamlit_elements import elements, sync, event
+#   from types import SimpleNamespace
+#   from mui_elements.dashboard import Dashboard
+#   from mui_elements.player import Player
+#   from mui_elements.data_grid import DataGrid
+#   from mui_elements.charting import Pie
+  
+#   if 'w' not in state:
+#     board = Dashboard()
+#     w = SimpleNamespace(
+#       dashboard= board,
+#       player = Player(board, x=1, y=30, w=5, h=5, minW=3, minH=3),
+#       table = DataGrid(board, 1,2,3,4, df=df),
+#       pie = Pie(board, 1,2,3,4, fig=None),
+#     )
+#     state.w = w
+#   else:
+#     w = state.w
+
+
+#   with elements('ABC'):
+#     event.Hotkey("ctrl+s", sync(), bindInputs=True, overrideDefault=True)
+
+#     with w.dashboard(rowHeight=57):
+#       w.player()
+#       w.table()
+#       w.pie()

@@ -22,7 +22,7 @@ class S3C15_Calculator(BaseModel):
             if not isinstance(asset, S3C15_BaseAsset):
                 raise TypeError('Asset not of expected data type. Expect S3C15_BaseAsset.')
                 
-            res = self._calculate_financed_emissions(asset)
+            res = self._calculate_emission_result(asset)
             if res is None:
                 print('Unable to calculate emissions for asset')
                 return
@@ -41,7 +41,7 @@ class S3C15_Calculator(BaseModel):
         self._update_emissions_summary()
             
         
-    def _calculate_financed_emissions(self, asset: S3C15_BaseAsset):
+    def _calculate_emission_result(self, asset: S3C15_BaseAsset):
         if isinstance(asset, (S3C15_1A_ListedEquity)):
             res = calc_S3C15_1A_ListedEquity(asset)
             
@@ -134,21 +134,21 @@ Client only have 1200 chars to make their case in estimation description.
 """
 
 def calc_S3C15_1A_ListedEquity(asset: S3C15_1A_ListedEquity):
-    financed_emissions={}
+    emission_result={}
     data_quality =5
     metadata=[]
 
     f1 = ['attribution_share', 'reported_emissions']
     if all(getattr(asset, field, None) is not None for field in f1):
         reported_emissions_1 = round(asset.attribution_share * asset.reported_emissions, 2)
-        financed_emissions['reported_emissions_1'] = reported_emissions_1
+        emission_result['reported_emissions_1'] = reported_emissions_1
         metadata.append( create_metadata('reported_emissions_1', reported_emissions_1, f1, data_quality) )
 
     f2 = ['outstanding_amount', 'enterprise_value', 'reported_emissions']
     if all(getattr(asset, field, None) is not None for field in f2):
         reported_emissions_2 = round( (asset.outstanding_amount / asset.enterprise_value) * asset.reported_emissions, 2)
         data_quality -= 1
-        financed_emissions['reported_emissions_2'] = reported_emissions_2
+        emission_result['reported_emissions_2'] = reported_emissions_2
         metadata.append( create_metadata('reported_emissions_2', reported_emissions_2, f2, data_quality) )
 
     # When you must estimate emissions
@@ -156,14 +156,14 @@ def calc_S3C15_1A_ListedEquity(asset: S3C15_1A_ListedEquity):
         ef1 = ['estimated_emissions']
         if all(getattr(asset, field, None) is not None for field in ef1):
             estimated_emissions = asset.estimated_emissions
-            financed_emissions['estimated_emissions'] = estimated_emissions
+            emission_result['estimated_emissions'] = estimated_emissions
             metadata.append( create_metadata('estimated_emissions', estimated_emissions, ef1, data_quality) )
 
-    return {'financed_emissions': financed_emissions, 'data_quality': data_quality, 'metadata': metadata}
+    return {'emission_result': emission_result, 'data_quality': data_quality, 'metadata': metadata}
 
 
 def calc_S3C15_1B_1C(asset: Union[S3C15_1B_UnlistedEquity, S3C15_1C_CorporateBonds]):
-    financed_emissions={}
+    emission_result={}
     data_quality=5
     metadata=[]
     
@@ -171,7 +171,7 @@ def calc_S3C15_1B_1C(asset: Union[S3C15_1B_UnlistedEquity, S3C15_1C_CorporateBon
     if all(getattr(asset, field, None) is not None for field in f1):
         reported_emissions_1 = round(asset.attribution_share * asset.reported_emissions, 2)
         
-        financed_emissions['reported_emissions_1'] = reported_emissions_1
+        emission_result['reported_emissions_1'] = reported_emissions_1
         metadata.append( create_metadata('reported_emissions_1', reported_emissions_1, f1, data_quality) )
 
     f2 = ['outstanding_amount', 'total_equity', 'total_debt', 'reported_emissions']
@@ -180,7 +180,7 @@ def calc_S3C15_1B_1C(asset: Union[S3C15_1B_UnlistedEquity, S3C15_1C_CorporateBon
         reported_emissions_2 = round( (asset.outstanding_amount / EV) * asset.reported_emissions, 2)
         data_quality -= 1
         
-        financed_emissions['reported_emissions_2'] = reported_emissions_2
+        emission_result['reported_emissions_2'] = reported_emissions_2
         metadata.append( create_metadata('reported_emissions_2', reported_emissions_2, f2, data_quality) )
 
     # When you must estimate emissions
@@ -188,14 +188,14 @@ def calc_S3C15_1B_1C(asset: Union[S3C15_1B_UnlistedEquity, S3C15_1C_CorporateBon
         ef1 = ['estimated_emissions']
         if all(getattr(asset, field, None) is not None for field in ef1):
             estimated_emissions = asset.estimated_emissions
-            financed_emissions['estimated_emissions'] = estimated_emissions
+            emission_result['estimated_emissions'] = estimated_emissions
             metadata.append( create_metadata('estimated_emissions', estimated_emissions, ef1, data_quality) )
         
-    return {'financed_emissions': financed_emissions, 'data_quality': data_quality, 'metadata': metadata}
+    return {'emission_result': emission_result, 'data_quality': data_quality, 'metadata': metadata}
 
 
 def calc_S3C15_1D_BusinessLoans(asset: S3C15_BaseAsset):
-    financed_emissions={}
+    emission_result={}
     data_quality=5
     metadata=[]
     
@@ -203,7 +203,7 @@ def calc_S3C15_1D_BusinessLoans(asset: S3C15_BaseAsset):
     if all(getattr(asset, field, None) is not None for field in f1):
         reported_emissions_1 = round(asset.attribution_share * asset.reported_emissions, 2)
         
-        financed_emissions['reported_emissions_1'] = reported_emissions_1
+        emission_result['reported_emissions_1'] = reported_emissions_1
         metadata.append( create_metadata('reported_emissions_1', reported_emissions_1, f1, data_quality) )
 
     if asset.is_listed == False:
@@ -213,7 +213,7 @@ def calc_S3C15_1D_BusinessLoans(asset: S3C15_BaseAsset):
             reported_emissions_2 = round( (asset.outstanding_amount / EV) * asset.reported_emissions, 2)
             data_quality -= 1
             
-            financed_emissions['reported_emissions_2'] = reported_emissions_2
+            emission_result['reported_emissions_2'] = reported_emissions_2
             metadata.append( create_metadata('reported_emissions_2', reported_emissions_2, f2, data_quality) )
             
     elif asset.is_listed == True:
@@ -222,7 +222,7 @@ def calc_S3C15_1D_BusinessLoans(asset: S3C15_BaseAsset):
             reported_emissions_2 = round( (asset.outstanding_amount / asset.enterprise_value) * asset.reported_emissions, 2)
             data_quality -= 1
       
-            financed_emissions['reported_emissions_2'] = reported_emissions_2
+            emission_result['reported_emissions_2'] = reported_emissions_2
             metadata.append( create_metadata('reported_emissions_2', reported_emissions_2, f2, data_quality) )
 
     # When you must estimate emissions
@@ -230,14 +230,14 @@ def calc_S3C15_1D_BusinessLoans(asset: S3C15_BaseAsset):
         ef1 = ['estimated_emissions']
         if all(getattr(asset, field, None) is not None for field in ef1):
             estimated_emissions = asset.estimated_emissions
-            financed_emissions['estimated_emissions'] = estimated_emissions
+            emission_result['estimated_emissions'] = estimated_emissions
             metadata.append( create_metadata('estimated_emissions', estimated_emissions, ef1, data_quality) )
 
-    return {'financed_emissions': financed_emissions, 'data_quality': data_quality, 'metadata': metadata}
+    return {'emission_result': emission_result, 'data_quality': data_quality, 'metadata': metadata}
 
 
 def calc_S3C15_1E_2A(asset: S3C15_BaseAsset):
-    financed_emissions={}
+    emission_result={}
     data_quality=5
     metadata=[]
     
@@ -245,7 +245,7 @@ def calc_S3C15_1E_2A(asset: S3C15_BaseAsset):
     if all(getattr(asset, field, None) is not None for field in f1):
         reported_emissions_1 = round(asset.attribution_share * asset.reported_emissions, 2)
         
-        financed_emissions['reported_emissions_1'] = reported_emissions_1
+        emission_result['reported_emissions_1'] = reported_emissions_1
         metadata.append( create_metadata('reported_emissions_1', reported_emissions_1, f1, data_quality) )
         
     f2 = ['outstanding_amount', 'property_value', 'reported_emissions']
@@ -256,7 +256,7 @@ def calc_S3C15_1E_2A(asset: S3C15_BaseAsset):
         if asset.value_at_origin == True:
             data_quality -= 0.5
             
-        financed_emissions['reported_emissions_2'] = reported_emissions_2
+        emission_result['reported_emissions_2'] = reported_emissions_2
         metadata.append( create_metadata('reported_emissions_2', reported_emissions_2, f2, data_quality) )
         
     f3 = ['building_energy_use', 'building_emission_factor', 'reported_emissions', 'outstanding_amount', 'property_value']
@@ -265,7 +265,7 @@ def calc_S3C15_1E_2A(asset: S3C15_BaseAsset):
         physical_emissions = round( (asset.outstanding_amount / asset.property_value) * building_emissions, 2)
         data_quality -= 2
         
-        financed_emissions['physical_emissions'] = physical_emissions
+        emission_result['physical_emissions'] = physical_emissions
         metadata.append( create_metadata('physical_emissions', physical_emissions, f3, data_quality) )
 
     # When you must estimate emissions
@@ -273,14 +273,14 @@ def calc_S3C15_1E_2A(asset: S3C15_BaseAsset):
         ef1 = ['estimated_emissions']
         if all(getattr(asset, field, None) is not None for field in ef1):
             estimated_emissions = asset.estimated_emissions
-            financed_emissions['estimated_emissions'] = estimated_emissions
+            emission_result['estimated_emissions'] = estimated_emissions
             metadata.append( create_metadata('estimated_emissions', estimated_emissions, ef1, data_quality) )
     
-    return {'financed_emissions': financed_emissions, 'data_quality': data_quality, 'metadata': metadata}
+    return {'emission_result': emission_result, 'data_quality': data_quality, 'metadata': metadata}
 
 
 def calc_S3C15_2B_VehicleLoans(asset: S3C15_BaseAsset):
-    financed_emissions={}
+    emission_result={}
     data_quality=5
     metadata=[]
     
@@ -288,7 +288,7 @@ def calc_S3C15_2B_VehicleLoans(asset: S3C15_BaseAsset):
     if all(getattr(asset, field, None) is not None for field in f1):
         reported_emissions_1 = round(asset.attribution_share * asset.reported_emissions, 2)
         
-        financed_emissions['reported_emissions_1'] = reported_emissions_1
+        emission_result['reported_emissions_1'] = reported_emissions_1
         metadata.append( create_metadata('reported_emissions_1', reported_emissions_1, f1, data_quality) )
         
     f2 = ['outstanding_amount', 'vehicle_value', 'reported_emissions']
@@ -299,7 +299,7 @@ def calc_S3C15_2B_VehicleLoans(asset: S3C15_BaseAsset):
         if asset.value_at_origin == True:
             data_quality -= 0.5
         
-        financed_emissions['reported_emissions_2'] = reported_emissions_2
+        emission_result['reported_emissions_2'] = reported_emissions_2
         metadata.append( create_metadata('reported_emissions_2', reported_emissions_2, f2, data_quality) )      
             
     f3 = ['distance_traveled', 'distance_emission_factor', 'reported_emissions', 'outstanding_amount', 'vehicle_value']
@@ -308,7 +308,7 @@ def calc_S3C15_2B_VehicleLoans(asset: S3C15_BaseAsset):
         physical_emissions = round( (asset.outstanding_amount / asset.vehicle_value) * vehicle_emissions, 2)
         data_quality -= 2
         
-        financed_emissions['physical_emissions'] = physical_emissions
+        emission_result['physical_emissions'] = physical_emissions
         metadata.append( create_metadata('physical_emissions', physical_emissions, f3, data_quality) )
     
     # When you must estimate emissions
@@ -316,14 +316,14 @@ def calc_S3C15_2B_VehicleLoans(asset: S3C15_BaseAsset):
         ef1 = ['estimated_emissions']
         if all(getattr(asset, field, None) is not None for field in ef1):
             estimated_emissions = asset.estimated_emissions
-            financed_emissions['estimated_emissions'] = estimated_emissions
+            emission_result['estimated_emissions'] = estimated_emissions
             metadata.append( create_metadata('estimated_emissions', estimated_emissions, ef1, data_quality) )
 
-    return {'financed_emissions': financed_emissions, 'data_quality': data_quality, 'metadata': metadata}
+    return {'emission_result': emission_result, 'data_quality': data_quality, 'metadata': metadata}
 
     
 def calc_S3C15_3_ProjectFinance(asset: S3C15_BaseAsset):
-    financed_emissions={}
+    emission_result={}
     data_quality=5
     metadata=[]
     
@@ -331,7 +331,7 @@ def calc_S3C15_3_ProjectFinance(asset: S3C15_BaseAsset):
     if all(getattr(asset, field, None) is not None for field in f1):
         reported_emissions_1 = round(asset.attribution_share * asset.project_emissions, 2)
         
-        financed_emissions['reported_emissions_1'] = reported_emissions_1
+        emission_result['reported_emissions_1'] = reported_emissions_1
         metadata.append( create_metadata('reported_emissions_1', reported_emissions_1, f1, data_quality) )
         
     f2 = ['outstanding_amount', 'total_equity', 'total_debt', 'project_emissions']
@@ -340,7 +340,7 @@ def calc_S3C15_3_ProjectFinance(asset: S3C15_BaseAsset):
         reported_emissions_2 = round( (asset.outstanding_amount / EV) * asset.project_emissions, 2)
         data_quality -= 1
         
-        financed_emissions['reported_emissions_2'] = reported_emissions_2
+        emission_result['reported_emissions_2'] = reported_emissions_2
         metadata.append( create_metadata('reported_emissions_2', reported_emissions_2, f2, data_quality) )
 
     # When you must estimate emissions
@@ -348,10 +348,10 @@ def calc_S3C15_3_ProjectFinance(asset: S3C15_BaseAsset):
         ef1 = ['estimated_emissions']
         if all(getattr(asset, field, None) is not None for field in ef1):
             estimated_emissions = asset.estimated_emissions
-            financed_emissions['estimated_emissions'] = estimated_emissions
+            emission_result['estimated_emissions'] = estimated_emissions
             metadata.append( create_metadata('estimated_emissions', estimated_emissions, ef1, data_quality) )
         
-    return {'financed_emissions': financed_emissions, 'data_quality': data_quality, 'metadata': metadata}
+    return {'emission_result': emission_result, 'data_quality': data_quality, 'metadata': metadata}
 
 
 def calc_S3C15_4_EmissionRemovals(asset: S3C15_BaseAsset):
@@ -386,7 +386,7 @@ def calc_S3C15_4_EmissionRemovals(asset: S3C15_BaseAsset):
 
 
 def calc_S3C15_5_SovereignDebt(asset: S3C15_BaseAsset):
-    financed_emissions={}
+    emission_result={}
     data_quality=5
     metadata=[]
     
@@ -394,7 +394,7 @@ def calc_S3C15_5_SovereignDebt(asset: S3C15_BaseAsset):
     if all(getattr(asset, field, None) is not None for field in f1):
         reported_emissions_1 = round(asset.attribution_share * asset.reported_emissions, 2)
         
-        financed_emissions['reported_emissions_1'] = reported_emissions_1
+        emission_result['reported_emissions_1'] = reported_emissions_1
         metadata.append( create_metadata('reported_emissions_1', reported_emissions_1, f1, data_quality) )
          
     f2 = ['outstanding_amount', 'PPP_adj_GDP', 'reported_emissions']
@@ -402,7 +402,7 @@ def calc_S3C15_5_SovereignDebt(asset: S3C15_BaseAsset):
         reported_emissions_2 = round( (asset.outstanding_amount / asset.PPP_adj_GDP) * asset.reported_emissions, 2)
         data_quality -=1
         
-        financed_emissions['reported_emissions_2'] = reported_emissions_2
+        emission_result['reported_emissions_2'] = reported_emissions_2
         metadata.append( create_metadata('reported_emissions_2', reported_emissions_2, f2, data_quality) )
 
     f3 = ['attribution_share', 'consumption_emissions']
@@ -410,7 +410,7 @@ def calc_S3C15_5_SovereignDebt(asset: S3C15_BaseAsset):
         physical_emissions = round(asset.attribution_share * asset.consumption_emissions, 2)
         data_quality -= 2
         
-        financed_emissions['physical_emissions'] = physical_emissions
+        emission_result['physical_emissions'] = physical_emissions
         metadata.append( create_metadata('physical_emissions', physical_emissions, f3, data_quality) )
 
     # When you must estimate emissions
@@ -418,10 +418,10 @@ def calc_S3C15_5_SovereignDebt(asset: S3C15_BaseAsset):
         ef1 = ['estimated_emissions']
         if all(getattr(asset, field, None) is not None for field in ef1):
             estimated_emissions = asset.estimated_emissions
-            financed_emissions['estimated_emissions'] = estimated_emissions
+            emission_result['estimated_emissions'] = estimated_emissions
             metadata.append( create_metadata('estimated_emissions', estimated_emissions, ef1, data_quality) )
 
-    return {'financed_emissions': financed_emissions, 'data_quality': data_quality, 'metadata': metadata}
+    return {'emission_result': emission_result, 'data_quality': data_quality, 'metadata': metadata}
 
 
 #--

@@ -44,5 +44,7 @@ def markdown_insert_images(markdown):
         image_path = image[2]
         if os.path.exists(image_path):
             markdown = markdown.replace(image_markdown, img_to_html(image_path, image_alt))
-    return markdown
 
+    # Add two newlines before each image HTML to ensure it's treated as a separate block
+    markdown = re.sub(r'(<img [^>]*>)', r'\n\n\1', markdown)
+    return markdown

@@ -15,8 +15,8 @@ def run_app_config():
     st.session_state.watermark_settings = [dict(
       source= Image.open("./resources/BlackShortText_Logo_Horizontal-long.png"),
       xref="paper", yref="paper",
-      x=0.98, y=0.02,
-      sizex=0.20, sizey=0.20, opacity= 0.25,
+      x=0.985, y=0.015,
+      sizex=0.012, sizey=0.012, opacity= 0.15,
       xanchor="right", yanchor="bottom"
   )]
 

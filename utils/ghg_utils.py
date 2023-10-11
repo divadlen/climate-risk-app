@@ -33,9 +33,10 @@ def get_relevant_factors(factors, unit:str):
                         relevant_factors[chemical_name] = value
                         break           
         return relevant_factors
-    except:
-        print(f"Unable to retrive relevant factors from {factors}")
-        return None
+    
+    except Exception as e:
+        print(f"Unable to retrive relevant factors from {factors}. Error: {e}")
+        return {}
 
 
 def calculate_co2e(relevant_factors:dict, unit_value:float, unit_of_interest:str=None, gwp:dict=None):

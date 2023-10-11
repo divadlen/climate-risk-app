@@ -1,0 +1,1 @@
+    ![Uploaded file preview](resources/imgs/s1sc-validation-guide-1.JPG)

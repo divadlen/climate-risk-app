@@ -1,5 +1,6 @@
 .streamlit/secrets.toml
 notebooks/
+mui_elements/
 
 # Environments
 .env

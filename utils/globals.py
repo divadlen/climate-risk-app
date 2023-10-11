@@ -69,7 +69,7 @@ COLUMN_SORT_ORDER = [
   'floor_area', 'area_unit', 'building_energy_use', 'building_emission_factor', 'year_constructed',
 
   # waste descriptions
-  'waste_type', 'waste_quantity', 'waste_state', 'waste_unit', 'waste_treatment_method', 'waste_treatment_provider'
+  'waste_type', 'waste_quantity', 'waste_state', 'waste_unit', 'waste_treatment_method', 'waste_treatment_provider',
 
   # finances
   'currency', 'outstanding_amount', 'enterprise_value', 'total_equity', 'total_debt', 'total_government_debt', 'PPP_adj_GDP', 'property_value', 'value_at_origin', 
@@ -140,9 +140,13 @@ class ColorDiscrete:
   nhk_jp = ['#E60012', '#579D1C', '#4B1E66', '#1B255E', '#1E4896', '#00A0E9', '#009944', '#6CBB5A', '#D1C000', '#E39800']
   abc_aus = ['#E14100', '#008C45', '#00AEEF', '#7600A1', '#80C342', '#005BB5', '#93C6E0', '#F15A29', '#DF7C00', '#00B5E2']
 
+  bj3 = ['#004457', '#db8b00', '#570044']
+  bj7 = ['#5555cb','#978cd7','#a6a6a6','#6f6f6f','#b2a9dc','#d6d6d6','#30309c']
+  bj7_v2 = ['#916081','#570044','#6f6f6f','#a1a1a1','#c9b7c3','#d6d6d6','#ad8ba1']
+
   gecko7 = ['#004457', '#567583', '#9baab1', '#B5C0CB', '#b8e8e3', '#83ede3', '#05f1e3']
   gecko5 = ['#004457', '#798f9a', '#B5C0CB', '#a0ebe3', '#05f1e3']
-  gecko3 = ['#004457', '#798f9a', '#05f1e3']
+  gecko3 = ["#004457", "#4F8CBD", "#05eaf1"]
 
   gecko_v1 = [
     '#00989d', '#ffa500', 

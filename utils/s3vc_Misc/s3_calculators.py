@@ -695,17 +695,6 @@ def calc_S3C14_Franchise(data: S3C14_Franchise, cache):
     total_co2e = 0
     physical_available = False 
 
-    # f1 = ['country', 'state', 'electric_use']  
-    # if all(getattr(data, field, None) is not None for field in f1): 
-    #     TABLE = 's2ie_gef'
-    #     factors = cache.get_grid_emission_factors(table=TABLE, country=data.country, state=data.state)
-    #     relevant_factors =  get_relevant_factors(factors, unit='kwh')
-    #     co2e = calculate_co2e(relevant_factors, unit_value=data.electric_use)
-        
-    #     physical_available = True
-    #     fields += f1
-    #     total_co2e += co2e
-
     if getattr(data, 'electric_use', None) is not None:
         # Step 1: Check for grid_emission_factor
         grid_emission_factor = getattr(data, 'grid_emission_factor', None)

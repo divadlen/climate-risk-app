@@ -3,3 +3,5 @@ streamlit-aggrid
 
 stqdm
 streamlit-authenticator
+
+streamlit_antd_components

@@ -3,6 +3,7 @@ import numpy as np
 from collections import Counter
 
 from utils.s1de_Misc.s1_models import *
+from utils.s2ie_Misc.s2_models import *
 from utils.s3vc_Misc.s3_models import *
 from utils.s3vc_Misc.s3c15_models import *
 
@@ -14,6 +15,9 @@ class ModelInferencer:
             'S1_FugitiveEmission': S1_FugitiveEmission,
             'S1_MobileCombustion': S1_MobileCombustion,
             'S1_StationaryCombustion': S1_StationaryCombustion,
+
+            #S2
+            'S2_PurchasedPower': S2_PurchasedPower,
 
             # S3 Non C15
             'S3C1_PurchasedGoods': S3C1_PurchasedGoods,

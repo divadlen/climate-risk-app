@@ -41,62 +41,25 @@ def legend_settings_dark(orientation='v', max_per_row=7):
 # Theme config
 #---
 def initialize_plotly_themes():
-    pio.templates["gecko7"] = go.layout.Template(
-        layout={
-            'colorway': ColorDiscrete.gecko7,
-            'plot_bgcolor': 'rgba(0,0,0,0)',
-            'paper_bgcolor': 'rgba(0,0,0,0)',
-            'xaxis': {'gridcolor': 'grey'},
-            'yaxis': {'gridcolor': 'grey'},
-        }
-    )
+    common_layout = {
+        'plot_bgcolor': 'rgba(0,0,0,0)',
+        'paper_bgcolor': 'rgba(0,0,0,0)',
+        'xaxis': {'gridcolor': 'grey'},
+        'yaxis': {'gridcolor': 'grey'},
+    }
 
-    pio.templates["gecko5"] = go.layout.Template(
-        layout={
-            'colorway': ColorDiscrete.gecko5,
-            'plot_bgcolor': 'rgba(0,0,0,0)',
-            'paper_bgcolor': 'rgba(0,0,0,0)',
-            'xaxis': {'gridcolor': 'grey'},
-            'yaxis': {'gridcolor': 'grey'},
-        }
-    )
-    pio.templates["gecko3"] = go.layout.Template(
-        layout={
-            'colorway': ColorDiscrete.gecko3,
-            'plot_bgcolor': 'rgba(0,0,0,0)',
-            'paper_bgcolor': 'rgba(0,0,0,0)',
-            'xaxis': {'gridcolor': 'grey'},
-            'yaxis': {'gridcolor': 'grey'},
-        }
-    )
-    pio.templates["google"] = go.layout.Template(
-        layout={
-            'colorway': ColorDiscrete.google,
-            'plot_bgcolor': 'rgba(0,0,0,0)',
-            'paper_bgcolor': 'rgba(0,0,0,0)',
-            'xaxis': {'gridcolor': 'grey'},
-            'yaxis': {'gridcolor': 'grey'},
-        }
-    )
-    pio.templates["gecko_v1"] = go.layout.Template(
-        layout={
-            'colorway': ColorDiscrete.gecko_v1,
-            'plot_bgcolor': 'rgba(0,0,0,0)',
-            'paper_bgcolor': 'rgba(0,0,0,0)',
-            'xaxis': {'gridcolor': 'grey'},
-            'yaxis': {'gridcolor': 'grey'},
-        }
-    )
-    pio.templates["gecko_v2"] = go.layout.Template(
-        layout={
-            'colorway': ColorDiscrete.gecko_v2,
-            'plot_bgcolor': 'rgba(0,0,0,0)',
-            'paper_bgcolor': 'rgba(0,0,0,0)',
-            'xaxis': {'gridcolor': 'grey'},
-            'yaxis': {'gridcolor': 'grey'},
-        }
-    )
-
+    for name in dir(ColorDiscrete):
+        if not name.startswith("__"):  # Skip built-in attributes
+            color = getattr(ColorDiscrete, name)
+            try:
+                pio.templates[name] = go.layout.Template(
+                    layout={
+                        **common_layout,
+                        'colorway': color
+                    }
+                )
+            except Exception as e:
+                print(f"Failed to set colorway for {name}: {e}")
 
 #---
 # Helper
@@ -241,22 +204,27 @@ def make_donut_chart(
         labels=grouped_data[group_col],
         values=grouped_data[value_col],
         hole=hole,
+
         customdata=grouped_data['percent'],
         textinfo='label+percent',
+        textfont_size=15,
         insidetextorientation='horizontal',
-        # texttemplate="<b>%{label}</b>:<br>%{value:.2f}<br>%{customdata:.2f}%",
         texttemplate="<br>%{value:.2f}<br>%{customdata:.2f}%",
-        sort=False,
+        sort=True,
+        direction="clockwise",
+        hovertemplate="%{label} = %{value} (%{percent})",
     )])
     
     # Update layout
     fig.update_layout(
         title=title,
         title_x=0.5,
+        title_font_size=15,
         height=height,
         width=width,
-        annotations=[dict(text=center_text, x=0.5, y=0.5, font_size=14, showarrow=False)], 
+        annotations=[dict(text=center_text, x=0.5, y=0.5, font_size=15, showarrow=False)], 
     )
+    fig.update_traces()
     if theme:
         fig.update_layout(template=theme)
     if watermark:
@@ -266,7 +234,7 @@ def make_donut_chart(
     if legend_dark:
         fig.update_layout(legend = legend_settings_dark())
     if horizontal_legend:
-        fig.update_layout(title_y=1, legend=dict(orientation='h', x=0.5, y=1, xanchor='center', yanchor='bottom'))
+        fig.update_layout(title_y=1, legend=dict(orientation='h', x=0.5, y=-0.05, xanchor='center', yanchor='top'))
 
     return fig
 

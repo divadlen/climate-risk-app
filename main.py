@@ -100,51 +100,25 @@ def run_app():
     from apps.logout import logoutPage
     logoutPage()
 
-  # @app.addapp(title='Risk Heatmap')
-  # def heatmapApp():
-  #   from apps.heatmap import heatmapPage
-  #   heatmapPage()
-
-  # @app.addapp(title='Graph connect')
-  # def barfiApp():
-  #   from apps.barfi import barfiPage
-  #   barfiPage()
-
   @app.addapp(title='Scope 1: Direct Emissions')
   def s1deApp():
     from apps.s1de_page import s1de_Page
     s1de_Page()
 
-  # @app.addapp(title='Scope 1: Stationary Combustion')
-  # def s1scApp():
-  #   from apps.s1sc_page import s1sc_Page
-  #   s1sc_Page()
-
-  # @app.addapp(title='Scope 1: Mobile Combustion')
-  # def s1mcApp():
-  #   from apps.s1mc_page import s1mc_Page
-  #   s1mc_Page()
-
   @app.addapp(title='Scope 2: Indirect Emissions')
   def s2ieApp():
-    from apps.s2ie_page import s2ie_Page
-    s2ie_Page()
+    from apps.s2ie_page import s2ie_Page_v2
+    s2ie_Page_v2()
 
   @app.addapp(title='Scope 3: Value Chain')
   def s3vcApp():
     from apps.s3vc_page import s3vc_Page
     s3vc_Page()
 
-
   @app.addapp(title='Overall Dashboard')
   def main_dash():
     from apps.main_dash import main_dash_Page
     main_dash_Page()
-
-  # @app.addapp(title='Dash V1')
-  # def dashApp_v1():
-  #   from apps.dash_v1 import dash_Page_v1
-  #   dash_Page_v1()
 
 
     

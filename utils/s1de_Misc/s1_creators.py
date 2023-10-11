@@ -1,10 +1,4 @@
-import pandas as pd
-from pydantic import BaseModel, Field
-from typing import Optional, Dict, Union, Tuple, ClassVar, Any
-
-from utils.globals import LOCATION_ABBRV
-from utils.utility import find_closest_category, supabase_query_v2
-from utils.geolocator import GeoLocator
+from utils.utility import find_closest_category
 from utils.s1de_Misc.s1_models import *
 
 

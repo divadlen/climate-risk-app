@@ -1,6 +1,8 @@
 import streamlit as st
+from streamlit import session_state as state
 from st_aggrid import AgGrid, JsCode, GridUpdateMode
 from st_aggrid.grid_options_builder import GridOptionsBuilder
+import streamlit_antd_components as sac
 
 import numpy as np
 import pandas as pd
@@ -14,7 +16,7 @@ import plotly.express as px
 from utils.globals import SECTOR_TO_CATEGORY_IDX, IDX_TO_CATEGORY_NAME
 from utils.utility import get_dataframe, create_line_simulation
 from utils.display_utility import show_example_form, pandas_2_AgGrid
-from utils.model_df_utility import df_to_calculator, calculator_to_df
+from utils.model_df_utility import df_to_calculator, calculator_to_df, calculators_2_df
 from utils.md_utility import markdown_insert_images
 from utils.model_inferencer import ModelInferencer
 
@@ -30,22 +32,28 @@ from utils.charting import initialize_plotly_themes \
 
 
 def s3vc_Page(): 
+  if 'geolocator' not in state:
+    state['geolocator'] = GeoLocator()
+  if 'S3VC_Lookup_Cache' not in state:
+    state['S3VC_Lookup_Cache'] = S3_Lookup_Cache()
+
+
   st.title('Scope 3: Value Chain')  
-  if not st.session_state.get('s3_settings'):
+  if not state.get('s3_settings'):
     with st.form(key='scope_3_config'):
       valid_sectors = list(SECTOR_TO_CATEGORY_IDX.keys())
       sector = st.selectbox('Select Sector', options=valid_sectors)
       
       if st.form_submit_button('Confirm settings'):
         with st.spinner():
-          st.session_state["s3_settings"] = True
-          st.session_state['s3_sector'] = sector
+          state["s3_settings"] = True
+          state['s3_sector'] = sector
           st.experimental_rerun()
 
 
-  if 's3_settings' in st.session_state and st.session_state['s3_settings'] == True:
+  if 's3_settings' in state and state['s3_settings'] == True:
     tab1, tab2, tab3, tab4 = st.tabs(['Settings', 'Get Forms/Guidelines', 'Submit & Review', 'Analysis'])
-    applicable_indices = SECTOR_TO_CATEGORY_IDX.get(st.session_state['s3_sector'], None)
+    applicable_indices = SECTOR_TO_CATEGORY_IDX.get(state['s3_sector'], None)
     
     try:
       sorted_applicable_indices = sorted(list(set(applicable_indices)))
@@ -56,7 +64,7 @@ def s3vc_Page():
 
     with tab1:
       with st.form(key='scope_3_reset'):
-        st.success(f"Current sector: {st.session_state['s3_sector']}")
+        st.success(f"Current sector: {state['s3_sector']}")
         st.info(f'Highighted rows indicate the *recommended* scopes to be covered by industry. Navigate to **Get Forms/Guidelines** or **Submit & Review** to get started!')
 
         df = pd.DataFrame({
@@ -81,7 +89,7 @@ def s3vc_Page():
         pandas_2_AgGrid(df, cellstyle_jscode=cellstyle_jscode, height=None, pagination=None)
 
         if st.form_submit_button('Reset settings'):
-          del st.session_state['s3_settings']
+          del state['s3_settings']
           st.experimental_rerun() 
 
 
@@ -90,7 +98,21 @@ def s3vc_Page():
       
       st.subheader('User Guide')
       with st.expander('Show help', expanded=True):
-        st.markdown(general_guide_md)
+        download_desc = 'Click on the links in Table of Contents to redirect you to the recommended tables to fill. Download the example forms. Each transaction counts as a row.'
+        fill_desc = 'Each form is represented as CSV, each row is one transaction. Example 1: in "S3C15_ListedEquity" file, each holding company counts as one row. Example 2: In "S3C7_EmployeeCommute", each employee journey counts as one row (If employee uses multiple transport method, submit multiple rows for the same employee). Details at "More help" and "Visual help"'
+        upload_desc = 'In "Submit & Review" tab, drag and drop your csv files in the upload window.'
+        validate_desc = 'In "Submit & Review" tab, go to "Analyze uploads" to verify your uploaded files. From there, our AI validator will simulate the results of your submitted files.'
+
+        sac.steps(
+          items=[
+            sac.StepsItem(title='Download relevant forms', subtitle='', description=download_desc),
+            sac.StepsItem(title='Fill relevant forms', subtitle='', description=fill_desc),
+            sac.StepsItem(title='Upload relevant forms', subtitle='', description=upload_desc),
+            sac.StepsItem(title='Validate & submit forms', subtitle='', description=validate_desc),
+          ], 
+          format_func='title',
+          direction='vertical',
+        )
 
       with st.expander('Visual help'):
         with open("resources/mds/s3vc_general_guide.md", "r") as gmd:
@@ -207,15 +229,15 @@ def s3vc_Page():
 
           if st.form_submit_button('Upload'):
             # reset everything if button is clicked
-            st.session_state['s3vc_original_dfs'] = {}
-            st.session_state['s3vc_result_dfs'] = {}
-            st.session_state['s3vc_warnings'] = {}
-            st.session_state['s3vc_calc_results'] = {}
+            state['s3vc_original_dfs'] = {}
+            state['s3vc_result_dfs'] = {}
+            state['s3vc_warnings'] = {}
+            state['s3vc_calc_results'] = {}
 
             # Inferencer and df inits
             modinf = ModelInferencer()
-            gl = GeoLocator()
-            cache = S3_Lookup_Cache()
+            gl = state['geolocator']
+            cache = state['S3VC_Lookup_Cache']
 
             s1_models = [
               'S1_FugitiveEmission', 'S1_MobileCombustion', 'S1_StationaryCombustion'
@@ -290,11 +312,11 @@ def s3vc_Page():
                   result_df = calculator_to_df(calc)
 
                   if len(warning_list) > 0:
-                    st.session_state['s3vc_warnings'][model_name] = warning_list
+                    state['s3vc_warnings'][model_name] = warning_list
 
-                  st.session_state['s3vc_original_dfs'][model_name] = df
-                  st.session_state['s3vc_result_dfs'][model_name] = result_df
-                  st.session_state['s3vc_calc_results'][model_name] = calc
+                  state['s3vc_original_dfs'][model_name] = df
+                  state['s3vc_result_dfs'][model_name] = result_df
+                  state['s3vc_calc_results'][model_name] = calc
                 
                 except Exception as e:
                   raise
@@ -305,10 +327,10 @@ def s3vc_Page():
                 progress_idx += 1
 
         #-Show uploaded dfs-#
-        if st.session_state['s3vc_original_dfs'] not in [{}]:
+        if state['s3vc_original_dfs'] not in [{}]:
           st.subheader('Review uploaded files')
 
-          for name, df in st.session_state['s3vc_original_dfs'].items(): # works
+          for name, df in state['s3vc_original_dfs'].items(): # works
             if len(df) > 0:
               with st.expander(f'Show uploaded table ({name})'):
                 pandas_2_AgGrid(df, theme='balham', key=f's3_{name}_aggrid')
@@ -320,81 +342,64 @@ def s3vc_Page():
         with st.expander('Show help'):
           st.markdown('Hi')
 
-        if 's3vc_original_dfs' not in st.session_state or st.session_state['s3vc_original_dfs'] in [{}]:
+        if 's3vc_original_dfs' not in state or state['s3vc_original_dfs'] in [{}]:
           st.info('Please upload at least one valid table at "Upload/Validate" tab to continue')
 
-        if 's3vc_original_dfs' in st.session_state and st.session_state['s3vc_original_dfs'] not in [{}]:
+        if 's3vc_original_dfs' in state and state['s3vc_original_dfs'] not in [{}]:
           with st.expander('Show uploaded table', expanded=True):
-            for name, df in st.session_state['s3vc_original_dfs'].items():
-              pandas_2_AgGrid(df, theme='balham', height=300, key=f's3vc_og_{name}_aggrid')
+            for name, df in state['s3vc_original_dfs'].items():
+              pandas_2_AgGrid(df.head(20), theme='balham', height=300, key=f's3vc_og_{name}_aggrid')
 
-        if 'analyzed_s3vc' not in st.session_state:
-          st.session_state['analyzed_s3vc'] = False
+        if 'analyzed_s3vc' not in state:
+          state['analyzed_s3vc'] = False
         
         analyze_button = st.button('Analyze uploaded dataframes', help='Attempts to return calculation results for each row for table. Highly recommended to reupload a validated table before running analysis')
-        if analyze_button and st.session_state['s3vc_original_dfs'] not in [{}]:
-          st.session_state['analyzed_s3vc'] = True   
+        if analyze_button and state['s3vc_original_dfs'] not in [{}]:
+          state['analyzed_s3vc'] = True   
           st.success('Uploaded Scope 3 data tables analyzed!')
 
-          if all(key in st.session_state for key in ['s3vc_warnings', 's3vc_original_dfs']) and st.session_state.get('analyzed_s3vc', True):
+          if all(key in state for key in ['s3vc_warnings', 's3vc_original_dfs']) and state.get('analyzed_s3vc', True):
             with st.expander('Show warnings'):
-              for name, warnings in st.session_state['s3vc_warnings'].items():
+              for name, warnings in state['s3vc_warnings'].items():
                 for warn in warnings:
                   st.warning(f'{name}: {warn}')
             
-            for name, df in st.session_state['s3vc_result_dfs'].items(): # might not need this
+            for name, df in state['s3vc_result_dfs'].items(): # might not need this
               with st.expander(f'Show table for analyzed **{name}**'):
                 pandas_2_AgGrid(df, theme='balham', height=300, key=f's3vc_{name}_aggrid')
 
 
     with tab4:
       st.subheader('Executive Insights')
+      if 's3vc_calc_results' not in state or state['s3vc_calc_results'] == {}:
+        st.error('Nothing to display here. Have you uploaded or analyzed your uploaded files?')
 
-      if 's3vc_calc_results' in st.session_state and st.session_state['s3vc_calc_results'] != {}:
-        res_df = st.session_state['s3vc_calc_results'] # key: Model name, val: Calculator
+      if 's3vc_calc_results' in state and state['s3vc_calc_results'] != {}:
+        res_df = state['s3vc_calc_results'] # key: Model name, val: Calculator
         res_df = calculators_2_df(res_df) # convert each k/v to df
-
         
+        emissionOverviewPart(df=res_df)
 
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
 
-        st.write(res_df) # 
-        pandas_2_AgGrid(res_df) # 
-
-
-
-
-        # fig1 = make_bar_chart(res_df, title='Reported Emissions', scope_col='scope', category_col='category', value_col='financed_emissions', theme='gecko5', height=300, watermark=True, legend=True, legend_dark=False)
-        # st.plotly_chart(fig1, use_container_width=True)
-
-        # fig2 = make_donut_chart(res_df, group_col='category', value_col='financed_emissions', center_text='<b>Emissions by Category</b>', legend=True, theme='gecko5')
-        # st.plotly_chart(fig2, use_container_width=True)
-
-        # fig3 = make_grouped_line_chart(res_df, group_col='category', value_col='financed_emissions', date_col='date', theme='gecko5', legend=True, legend_dark=True)
-        # st.plotly_chart(fig3, use_container_width=True)
-
-
-        # #----------
-        # ts= create_line_simulation()
-        # st.write(ts)
-        
-        # fig4 = make_grouped_line_chart(
-        #   ts, 
-        #   group_col='category', 
-        #   value_col='value', 
-        #   date_col='date', 
-        #   resample_freq='Q', 
-        #   stacked=False,
-        #   theme='gecko_v2',
-        #   legend=True
-        # )
-        # st.plotly_chart(fig4, use_container_width=True)
-        # #-----------
-
-        # fig5 = make_sankey_chart(res_df, hierarchy_col_list=['financial_type', 'category', 'sector'], title='Financed Emissions Flow', value_col='financed_emissions', theme='google')
-        # st.plotly_chart(fig5, use_container_width=True)
-
-        # fig6 = make_sunburst_chart(res_df, hierarchy_list=['financial_type', 'category'], root='<b>Emissions Subset</b>', value_col='financed_emissions', theme='gecko7')
-        # st.plotly_chart(fig6, use_container_width=True)
 
 
 
@@ -403,66 +408,162 @@ def s3vc_Page():
 #---
 # Helpers
 #---
-def calculators_2_df(calculators):
-  """ 
-  calculators: dictionary of calculators
-    Example: 
-    calculators = {
-      'Scope1_MobileCombustion': calculator1,
-      'Scope2_IndirectEmissions': calculator2,
-      # ...
-    }
-  """
-  def get_first_number(d):
-    if isinstance(d, dict):
-      for value in d.values():
-        if isinstance(value, (int, float)):
-          return value
-    return np.nan
+# def calculators_2_df(calculators):
+#   """ 
+#   calculators: dictionary of calculators
+#     Example: 
+#     calculators = {
+#       'Scope1_MobileCombustion': calculator1,
+#       'Scope2_IndirectEmissions': calculator2,
+#       # ...
+#     }
+#   """
+#   def get_first_number(d):
+#     if isinstance(d, dict):
+#       for value in d.values():
+#         if isinstance(value, (int, float)):
+#           return value
+#     return np.nan
 
-  rows = []
-  for name, calculator in calculators.items():
-    scope = name.split('_')[0]  # Assuming the scope is the first part of the name
-    category = name.split('_')[-1]
+#   rows = []
+#   for name, calculator in calculators.items():
+#     scope = name.split('_')[0]  # Assuming the scope is the first part of the name
+#     category = name.split('_')[-1]
 
-    if hasattr(calculator, 'calculated_emissions'):
-      for key, value in calculator.calculated_emissions.items():
+#     if hasattr(calculator, 'calculated_emissions'):
+#       for key, value in calculator.calculated_emissions.items():
 
-        # Initialize row
-        row = {
-          'scope': scope,
-          'category': category,
-        }
-        input_data = value.get('input_data', {})
+#         # Initialize row
+#         row = {
+#           'scope': scope,
+#           'category': category,
+#         }
+#         input_data = value.get('input_data', {})
 
-        for k, v in input_data.items():
-          if 'description' not in k.lower() and 'uuid' not in k.lower():
-            row[k] = v
+#         for k, v in input_data.items():
+#           if 'description' not in k.lower() and 'uuid' not in k.lower():
+#             row[k] = v
 
-        emission_data = value.get('calculated_emissions', {})
+#         emission_data = value.get('calculated_emissions', {})
 
-        for k, v in emission_data.items():
-          if isinstance( v, (int, float, str, bool)):
-            row[k] = v
-          elif isinstance( v, (dict)):
-            row[k] = get_first_number(v)
-          elif isinstance( v, list ):
-            try:
-              row[k] = v[0]
-            except:
-              row[k] = {}
-          else:
-            print(f'Column {k} unable to retrieve valid value. {v} as {type(v)}')
+#         for k, v in emission_data.items():
+#           if isinstance( v, (int, float, str, bool)):
+#             row[k] = v
+#           elif isinstance( v, (dict)):
+#             row[k] = get_first_number(v)
+#           elif isinstance( v, list ):
+#             try:
+#               row[k] = v[0]
+#             except:
+#               row[k] = {}
+#           else:
+#             print(f'Column {k} unable to retrieve valid value. {v} as {type(v)}')
 
-        rows.append(row)
+#         rows.append(row)
   
-  df = pd.DataFrame(rows)
-  for col in df.columns:
-    if df[col].apply(lambda x: isinstance(x, (dict, list))).any():
-      df[col] = df[col].apply(json.dumps)
+#   df = pd.DataFrame(rows)
+#   for col in df.columns:
+#     if df[col].apply(lambda x: isinstance(x, (dict, list))).any():
+#       df[col] = df[col].apply(json.dumps)
 
-  return df
+#   return df
 
+
+def emissionOverviewPart(df):      
+    from streamlit_extras.metric_cards import style_metric_cards
+    import plotly.graph_objects as go
+
+    def format_metric(value) -> str:
+        import math
+        if value <= 0:
+            return "0 g CO2e"
+        elif value < 1:
+            return f"{value * 1000:.0f} g CO2e"
+        elif value < 1000:  # Less than 1 Ton
+            return f"{value:.2f} Kg CO2e"
+        elif value < 1e6:  # Less than 1 million
+            return f"{value / 1000:.2f} Ton CO2e"
+        elif value < 1e9:  # Less than 1 billion
+            return f"{value / 1e6:.2f}K Ton CO2e"
+        elif value < 1e12:  # Less than 1 trillion
+            return f"{value / 1e9:.2f}M Ton CO2e"
+        elif value < 1e15:  # Less than 1 quadrillion
+            return f"{value / 1e12:.2f}B Ton CO2e"
+        else:
+            exponent = int(math.log10(value))
+            return f"{value / 10**exponent:.2f}e{exponent} Ton CO2e"
+
+    # Global styling
+    style_metric_cards(background_color='#D6D6D6', border_left_color='#28104E', border_radius_px=60)
+
+    total_s3 = df[df['scope'] == 3]['emission_result'].sum()
+    st.metric(label="Scope 3 Emissions", value=format_metric(total_s3))
+    st.divider()
+
+
+    st.subheader('Top contributors')
+    # Group DataFrame by selected option, sum, then sort
+    grouped_df = df.groupby('category_name')['emission_result'].sum().reset_index()
+    sorted_df = grouped_df.sort_values('emission_result', ascending=False)
+    sorted_df['delta'] = round( sorted_df['emission_result'].pct_change(-1).fillna(0) * 100, 2)
+
+    # Limit to top 10 and combine the rest as 'Others'
+    top_10_df = sorted_df.head(10)
+    others_sum = sorted_df.iloc[10:]['emission_result'].sum()
+    others_delta = sorted_df.iloc[9]['emission_result'] - others_sum if len(sorted_df) > 10 else 0
+    others_df = pd.DataFrame({'category_name': ['Others'], 'emission_result': [others_sum], 'delta': [others_delta]})
+    top_10_df = pd.concat([top_10_df, others_df], ignore_index=True)
+
+    c1, c2 = st.columns([1, 3])
+    with c1:
+      for index, row in top_10_df.head(5).iterrows():
+        st.metric(label=f"{row['category_name']} Emissions", value=format_metric(row['emission_result']), delta=f"{row['delta']}%")
+
+    # Vertical Bar Chart with Cumulative Sum
+    total_emission = top_10_df['emission_result'].sum()
+    top_10_df['cum_sum'] = top_10_df['emission_result'].cumsum()
+    top_10_df['cum_sum_percent'] = (top_10_df['cum_sum'] / total_emission) * 100
+
+    fig = go.Figure()
+    for index, row in top_10_df.iterrows():
+      fig.add_trace(go.Bar(
+        x=[row['category_name']],  # x should be a list or array
+        y=[row['emission_result']],  # y should also be a list or array
+        name=str(row['category_name']),
+        yaxis='y1'
+      ))
+
+    # Cumulative Sum Line
+    fig.add_trace(go.Scatter(
+      x=top_10_df['category_name'],
+      y=top_10_df['cum_sum_percent'],
+      mode='lines+markers',
+      name='Cumulative Sum (%)',
+      yaxis='y2'
+    ))
+
+    # Update layout
+    fig.update_layout(
+      title='',
+      xaxis_title=f'<b>Category</b>',
+      yaxis=dict(title='<b>Emission Result</b>'),
+      yaxis2=dict(
+        title='<b>Cumulative Sum (%)</b>',
+        overlaying='y',
+        side='right',
+        range=[0, 100]
+      ),
+      height=800,
+      template='google',
+      legend=dict(
+        orientation='h', title=None,
+        x=0.5, y=1, xanchor='center', yanchor='bottom'
+      ),
+      showlegend=True
+    )
+    
+    with c2:
+      st.plotly_chart(fig, use_container_width=True)
 
 
 

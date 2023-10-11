@@ -1,6 +1,9 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import re
+import json
+import traceback
 
 
 def df_to_calculator(df:pd.DataFrame, calculator, creator, progress_bar=True):
@@ -27,8 +30,10 @@ def df_to_calculator(df:pd.DataFrame, calculator, creator, progress_bar=True):
     try:
       data = creator(row=row) # make sure your creator must have 'row' as parameter
       calculator.add_data(data) # calculator must have internal function 'add_data()'
+
     except Exception as e:
       warning_messages.append(f'Unable to add data for row {idx+1}. Traceback: {e}')
+      traceback.print_exc()
       pass
     
     if progress_bar:
@@ -63,3 +68,95 @@ def calculator_to_df(calculator):
     return pd.DataFrame(data)
 
 
+def calculators_2_df(calculators):
+  """ 
+  calculators: dictionary of calculators
+    Example: 
+    calculators = {
+      'Scope1_MobileCombustion': calculator1,
+      'Scope2_IndirectEmissions': calculator2,
+      # ...
+    }
+  """
+  def camel_case_to_natural(camel_case_str):
+    return re.sub('([a-z0-9])([A-Z])', r'\1 \2', camel_case_str)
+
+
+  def extract_scope_and_category(name):
+      scope_match = re.search(r'S(\d+)', name)
+      category_match = re.search(r'C(\d+)', name)
+      
+      scope = int(scope_match.group(1)) if scope_match else None
+      category = int(category_match.group(1)) if category_match else None
+      category_name = camel_case_to_natural(name.split('_')[-1])
+      return scope, category, category_name
+  
+
+  def get_stream_status(scope, category):
+      if scope in [1, 2]:
+          return "Current"
+      if category in [None, np.nan]:
+          return None
+      if category < 9:
+          return "Upstream"
+      return "Downstream"
+  
+
+  def get_first_number(d):
+    if isinstance(d, dict):
+      for value in d.values():
+        if isinstance(value, (int, float)):
+          return value
+    return np.nan
+
+  rows = []
+  for name, calculator in calculators.items():
+    scope, category, category_name = extract_scope_and_category(name)    
+    stream = get_stream_status(scope=scope, category=category)
+
+    if hasattr(calculator, 'calculated_emissions'):
+      for key, value in calculator.calculated_emissions.items():
+
+        # Initialize row
+        if category is None or category_name is None:
+          formatted_category_name = None
+        if category is None:
+          formatted_category_name = f"C0: {category_name}"
+        else:
+          formatted_category_name = f"C{category}: {category_name}"
+
+        row = {
+          'scope': scope,
+          'category': category,
+          'category_name': formatted_category_name,
+          'stream': stream
+        }
+        input_data = value.get('input_data', {})
+
+        for k, v in input_data.items():
+          if 'description' not in k.lower(): # get rid of description cols
+            row[k] = v
+
+        emission_data = value.get('calculated_emissions', {})
+        
+        for k, v in emission_data.items():
+          if isinstance( v, (int, float, str, bool)):
+            row[k] = v
+          elif isinstance( v, (dict)):
+            row[k] = get_first_number(v)
+          elif isinstance( v, list ):
+            try:
+              row[k] = v[0]
+            except:
+              row[k] = {}
+          else:
+            print(f'Column {k} unable to retrieve valid value. {v} as {type(v)}')
+
+        rows.append(row)
+  
+  df = pd.DataFrame(rows)
+  for col in df.columns:
+    if df[col].apply(lambda x: isinstance(x, (dict, list))).any():
+      df[col] = df[col].apply(json.dumps)
+
+  return df
