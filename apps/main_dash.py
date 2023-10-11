@@ -9,6 +9,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
 
+from utils.utility import format_metric
 from utils.model_df_utility import calculators_2_df
 from utils.charting import make_bar_chart, make_donut_chart
 
@@ -88,25 +89,6 @@ def main_dash_Page():
 #-- PARTS --# 
 
 def emissionOverviewPart(df):      
-    def format_metric(value) -> str:
-        if value <= 0:
-            return "0 g CO2e"
-        elif value < 1:
-            return f"{value * 1000:.0f} g CO2e"
-        elif value < 1000:  # Less than 1 Ton
-            return f"{value:.2f} Kg CO2e"
-        elif value < 1e6:  # Less than 1 million
-            return f"{value / 1000:.2f} tCO2e"
-        elif value < 1e9:  # Less than 1 billion
-            return f"{value / 1e6:.2f} ktCO2e"
-        elif value < 1e12:  # Less than 1 trillion
-            return f"{value / 1e9:.2f} mtCO2e"
-        elif value < 1e15:  # Less than 1 quadrillion
-            return f"{value / 1e12:.2f} btCO2e"
-        else:
-            exponent = int(math.log10(value))
-            return f"{value / 10**exponent:.2f}e{exponent} tCO2e"
-
     with st.expander('Emissions Overview', expanded=True):
       c1, c2, c3 = st.columns([1, 1, 1])
       

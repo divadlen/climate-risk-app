@@ -2,16 +2,18 @@ import streamlit as st
 from streamlit import session_state as state
 from st_aggrid import JsCode
 import streamlit_antd_components as sac
-
+from streamlit_extras.metric_cards import style_metric_cards
+    
 import numpy as np
 import pandas as pd
 from functools import partial
 from typing import List
 
 import plotly.express as px
+import plotly.graph_objects as go
 
 from utils.globals import SECTOR_TO_CATEGORY_IDX, IDX_TO_CATEGORY_NAME
-from utils.utility import get_dataframe
+from utils.utility import get_dataframe, format_metric
 from utils.display_utility import show_example_form, pandas_2_AgGrid
 from utils.model_df_utility import df_to_calculator, calculator_to_df, calculators_2_df
 from utils.md_utility import markdown_insert_images
@@ -404,29 +406,6 @@ def s3vc_Page():
 # Helpers
 #---
 def emissionOverviewPart(df):      
-    from streamlit_extras.metric_cards import style_metric_cards
-    import plotly.graph_objects as go
-
-    def format_metric(value) -> str:
-        import math
-        if value <= 0:
-            return "0 g CO2e"
-        elif value < 1:
-            return f"{value * 1000:.0f} g CO2e"
-        elif value < 1000:  # Less than 1 Ton
-            return f"{value:.2f} Kg CO2e"
-        elif value < 1e6:  # Less than 1 million
-            return f"{value / 1000:.2f} Ton CO2e"
-        elif value < 1e9:  # Less than 1 billion
-            return f"{value / 1e6:.2f}K Ton CO2e"
-        elif value < 1e12:  # Less than 1 trillion
-            return f"{value / 1e9:.2f}M Ton CO2e"
-        elif value < 1e15:  # Less than 1 quadrillion
-            return f"{value / 1e12:.2f}B Ton CO2e"
-        else:
-            exponent = int(math.log10(value))
-            return f"{value / 10**exponent:.2f}e{exponent} Ton CO2e"
-
     # Global styling
     style_metric_cards(background_color='#D6D6D6', border_left_color='#28104E', border_radius_px=60)
 

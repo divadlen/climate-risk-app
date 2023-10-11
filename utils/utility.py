@@ -2,6 +2,7 @@ import streamlit as st
 
 import pandas as pd
 import numpy as np
+import math
 import random
 from datetime import datetime
 
@@ -19,6 +20,29 @@ from utils.globals import COLUMN_SORT_ORDER
 
 supabase_url= st.secrets['supabase_url']
 supabase_anon_key= st.secrets['supabase_anon_key']
+
+#-----
+# Math 
+#-----
+def format_metric(value) -> str:
+    if value <= 0:
+        return "0 g CO2e"
+    elif value < 1:
+        return f"{value * 1000:.0f} g CO2e"
+    elif value < 1000:  # Less than 1 Ton
+        return f"{value:.2f} Kg CO2e"
+    elif value < 1e6:  # Less than 1 million
+        return f"{value / 1000:.2f} tCO2e"
+    elif value < 1e9:  # Less than 1 billion
+        return f"{value / 1e6:.2f} ktCO2e"
+    elif value < 1e12:  # Less than 1 trillion
+        return f"{value / 1e9:.2f} mtCO2e"
+    elif value < 1e15:  # Less than 1 quadrillion
+        return f"{value / 1e12:.2f} btCO2e"
+    else:
+        exponent = int(math.log10(value))
+        return f"{value / 10**exponent:.2f}e{exponent} tCO2e"
+
 
 #-----
 # Theming
