@@ -10,11 +10,10 @@ bcrypt==4.0.1
 plotly==5.16.0
 
 pyarrow==12.0.1
-pydantic>=2.1.1 < 2.2
+pydantic>=2.1.1, <2.2
 pydantic_core==2.4.0
 supabase==1.0.4
 
 fuzzywuzzy==0.18.0
-python-Levenshtein==0.21.1
-spacy>=3.6.0
+spacy==3.6.0
 https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.6.0/en_core_web_md-3.6.0-py3-none-any.whl
