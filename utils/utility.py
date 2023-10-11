@@ -279,15 +279,17 @@ def convert_BaseModel(cls, examples:bool=False, return_as_string:bool=True):
           row[field_name] = random_value_for_type(field_type) if default_value in ['None', 'PydanticUndefined'] else '<Blank>'
       return row
 
+    NUM_ROWS = 5
     field_names = list(cls.model_fields.keys())
     if 'uuid' in field_names:
       field_names.remove('uuid')    
-    df = pd.DataFrame(columns=field_names)
+    df = pd.DataFrame(index=range(NUM_ROWS), columns=field_names)
     
     # Add example rows
-    for _ in range(5):
+    for i in range(NUM_ROWS):
       example_row = create_random_row(cls)
-      df = pd.concat([df, pd.DataFrame([example_row])], axis=0, ignore_index=True) # ignore index to avoid pandas complaining about all-NA entries concat
+      df.loc[i] = example_row # avoid pandas complaining about all-NA entries concat
+      # df = pd.concat([df, pd.DataFrame([example_row])], axis=0, ignore_index=True)
 
   # Sort columns according to globals
   df = df[[col for col in COLUMN_SORT_ORDER if col in df.columns]] 
