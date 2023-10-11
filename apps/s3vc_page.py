@@ -225,7 +225,7 @@ def s3vc_Page():
         st.info('*(For best results, upload only csv files containing matching fields from examples and keep edits to recommended default fields to minimum)*')
 
         with st.form('Upload CSV files'):
-          uploaded_files = st.file_uploader("Upload CSV files", type=["csv"], accept_multiple_files=True, help='CSV containing any relevant Scope 3 data. Categories are automatically inferred')
+          uploaded_files = st.file_uploader("Upload CSV files (accepts multiple files)", type=["csv"], accept_multiple_files=True, help='CSV containing any relevant Scope 3 data. Categories are automatically inferred')
 
           if st.form_submit_button('Upload'):
             # reset everything if button is clicked

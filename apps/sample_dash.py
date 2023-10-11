@@ -24,26 +24,24 @@ def dash_Page_v1():
     with tab1:
       tdf = generate_toy_df()
 
-      col1, col2 = st.columns([1, 1])
-      with col1:
-          mode = st.selectbox("Mode", ["Light", "Dark"])
-      with col2:
-          theme_names = [name for name in dir(ColorDiscrete) if not name.startswith("__")]
-          theme_name = st.selectbox("Color Theme", theme_names)
-          selected_theme = getattr(ColorDiscrete, theme_name)
+      # col1, col2 = st.columns([1, 1])
+      # with col1:
+      #     mode = st.selectbox("Mode", ["Light", "Dark"])
+      # with col2:
+      #     theme_names = [name for name in dir(ColorDiscrete) if not name.startswith("__")]
+      #     theme_name = st.selectbox("Color Theme", theme_names)
+      #     selected_theme = getattr(ColorDiscrete, theme_name)
 
       layout = { # doesnt work streamlit will hijack background settings
-          'colorway': selected_theme,
-          'plot_bgcolor': 'rgba(0,0,0,0.9)' if mode == "Dark" else 'rgba(255,255,255,1)',
-          'paper_bgcolor': 'rgba(0,0,0,0.9)' if mode == "Dark" else 'rgba(255,255,255,1)',
-          'font': {'color': 'white' if mode == "Dark" else 'black'},
+          'colorway': ColorDiscrete.gecko_v2,
+          'plot_bgcolor': 'rgba(255,255,255,1)',
+          'paper_bgcolor': 'rgba(255,255,255,1)',
+          'font': {'color': 'black'},
           'xaxis': {'gridcolor': 'grey'},
           'yaxis': {'gridcolor': 'grey'},
       }
       pio.templates["custom"] = go.layout.Template(layout=layout)
       pio.templates.default = "custom"
-
-      st.write("---")  # Divider
 
       col1, col2 = st.columns([1,1])
       with col1:
@@ -68,26 +66,24 @@ def dash_Page_v1():
     with tab2:
       fdf = generate_s3c15_df()
 
-      col1, col2 = st.columns([1, 1])
-      with col1:
-          mode = st.selectbox("Mode", ["Light", "Dark"], key='00oi9i9u8u')
-      with col2:
-          theme_names = [name for name in dir(ColorDiscrete) if not name.startswith("__")]
-          theme_name = st.selectbox("Color Theme", theme_names, key='0o0i9iu8u')
-          selected_theme = getattr(ColorDiscrete, theme_name)
+      # col1, col2 = st.columns([1, 1])
+      # with col1:
+      #     mode = st.selectbox("Mode", ["Light", "Dark"], key='00oi9i9u8u')
+      # with col2:
+      #     theme_names = [name for name in dir(ColorDiscrete) if not name.startswith("__")]
+      #     theme_name = st.selectbox("Color Theme", theme_names, key='0o0i9iu8u')
+      #     selected_theme = getattr(ColorDiscrete, theme_name)
 
       layout = { # doesnt work streamlit will hijack background settings
-          'colorway': selected_theme,
-          'plot_bgcolor': 'rgba(0,0,0,0.9)' if mode == "Dark" else 'rgba(255,255,255,1)',
-          'paper_bgcolor': 'rgba(0,0,0,0.9)' if mode == "Dark" else 'rgba(255,255,255,1)',
-          'font': {'color': 'white' if mode == "Dark" else 'black'},
+          'colorway': ColorDiscrete.gecko_v2,
+          'plot_bgcolor': 'rgba(255,255,255,1)',
+          'paper_bgcolor': 'rgba(255,255,255,1)',
+          'font': {'color': 'black'},
           'xaxis': {'gridcolor': 'grey'},
           'yaxis': {'gridcolor': 'grey'},
       }
       pio.templates["custom"] = go.layout.Template(layout=layout)
       pio.templates.default = "custom"
-
-      st.write("---")  # Divider
 
       figs = []
       fig1 = make_bar_2(fdf, financial_type='investing', theme='custom')

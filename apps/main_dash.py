@@ -73,7 +73,23 @@ def main_dash_Page():
 
   else:
     st.error('No data available.')
-
+    st.write(' ')
+    st.write(' ')
+    st.write(' ')
+    st.write(' ')
+    st.write(' ')
+    st.write(' ')
+    st.write(' ')
+    st.write(' ')
+    st.write(' ')
+    st.write(' ')
+    st.write(' ')
+    st.write(' ')
+    st.write(' ')
+    st.write(' ')
+    st.write(' ')
+    st.write(' ')
+    st.write(' ')
 
 
 

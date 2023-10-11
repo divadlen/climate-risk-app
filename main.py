@@ -17,6 +17,14 @@ st.set_page_config(
   }
 )
 
+sidebar_md = """
+## Resources
+- [Account verification](https://geckointel.com/contact-us)
+- [Submit a bug report](https://geckointel.com/contact-us)
+- Privacy policy
+- Terms and condition
+"""
+
 #---Start app---#
 def run_app():
   # Check if user is authenticated
@@ -25,6 +33,8 @@ def run_app():
     # Run authentication app
     AuthApp()
     return
+  
+  user_level = st.session_state.get("user_level", 1)
 
   #---Load states and configurations---#
   run_app_config()
@@ -49,10 +59,13 @@ def run_app():
     st.image("./resources/G1-long.png", use_column_width=True, width=None)
 
 
-
-
   with st.sidebar:
-    qwe = st.text_input('QWE') # 
+    st.image("./resources/BlackText_Logo_Horizontal.png", use_column_width=True, width=None)
+
+    if user_level < 2:
+      st.info(f"Welcome **{st.session_state.username}**! Your account is not yet verified internally. Please enjoy the demo pages.")
+
+    st.info(sidebar_md)
 
     with st.form(key='theme_form'):
       st.session_state['theme_choice'] = st.radio('Choose theme', ['Dark', 'Light'], horizontal=True)  
@@ -61,16 +74,22 @@ def run_app():
     if submit_button:
       reconcile_theme_config()  # Apply the theme
 
-    with st.expander('Show states'):
-      size_dict = {}
-      for key in st.session_state.keys():
-        size = get_deep_size(st.session_state[key])
-        size_dict[key] = size
+    with st.expander('App version'):
+      st.write('0.4.3')
 
-      # Sort by size
-      sorted_items = sorted(size_dict.items(), key=lambda x: x[1], reverse=True)
-      for key, size in sorted_items:
-        st.write(f"{key}: {size/1000} kb")
+    st.markdown('Copyright © 2023 Gecko Technologies')
+
+    #--- DEBUGGING PURPOSES ---#
+    # with st.expander('Show states'): 
+    #   size_dict = {}
+    #   for key in st.session_state.keys():
+    #     size = get_deep_size(st.session_state[key])
+    #     size_dict[key] = size
+
+    #   # Sort by size
+    #   sorted_items = sorted(size_dict.items(), key=lambda x: x[1], reverse=True)
+    #   for key, size in sorted_items:
+    #     st.write(f"{key}: {size/1000} kb")
 
 
   app = hy.HydraApp(
@@ -86,51 +105,66 @@ def run_app():
   app.add_loader_app(MyLoadingApp(delay=0))
 
   #---Add apps from folder---#
-  @app.addapp(is_home=True)
-  def my_home(title='home'):
-    hy.info('Hello from Home!')
-
-  # @app.addapp(title='from app folderr')
-  # def app4():
-  #   from apps.home2 import main
-  #   main()
+  @app.addapp(is_home=True, title='Home')
+  def homeApp():
+    from apps.home_page import homePage
+    homePage()
 
   @app.addapp(title='Logout')
   def logout_button():
     from apps.logout import logoutPage
     logoutPage()
 
-  @app.addapp(title='Scope 1: Direct Emissions')
-  def s1deApp():
-    from apps.s1de_page import s1de_Page
-    s1de_Page()
+  #--- Level 1 apps ---#
+  if user_level < 2: 
+    @app.addapp(title='Sample Dashboard')
+    def sampleDashApp():
+      from apps.sample_dash import dash_Page_v1
+      dash_Page_v1()
 
-  @app.addapp(title='Scope 2: Indirect Emissions')
-  def s2ieApp():
-    from apps.s2ie_page import s2ie_Page_v2
-    s2ie_Page_v2()
+  #--- Level 2 apps ---#
+  if user_level >= 2:
+    @app.addapp(title='Scope 1: Direct Emissions')
+    def s1deApp():
+      from apps.s1de_page import s1de_Page
+      s1de_Page()
 
-  @app.addapp(title='Scope 3: Value Chain')
-  def s3vcApp():
-    from apps.s3vc_page import s3vc_Page
-    s3vc_Page()
+    @app.addapp(title='Scope 2: Indirect Emissions')
+    def s2ieApp():
+      from apps.s2ie_page import s2ie_Page
+      s2ie_Page()
 
-  @app.addapp(title='Overall Dashboard')
-  def main_dash():
-    from apps.main_dash import main_dash_Page
-    main_dash_Page()
+    @app.addapp(title='Scope 3: Value Chain')
+    def s3vcApp():
+      from apps.s3vc_page import s3vc_Page
+      s3vc_Page()
+
+    @app.addapp(title='Overall Dashboard')
+    def main_dash():
+      from apps.main_dash import main_dash_Page
+      main_dash_Page()
 
 
+  def build_navigation(user_level=1):
+    complex_nav = {}
     
-  #---Optional, if you want to nest navigations---#
-  complex_nav = {
-    "Home": ['home'],
-    "Emissions Calculator": ['Scope 1: Direct Emissions', 'Scope 2: Indirect Emissions', 'Scope 3: Value Chain'],
-    # "heat": ['Risk Heatmap'], 
-    "Graphics": ["Overall Dashboard"],
-    "logout": ['Logout'],
-  }
+    # Always add Home first
+    complex_nav["Home"] = ['Home']
+    
+    # Conditionally add other navigation items based on user level
+    if user_level < 2: 
+      complex_nav['Sample Dashboard'] = ['Sample Dashboard']
 
+    if user_level >= 2:
+      complex_nav["Emissions Calculator"] = ['Scope 1: Direct Emissions', 'Scope 2: Indirect Emissions', 'Scope 3: Value Chain']
+      complex_nav["Graphics"] = ["Overall Dashboard"]
+    
+    # Always add Logout last
+    complex_nav["logout"] = ['Logout']
+    return complex_nav
+  
+
+  complex_nav = build_navigation(user_level)
   app.run(complex_nav=complex_nav)
 
 if __name__ == '__main__':

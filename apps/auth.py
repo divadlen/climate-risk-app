@@ -1,8 +1,10 @@
 import streamlit as st
+from streamlit import session_state as state
 import streamlit_authenticator as stauth
 
 import bcrypt
 import re
+from datetime import datetime, timedelta
 
 from supabase import create_client
 import pandas as pd
@@ -12,8 +14,16 @@ supabase_url = st.secrets['supabase_url']
 supabase_anon_key = st.secrets['supabase_anon_key']
 supabase = create_client(supabase_url, supabase_anon_key)
 
+
 # Load the configuration file
 def AuthApp():
+  if 'last_account_creation' not in state:
+    state.last_account_creation = None
+  if 'last_password_tries' not in state:
+    state.last_password_tries = []
+  if 'last_reset' not in state:
+    state.last_reset = None
+
   col1, col2, col3 = st.columns([1,2,1])
   with col2:
     st.image("./resources/G1-long.png", use_column_width=True, width=None)
@@ -26,14 +36,24 @@ def AuthApp():
       password = st.text_input('Password', type='password')
     
       if st.form_submit_button('Login'):
+
+        # rate limiter
+        current_time = datetime.now()
+        state.last_password_tries = [t for t in state.last_password_tries if current_time - t < timedelta(minutes=2)] # Remove timestamps older than 1 minute
+        if len(state.last_password_tries) >= 10:
+          st.error('Too many login attempts. Please wait.')
+          return
+        else:
+          state.last_password_tries.append(current_time)
+
+        # check cred
         with st.spinner():
           user = check_credentials(username, password)
-        
           if user:
-            st.session_state["authenticated"] = True
-            st.session_state["username"] = username
+            state["authenticated"] = True
+            state["username"] = username
+            state["user_level"] = user['user_level']
             st.experimental_rerun()
-            return
           else:
             st.error('Username/password is incorrect')
     
@@ -46,6 +66,16 @@ def AuthApp():
       password = st.text_input('Password', type='password')
     
       if st.form_submit_button('Register'):
+        
+        # rate limiter
+        current_time = datetime.now()    
+        if state.last_account_creation and current_time - state.last_account_creation < timedelta(minutes=1):
+          st.error('Only one account can be created per minute.')
+          return
+        else:
+          state.last_account_creation = current_time
+
+        # register attempt
         with st.spinner():
           if register_user(username, password, email_address):
             st.success('User registered successfully')
@@ -58,6 +88,16 @@ def AuthApp():
       identifier = st.text_input('Email')
     
       if st.form_submit_button('Reset Password'):
+
+        # rate limiter
+        current_time = datetime.now()    
+        if state.last_reset and current_time - state.last_reset < timedelta(minutes=5):
+          st.error('Only one reset allowed per 5 minutes.')
+          return
+        else:
+          state.last_reset = current_time
+
+        # reset attempt
         with st.spinner():
           if '@' not in identifier or '.com' not in identifier[-4:] or identifier in [None, '']:
             st.error('Email not valid')
@@ -72,7 +112,6 @@ def AuthApp():
 
 
 #------------------------------#
-
 def check_credentials(identifier, password):
   user = None
   if '@' in identifier:
@@ -123,9 +162,10 @@ def register_user(username, password, email):
   try:
     hashed_password = stauth.Hasher([password]).generate()[0]
     result = supabase.table('user_creds').insert([
-      {'username': username, 'password': hashed_password, 'email': email}
+      {'username': username, 'password': hashed_password, 'email': email, 'user_level': 1}
     ]).execute()
     return result
+  
   except Exception as e:
     raise e
 

@@ -98,7 +98,7 @@ def s1de_Page():
       MAX_FILES = 3  
 
       with st.form('Upload CSV files'):
-        uploaded_files = st.file_uploader("Upload CSV files", type=["csv"], accept_multiple_files=True,  key=st.session_state.widget_key, help='CSV containing any relevant Scope 1 data. Categories are automatically inferred')
+        uploaded_files = st.file_uploader("Upload CSV files (accepts only up to 3 files)", type=["csv"], accept_multiple_files=True,  key=st.session_state.widget_key, help='CSV containing any relevant Scope 1 data. Categories are automatically inferred')
 
         c1,c2 = st.columns([1,1])
         with c1:

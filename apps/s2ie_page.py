@@ -27,7 +27,7 @@ from utils.geolocator import GeoLocator
 from utils.globals import LOCATION_ABBRV
 
 
-def s2ie_Page_v2():
+def s2ie_Page():
   if 'geolocator' not in state:
     state['geolocator'] = GeoLocator()
   if 'S2IE_Lookup_Cache' not in state:
@@ -83,7 +83,7 @@ def s2ie_Page_v2():
       st.info('*(For best results, upload only csv files containing matching fields from examples and keep edits to recommended default fields to minimum)*')
 
       with st.form('Upload CSV files'):
-        uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"], accept_multiple_files=False, help='CSV containing purchased power data for S2: Indirect Emissions')
+        uploaded_file = st.file_uploader("Upload a CSV file (accepts only 1 file)", type=["csv"], accept_multiple_files=False, help='CSV containing purchased power data for S2: Indirect Emissions')
 
         c1,c2 = st.columns([1,1])
         with c1:
