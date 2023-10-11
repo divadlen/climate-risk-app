@@ -303,7 +303,7 @@ def emissionOverviewPart(df):
 
     c1, c2 = st.columns([1, 3])
     with c1:
-      selected_group = st.selectbox('Select group', options=['fuel_type', 'vehicle_type'])
+      selected_group = st.selectbox('Select group', options=['fuel_type', 'vehicle_type', 'refrigerant_type'])
 
     # Group DataFrame by selected option, sum, then sort
     grouped_df = df.groupby(selected_group)['emission_result'].sum().reset_index()
