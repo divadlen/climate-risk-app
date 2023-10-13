@@ -302,7 +302,8 @@ def contributorAnalysisPart(df):
       # Select category
       c1,c2 = st.columns([1,1])
       with c1:
-        show_legend = st.selectbox('Show legend', options=[True, False], key='show_legend_contribute')
+        # show_legend = st.selectbox('Show legend', options=[True, False], key='show_legend_contribute')
+        display_type = st.selectbox('Display mode', options=['Bar', 'Pie'], key='display_contribute')
       with c2:
         default_index_category = categorical_columns.index('category_name') if 'category_name' in categorical_columns else 0
         selected_category = st.selectbox('Select category', categorical_columns, key='selected_category_contribute', index=default_index_category)
@@ -312,6 +313,14 @@ def contributorAnalysisPart(df):
 
       # Sort DataFrame by emission_result
       sorted_df = grouped_df.sort_values('emission_result', ascending=False)
+
+      # Limit to top 10 and combine the rest as 'Others'
+      top_10_df = sorted_df.head(10)
+      others_sum = sorted_df.iloc[10:]['emission_result'].sum()
+      others_delta = sorted_df.iloc[9]['emission_result'] - others_sum if len(sorted_df) > 10 else 0
+      others_df = pd.DataFrame({f'{selected_category}': ['Others'], 'emission_result': [others_sum], 'delta': [others_delta]})
+      sorted_df = pd.concat([top_10_df, others_df], ignore_index=True)
+      sorted_df = sorted_df.sort_values('emission_result', ascending=False)
 
       # Vertical Bar Chart with Cumulative Sum
       total_emission = sorted_df['emission_result'].sum()
@@ -355,12 +364,25 @@ def contributorAnalysisPart(df):
             orientation='h', title=None,
             x=0.5, y=1, xanchor='center', yanchor='bottom'
           ),
-          showlegend=show_legend,
+          showlegend=True,
           hovermode="x"
       )
       c1,c2,c3=st.columns([1,4,1])
       with c2:
-        st.plotly_chart(fig_v, use_container_width=True)
+        if display_type == 'Bar':
+          st.plotly_chart(fig_v, use_container_width=True)
+        
+        else:
+          # Make a truncated donut chart
+          fig  = make_donut_chart(
+            sorted_df, group_col=selected_category, value_col='emission_result', 
+            center_text=f'<b>Total<br>Emissions :<br>{format_metric(sorted_df["emission_result"].sum())} <b>',
+            hole=0.5, height=700, theme='google', horizontal_legend=True
+          )
+          st.plotly_chart(fig, use_container_width=True)
+
+
+
 
 
 def dataQualityPart(df):
