@@ -407,6 +407,12 @@ def dataQualityPart(df):
       selected_category = st.selectbox('Select category', categorical_columns, key='selected_category_dq', index=default_index_category)
 
     temp = df.copy()
+    # Find the top 10 most occurring categories
+    top_10_categories = temp[selected_category].value_counts().nlargest(10).index.tolist()
+
+    # Filter the DataFrame to only include the top 10 categories
+    temp = temp[temp[selected_category].isin(top_10_categories)]
+
     min_val = np.nanmin(temp['emission_result'])
     max_val = np.nanmax(temp['emission_result'])
     temp['size'] = np.where(
