@@ -431,31 +431,6 @@ def dataQualityPart(df):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #---
 # Helpers
 #---
@@ -475,13 +450,13 @@ def standardize_scope_df(df):
     'product_name', 'distributor_name', 'process_name', 'supplier_name',
 
     # asset status
-    'ownership_status', 'ownership_share', 'asset_class',
+    'ownership_status', 'ownership_share', 'asset_class', 'sector', 'is_listed', 
 
     # location
     'country', 'state', 'city', 'company_name', 
 
     # types
-    'refrigerant_type', 'vehicle_type', 'freight_type', 'fuel_type', 'waste_type'
+    'refrigerant_type', 'vehicle_type', 'freight_type', 'fuel_type', 'waste_type', 'financial_type', 
   ]
 
   selected_cols = [col for col in cols if col in df.columns]
