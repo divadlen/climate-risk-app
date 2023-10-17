@@ -411,7 +411,7 @@ def emissionOverviewPart(df):
     style_metric_cards(background_color='#D6D6D6', border_left_color='#28104E', border_radius_px=60)
 
     total_s3 = df[df['scope'] == 3]['emission_result'].sum()
-    st.metric(label="<b>Scope 3 Emissions</b>", value=format_metric(total_s3))
+    st.metric(label="Scope 3 Emissions", value=format_metric(total_s3))
     st.divider()
 
 
