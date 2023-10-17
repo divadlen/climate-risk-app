@@ -68,12 +68,12 @@ def run_app():
 
     st.info(sidebar_md)
 
-    with st.form(key='theme_form'):
-      st.session_state['theme_choice'] = st.radio('Choose theme', ['Dark', 'Light'], horizontal=True)  
-      submit_button = st.form_submit_button('Double click to apply theme')
+    # with st.form(key='theme_form'):
+    #   st.session_state['theme_choice'] = st.radio('Choose theme', ['Dark', 'Light'], horizontal=True)  
+    #   submit_button = st.form_submit_button('Double click to apply theme')
 
-    if submit_button:
-      reconcile_theme_config()  # Apply the theme
+    # if submit_button:
+    #   reconcile_theme_config()  # Apply the theme
 
     with st.expander('App version'):
       st.write('0.4.3')
