@@ -312,7 +312,8 @@ def emissionOverviewPart(df):
         x=[row[selected_group]],  # x should be a list or array
         y=[row['emission_result']],  # y should also be a list or array
         name=str(row[selected_group]),
-        yaxis='y1'
+        yaxis='y1',
+        hovertemplate=f"%{{value:.2f}} kg"
       ))
 
     # Cumulative Sum Line
@@ -321,7 +322,8 @@ def emissionOverviewPart(df):
       y=top_10_df['cum_sum_percent'],
       mode='lines+markers',
       name='Cumulative Sum (%)',
-      yaxis='y2'
+      yaxis='y2',
+      hovertemplate ='%{y:.2f} %',
     ))
 
     # Update layout
@@ -341,7 +343,9 @@ def emissionOverviewPart(df):
         orientation='h', title=None,
         x=0.5, y=1, xanchor='center', yanchor='bottom'
       ),
-      showlegend=True
+      showlegend=True,
+      hovermode="x",
+      hoverlabel=dict(font_size=18),
     )
     
     with c2:

@@ -137,6 +137,7 @@ def calculators_2_df(calculators):
         for k, v in input_data.items():
           if 'description' not in k.lower(): # get rid of description cols
             row[k] = v
+          # row[k] = v
 
         emission_data = value.get('calculated_emissions', {})
         

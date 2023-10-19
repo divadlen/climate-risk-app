@@ -231,6 +231,8 @@ class S3C6_1_BusinessTravel(S3_BaseModel):
     1. Mode >> vehicle >> distance
     2. fuel type >> consumption
     """
+    branch: Optional[str] = Field(None, max_length=1600)
+
     travel_mode: str = Field(default='Land') 
     vehicle_type: Optional[str] = Field(default='Car', description='If vehicle emission factor is by passenger (Plane, rail), each passenger files separately (IE: duplicate the entries for plane).')
 
@@ -287,6 +289,8 @@ class S3C7_EmployeeCommute(S3_BaseModel):
     EMISSION FACTORS REQUIRED FROM BACKEND 
     1. travel_mode, vehicle, distance
     """
+    branch: Optional[str] = Field(None, max_length=1600)
+    
     employee_id: Optional[Union[str, int]] = Field(None, description='Optional identifier. Purpose is to track employees with multiple modes of travel. (They will file rail + car in separate entries)')
     travel_mode: str = Field(default='Land')
     vehicle_type: Optional[str] = Field(default='Car')

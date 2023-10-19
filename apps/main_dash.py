@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit import session_state as state
 from streamlit_sortables import sort_items
 from streamlit_extras.metric_cards import style_metric_cards
 
@@ -10,7 +11,8 @@ from PIL import Image
 import plotly.express as px
 import plotly.graph_objs as go
 
-from utils.utility import format_metric
+from utils.utility import format_metric, convert_df
+from utils.display_utility import pandas_2_AgGrid
 from utils.model_df_utility import calculators_2_df
 from utils.charting import make_donut_chart, sort_str_column_numeric
 
@@ -24,22 +26,22 @@ def main_dash_Page():
   st.title('Emissions Executive Summary')
   dfs_to_concat = []
 
-  if 's1de_calc_results' in st.session_state and st.session_state['s1de_calc_results'] != {}:
-    s1_res = st.session_state['s1de_calc_results']
+  if 's1de_calc_results' in state and state['s1de_calc_results'] != {}:
+    s1_res = state['s1de_calc_results']
     s1_df = calculators_2_df(s1_res)
     dfs_to_concat.append(s1_df)
   else:
     st.info('Calculated results for Scope 1 not yet retrieved. Main dashboard will not include results for Scope 1.')
 
-  if 's2ie_calc_results' in st.session_state and st.session_state['s2ie_calc_results'] != {}:
-    s2_res = st.session_state['s2ie_calc_results']     
+  if 's2ie_calc_results' in state and state['s2ie_calc_results'] != {}:
+    s2_res = state['s2ie_calc_results']     
     s2_df = calculators_2_df(s2_res)
     dfs_to_concat.append(s2_df)
   else:
     st.info('Calculated results for Scope 2 not yet retrieved. Main dashboard will not include results for Scope 2.')
 
-  if 's3vc_calc_results' in st.session_state and st.session_state['s3vc_calc_results'] != {}:
-    s3_res = st.session_state['s3vc_calc_results'] # key: Model name, val: Calculator
+  if 's3vc_calc_results' in state and state['s3vc_calc_results'] != {}:
+    s3_res = state['s3vc_calc_results'] # key: Model name, val: Calculator
     s3_df = calculators_2_df(s3_res) # convert each k/v to df
     dfs_to_concat.append(s3_df)
   else:
@@ -64,6 +66,24 @@ def main_dash_Page():
 
     # Data quality
     dataQualityPart(df)
+
+    # table export
+    with st.expander('Download calculation results'):
+      cols = [
+        'uuid', 'date', 
+        'scope', 'category', 'category_name', 
+        'emission_result', 'metadata'
+      ]
+      raw_df = pd.concat(dfs_to_concat, ignore_index=True)
+      pandas_2_AgGrid(raw_df[cols], height=None)
+
+      st.download_button(
+        label='Download calculation results',
+        data=convert_df(raw_df[cols]),
+        file_name=f'calculation_results.csv',
+        mime='text/csv'
+      )
+        
 
   else:
     st.error('No data available.')
@@ -289,11 +309,10 @@ def hierarchalFlowPart(df):
               color='lightgrey'
           )
       ))
-
       fig.update_layout(title_text="<b>Emissions Flow</b>", title_x=0.5, font_size=16, height=700)
       fig.update_layout(hoverlabel=dict(font_size=20))
       fig.update_layout(template='google')
-      fig.update_layout(images=st.session_state.watermark_settings)
+      fig.update_layout(images=watermark(x=0.985, y=0.015, xanchor="right", yanchor="bottom"))
       fig.update_layout(showlegend=False)
       return fig
   
@@ -336,11 +355,11 @@ def hierarchalFlowPart(df):
         if len(temp) == 0:
           st.warning("Unable to display emission flow chart under this combination of hierarchy. Please adjust the columns.")  
         else:
-          st.session_state['hierarchal_flow_df'] = temp
-          st.session_state['hierarchy_list'] = hierarchy_list
+          state['hierarchal_flow_df'] = temp
+          state['hierarchy_list'] = hierarchy_list
 
-    if 'hierarchal_flow_df' in st.session_state and 'hierarchy_list' in st.session_state:
-      sankey_fig = make_sankey_chart(st.session_state['hierarchal_flow_df'], hierarchy_col_list=st.session_state['hierarchy_list'], value_col='emission_result')
+    if 'hierarchal_flow_df' in state and 'hierarchy_list' in state:
+      sankey_fig = make_sankey_chart(state['hierarchal_flow_df'], hierarchy_col_list=state['hierarchy_list'], value_col='emission_result')
       st.plotly_chart(sankey_fig, use_container_width=True)
 
 
@@ -416,11 +435,11 @@ def contributorAnalysisPart(df):
           ),
           height=600,
           template='google',
-          legend=dict(orientation='h', x=0, y=0.9, xanchor='left', yanchor='top'),
+          legend=dict(orientation='h', x=0, y=0.9, xanchor='left', yanchor='bottom'),
           showlegend=True,
           hovermode="x",
           hoverlabel=dict(font_size=18),
-          margin=dict(l=0, r=0, t=0, b=0, pad=0), 
+          images=watermark(),
       )
       c1,c2,c3=st.columns([1,4,1])
 
@@ -498,8 +517,9 @@ def dataQualityPart(df):
       height=600,
       width=900,
       template='google',
-      legend=dict(orientation='h', title=None, x=0.5, y=1, xanchor='center', yanchor='bottom'),
+      legend=dict(orientation='h', title=None, x=0, y=1, xanchor='left', yanchor='bottom'),
       hoverlabel=dict(font_size=20),
+      images=watermark(),
     )
     fig.update_xaxes(range=[0, 5])
 
@@ -527,7 +547,7 @@ def standardize_scope_df(df):
     Merged df from s1, s2, s3 calculation results.
   """
   cols = [
-    'uuid', 'date',
+    'uuid', 'date', 'description',
     'scope', 'category', 'category_name', 'stream',
     'emission_result', 'most_reliable_co2e', 'financed_emissions', 'emission_removals',
     'data_quality',
@@ -570,3 +590,13 @@ def standardize_merged_df(df):
       df = standardize_emission_results(df, alt_col_name=name)
 
   return df
+
+
+def watermark(x=0.8, y=0.8, sizex=0.2, sizey=0.2, opacity=0.2, xanchor='left', yanchor='bottom'):
+  return [dict(
+    source= Image.open("./resources/BlackText_Logo_Horizontal.png"),
+    xref="paper", yref="paper",
+    x=x, y=y,
+    sizex=sizex, sizey=sizey, opacity=opacity,
+    xanchor=xanchor, yanchor=yanchor
+  )]

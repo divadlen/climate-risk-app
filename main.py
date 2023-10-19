@@ -74,7 +74,7 @@ def run_app():
     st.image("./resources/G1-long.png", use_column_width=True, width=None)
 
   with st.sidebar:
-    st.image("./resources/BlackText_Logo_Horizontal.png", use_column_width=True, width=None)
+    # st.image("./resources/BlackText_Logo_Horizontal.png", use_column_width=True, width=None)
 
     if user_level < 2:
       st.info(f"Welcome **{st.session_state.username}**! Your account is not yet verified internally. Please enjoy the demo pages.")

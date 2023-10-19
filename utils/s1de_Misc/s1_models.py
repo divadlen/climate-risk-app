@@ -36,6 +36,7 @@ class S1_BaseModel(BaseModel):
 class S1_StationaryCombustion(S1_BaseModel):
     """ 
     """
+    branch: Optional[str] = Field(None, max_length=1600)
     sector: str = Field(default='energy')
 
     fuel_state: Optional[str] = Field(default='liquid')
@@ -64,6 +65,7 @@ class S1_StationaryCombustion(S1_BaseModel):
 class S1_MobileCombustion(S1_BaseModel):
     """ 
     """
+    branch: Optional[str] = Field(None, max_length=1600)
     sector: str = Field(default='energy')
     vehicle_type: str = Field(default='car')
 
@@ -102,16 +104,17 @@ class S1_MobileCombustion(S1_BaseModel):
 class S1_FugitiveEmission(S1_BaseModel):
     """ 
     """
+    branch: Optional[str] = Field(None, max_length=1600)
     equipment_name: str 
 
-    refrigerant_capacity: Optional[float] = Field(None, ge=0)
+    refrigerant_capacity: Optional[float] = Field(None, ge=0, description='Most machines have their capacity, use that as reference')
     refrigerant_use: Optional[float] = Field(None, ge=0, description='If you know the capacity and loss rate, this will be the number')
     refrigerant_type: Optional[str] = Field(default='R-410A', description='R-410-A is most common refrigerants. In practice, many refrigerants have mixed composites')
     refrigerant_unit: Optional[str] = Field(default='kg', description='GWP for refrigerants are typically measured by mass not volume.')
 
-    install_loss_rate: Optional[float] = Field(None, ge=0, le=1)
-    annual_leak_rate: Optional[float] = Field(None, ge=0, le=1)
-    recovery_rate: Optional[float] = Field(None, ge=0, le=1)
+    install_loss_rate: Optional[float] = Field(None, ge=0, le=1, description='When installing the machine, percentage of refrigerant capacity that was expected to lose. 1-2 percent is a safe assumption')
+    annual_leak_rate: Optional[float] = Field(None, ge=0, le=1, description='Percentage of capacity expected to leak/evaporate per year')
+    recovery_rate: Optional[float] = Field(None, ge=0, le=1, description='Percentage of remaining capacity after decommissioning')
 
-    number_of_year: Optional[float] = Field(None, ge=0)
+    number_of_year: Optional[float] = Field(None, ge=0, description='Number of years. Used to be multiplied with annual leak rate')
 
