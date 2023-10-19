@@ -54,16 +54,15 @@ def s3vc_Page():
     
     try:
       sorted_applicable_indices = sorted(list(set(applicable_indices)))
-      applicable_bools = [i in sorted_applicable_indices for i in range(1, 16)]        
+      applicable_bools = ["Highly applicable" if i in sorted_applicable_indices else "Less Applicable"  for i in range(1, 16)]        
     except:
       sorted_applicable_indices = None
-      applicable_bools = [False] * 15
-      # applicable_bools = ["Less applicable"] * 15
+      applicable_bools = ["Less applicable"] * 15
 
     with tab1:
       with st.form(key='scope_3_reset'):
         st.success(f"Current sector: {state['s3_sector']}")
-        st.info(f'Highighted rows indicate the *recommended* scopes to be covered by industry. Navigate to **Get Forms/Guidelines** or **Submit & Review** to get started!')
+        st.info(f'Highighted rows indicate the *recommended* categories to be covered by industry. Navigate to **Get Forms/Guidelines** or **Submit & Review** to get started!')
 
         df = pd.DataFrame({
           'Category': [IDX_TO_CATEGORY_NAME[i] for i in range(1,16)],
@@ -72,7 +71,7 @@ def s3vc_Page():
 
         cellstyle_jscode = JsCode("""
         function(params){
-            if (params.data.Applicable === true) {
+            if (params.data.Applicable === 'Highly applicable') {
                 return {
                     'backgroundColor': 'lightblue',
                 }
@@ -92,7 +91,7 @@ def s3vc_Page():
 
 
     with tab2:
-      footer_md = """*(Highlighted columns with <Blank> are optional. Blue column indicates recommended default values)*"""
+      footer_md = """*(Highlighted columns with <Blank> and <To fill> are optional. <To fill> indicates fields that can affect calculations. Blue column indicates recommended default values)*"""
       
       st.subheader('User Guide')
       with st.expander('Show help', expanded=True):

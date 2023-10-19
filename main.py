@@ -5,6 +5,15 @@ from PIL import Image
 from app_config import run_app_config
 from utils.utility import get_deep_size, reconcile_theme_config
 
+#Only need to set these here as we are add controls outside of Hydralit, to customise a run Hydralit!
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            </style>
+            """
+
 icon = Image.open("./resources/GreenLogo_ico.ico")
 st.set_page_config(
   page_title="Gecko Technologies Emission Calculation Service",
@@ -39,6 +48,7 @@ def run_app():
 
   #---Load states and configurations---#
   run_app_config()
+  # st.markdown(hide_st_style, unsafe_allow_html=True)
 
   #---Start Hydra instance---#
   hydra_theme = None # init hydra theme
@@ -55,10 +65,13 @@ def run_app():
     'option_active': '#C4CEBC' 
   }
 
+  
+
+
+  # st.image("./resources/G1-long.png", use_column_width=True, width=None)
   col1, col2, col3 = st.columns([1,2,1])
   with col2:
     st.image("./resources/G1-long.png", use_column_width=True, width=None)
-
 
   with st.sidebar:
     st.image("./resources/BlackText_Logo_Horizontal.png", use_column_width=True, width=None)
@@ -76,7 +89,7 @@ def run_app():
     #   reconcile_theme_config()  # Apply the theme
 
     with st.expander('App version'):
-      st.write('0.4.3')
+      st.write('0.4.4')
 
     st.markdown('Copyright © 2023 Gecko Technologies')
 

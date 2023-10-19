@@ -9,7 +9,7 @@ from datetime import datetime
 from PIL import Image
 from io import StringIO
 import re
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Union, Dict, Any, get_args, get_origin
 from fuzzywuzzy import process
 
 import sys
@@ -286,21 +286,38 @@ def convert_BaseModel(cls, examples:bool=False, return_as_string:bool=True):
         return datetime.now().strftime('%Y-%m-%d')
       else:
         return '<Blank>'
-
+      
+    def get_default_value(field_type, default_value):
+      if get_origin(field_type) in (Optional, Union):
+        actual_types = get_args(field_type)
+        if float in actual_types or int in actual_types:
+          return '<To fill>'
+        return '<Blank>'
+      return random_value_for_type(field_type) if default_value in ['None', 'PydanticUndefined'] else '<Blank>'
+    
     def create_random_row(cls):
+      non_calculation_fields = [
+        'lat', 'lon', 'postcode', 'employee_id', 
+        'reported_emissions', 'estimated_emissions',
+      ]
+
       row = {}
       for field_name, field_info in cls.model_fields.items():  # pydantic only
+        field_type = field_info.annotation
+        default_value = str(field_info.default) # str representation to catch PydanticUndefined
+        
         if field_name == 'uuid':  # Skip uuid field
           continue
 
-        field_type = field_info.annotation
-        default_value = str(field_info.default) # str representation to catch PydanticUndefined
-  
-        # Check if a default value exists and is not None or Undefined
         if default_value not in ['None', 'PydanticUndefined']:
           row[field_name] = default_value
+          continue
+
+        if field_name in non_calculation_fields:
+          row[field_name] = '<Blank>'
         else:
-          row[field_name] = random_value_for_type(field_type) if default_value in ['None', 'PydanticUndefined'] else '<Blank>'
+          row[field_name] = get_default_value(field_type, default_value)
+
       return row
 
     NUM_ROWS = 5
@@ -314,6 +331,7 @@ def convert_BaseModel(cls, examples:bool=False, return_as_string:bool=True):
       example_row = create_random_row(cls)
       df.loc[i] = example_row # avoid pandas complaining about all-NA entries concat
       # df = pd.concat([df, pd.DataFrame([example_row])], axis=0, ignore_index=True)
+
 
   # Sort columns according to globals
   df = df[[col for col in COLUMN_SORT_ORDER if col in df.columns]] 

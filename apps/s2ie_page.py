@@ -176,9 +176,14 @@ def s2ie_Page():
         st.error('Nothing to display here. Have you uploaded or analyzed your uploaded files?')
 
       if 's2ie_calc_results' in st.session_state and st.session_state['s2ie_calc_results'] != {}:
+        # Check if warnings are discovered
+        if len(state['s2ie_warnings'].items()) > 0:
+            st.error('Invalid data table values found. Please refer to error logs in "Show warnings". Directory: "Submit & Review" >> "Analyze uploads"')
+            st.stop()
+
         res_df = st.session_state['s2ie_calc_results'] # key: Model name, val: Calculator
         res_df = calculators_2_df(res_df) # convert each k/v to df
-
+        
         emissionOverviewPart(df=res_df)
 
         st.write('')
@@ -208,7 +213,7 @@ def emissionOverviewPart(df):
     style_metric_cards(background_color='#D6D6D6', border_left_color='#28104E', border_radius_px=60)
 
     total_s2 = df[df['scope'] == 2]['emission_result'].sum()
-    st.metric(label="Scope 3 Emissions", value=format_metric(total_s2))
+    st.metric(label="Scope 2 Emissions", value=format_metric(total_s2))
     st.divider()
 
     st.subheader('Top contributors')
@@ -303,4 +308,4 @@ analysis_md = """
   - "Show results table" to display the raw output of the model
 """
 
-footer_md = """*(Highlighted columns with <Blank> are optional. Blue column indicates recommended default values)*"""
+footer_md = """*(Highlighted columns with <Blank> and <To fill> are optional. <To fill> indicates fields that can affect calculations. Blue column indicates recommended default values)*"""

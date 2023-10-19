@@ -5,13 +5,14 @@ from streamlit_extras.metric_cards import style_metric_cards
 import math
 import numpy as np
 import pandas as pd
+from PIL import Image
 
 import plotly.express as px
 import plotly.graph_objs as go
 
 from utils.utility import format_metric
 from utils.model_df_utility import calculators_2_df
-from utils.charting import make_bar_chart, make_donut_chart
+from utils.charting import make_donut_chart, sort_str_column_numeric
 
 
 
@@ -104,13 +105,15 @@ def emissionOverviewPart(df):
 
       temp = df.copy()
       temp['scope_str'] = "Scope " + temp['scope'].astype(str)
-      
+      temp = temp.sort_values('scope_str', ascending=True)
       total_co2e = temp['emission_result'].sum()
+
+      # st.write(temp)
 
       donut_fig = make_donut_chart(
         temp, group_col='scope_str', value_col='emission_result', hole=0.5, theme='bj3', 
-        center_text=f'<b>Total<br>Emissions :<br>{format_metric(total_co2e)} <b>',
-        horizontal_legend=True, height=600
+        center_text=f'<b>Total<br>Emissions :<br>{format_metric(total_co2e)} <b>', hover_units='kg',
+        horizontal_legend=True, height=600, sort_order=False, legend_sort=False
       )
       
       c1,c2,c3 = st.columns([1,3,1])
@@ -159,8 +162,10 @@ def emissionOverviewPart(df):
             x=0.5,
             y=1,
             xanchor='center',
-            yanchor='bottom'
-          )
+            yanchor='bottom',
+            traceorder="normal",
+          ),
+          hoverlabel=dict(font_size=18),
       )
 
       c1,c2,c3 = st.columns([1,6,1])
@@ -184,15 +189,62 @@ def categoryPerformancePart(df):
       if len(scope_df) < 1:
         continue
 
-      fig = make_bar_chart(
-        scope_df, scope_col=None, category_col='category_name', year_col=None, value_col='emission_result', 
-        percent=show_percent, legend=show_legend,
-        theme='bj7_v2', title=f'Scope {scope}', watermark=False, horizontal_legend=True, legend_sort_numeric=True, auto_adjust_height=True
+      category_col = 'category_name'
+      value_col='emission_result'
+      unit='kg'
+
+      grouped_df = scope_df.copy()
+      if show_percent:
+        total_value = grouped_df[value_col].sum()
+        grouped_df[value_col] = 100 * grouped_df[value_col] / total_value
+        unit='%'
+      
+      grouped_df = sort_str_column_numeric(grouped_df, category_col, ascending=False)
+
+      height = 200
+      nuniq = len( grouped_df[category_col].unique() )
+      height += nuniq * 50
+      
+      fig = go.Figure()
+      for cat in grouped_df[category_col].unique() if category_col else [None]:
+        cat_data = grouped_df[grouped_df[category_col] == cat] if category_col else grouped_df
+        hover_template_str = f"<b>%{{label}}</b><br>%{{value:.2f}} {unit}"  
+
+        if nuniq <= 3:
+          name = str(cat)
+        else:
+          name = str(cat)[:2]
+        
+        fig.add_trace(go.Bar(
+          y=[cat],
+          x=cat_data[value_col],
+          name=name,
+          text=cat_data[value_col].apply(lambda x: f"<b>{cat}</b><br><b>{x:.2f}</b>"),
+          textposition='inside',
+          orientation='h',
+          hovertemplate=hover_template_str,
+        ))
+
+      fig.update_layout(
+        title=f'Scope {scope}',
+        title_x=0.5,
+        title_y=1, 
+        hoverlabel=dict(font_size=18),
+        height=height,
+        showlegend=show_legend,
+        legend=dict(orientation='h', x=0, y=0.9, xanchor='left', yanchor='top'),
+        legend_traceorder="reversed",
+
+        margin=dict(l=0, r=0, t=0, b=0, pad=0),
+        xaxis=dict(domain=[0, 1]),
+        yaxis=dict(domain=[0, 0.8]),
+        template='bj7_v2',
       )
 
       c1,c2,c3 = st.columns([1,6,1])
       with c2:
         st.plotly_chart(fig, use_container_width=True)
+      st.divider()
 
 
 def hierarchalFlowPart(df):
@@ -238,7 +290,8 @@ def hierarchalFlowPart(df):
           )
       ))
 
-      fig.update_layout(title_text="<b>Emissions Flow</b>", title_x=0.5, font_size=10, height=700)
+      fig.update_layout(title_text="<b>Emissions Flow</b>", title_x=0.5, font_size=16, height=700)
+      fig.update_layout(hoverlabel=dict(font_size=20))
       fig.update_layout(template='google')
       fig.update_layout(images=st.session_state.watermark_settings)
       fig.update_layout(showlegend=False)
@@ -335,7 +388,8 @@ def contributorAnalysisPart(df):
               x=[row[selected_category]],  # x should be a list or array
               y=[row['emission_result']],  # y should also be a list or array
               name=str(row[selected_category]),
-              yaxis='y1'
+              yaxis='y1',
+              hovertemplate=f"%{{value:.2f}} kg"
           ))
 
       # Cumulative Sum Line
@@ -344,30 +398,32 @@ def contributorAnalysisPart(df):
           y=sorted_df['cum_sum_percent'],
           mode='lines+markers',
           name='Cumulative Sum (%)',
-          yaxis='y2'
+          yaxis='y2',
+          hovertemplate ='%{y:.2f} %',
       ))
 
       # Update layout
       fig_v.update_layout(
           title='',
           xaxis_title=f'<b>{selected_category}</b>',
-          yaxis=dict(title='<b>Emission Result</b>'),
+          yaxis=dict(title='<b>Emission Result</b>', domain=[0, 0.8]),
           yaxis2=dict(
               title='<b>Cumulative Sum (%)</b>',
               overlaying='y',
               side='right',
-              range=[0, 100]
+              range=[0, 100], 
+              domain=[0, 0.8]
           ),
           height=600,
           template='google',
-          legend=dict(
-            orientation='h', title=None,
-            x=0.5, y=1, xanchor='center', yanchor='bottom'
-          ),
+          legend=dict(orientation='h', x=0, y=0.9, xanchor='left', yanchor='top'),
           showlegend=True,
-          hovermode="x"
+          hovermode="x",
+          hoverlabel=dict(font_size=18),
+          margin=dict(l=0, r=0, t=0, b=0, pad=0), 
       )
       c1,c2,c3=st.columns([1,4,1])
+
       with c2:
         if display_type == 'Bar':
           st.plotly_chart(fig_v, use_container_width=True)
@@ -431,6 +487,10 @@ def dataQualityPart(df):
       opacity=0.6
     )
 
+    fig.update_traces(
+      hovertemplate = "Data Quality: %{x}<br>Emissions: %{y:.2f} kg"
+    )
+
     fig.update_layout(
       title='Data Gap Discovery',
       xaxis_title=f'<b>{xdata}</b>',
@@ -438,10 +498,8 @@ def dataQualityPart(df):
       height=600,
       width=900,
       template='google',
-      legend=dict(
-        orientation='h', title=None,
-        x=0.5, y=1, xanchor='center', yanchor='bottom'
-      )
+      legend=dict(orientation='h', title=None, x=0.5, y=1, xanchor='center', yanchor='bottom'),
+      hoverlabel=dict(font_size=20),
     )
     fig.update_xaxes(range=[0, 5])
 

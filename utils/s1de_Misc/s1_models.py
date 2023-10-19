@@ -43,7 +43,7 @@ class S1_StationaryCombustion(S1_BaseModel):
     fuel_use: Optional[float] = Field(None, ge=0)
     fuel_unit: Optional[str] = Field(default='litre')
     
-    heating_value: Optional[str] = Field(None)        
+    heating_value: Optional[float] = Field(None)        
     fuel_spend: Optional[float] = Field(None, ge=0)
     currency: Optional[str] = Field(default='USD') 
 

@@ -87,9 +87,14 @@ def show_example_form(BaseModelCls, title:str, button_text: str, filename: str, 
                     'backgroundColor': 'teal',
                     'color': 'white'
                 }
+            } else if (params.value === '<To fill>') {
+                return {
+                    'backgroundColor': 'orange',
+                    'color': 'black'
+                }
             } else if (typeof params.value === 'string' && !params.value.includes('EXAMPLE')) {
                 return {
-                    'backgroundColor': 'paleturquoise',
+                    'backgroundColor': 'turquoise',
                     'color': 'black'
                 }
             } else {

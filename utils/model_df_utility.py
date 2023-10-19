@@ -19,6 +19,7 @@ def df_to_calculator(df:pd.DataFrame, calculator, creator, progress_bar=True):
     Example: `create_data_for_model(**kwargs) -> Model(**kwargs)`. Advised to use `partial(create_data)` as input param. 
   """
   df = df.replace('<Blank>', None)
+  df = df.replace('<To fill>', None)
   df = df.replace(np.nan, None)
 
   if progress_bar:

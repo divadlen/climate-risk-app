@@ -178,6 +178,7 @@ def make_donut_chart(
     hole=0.3, 
     percent=False, 
     title='', 
+    hover_units='',
     center_text=None, 
     height=None, 
     width=None, 
@@ -185,7 +186,10 @@ def make_donut_chart(
     watermark=True,
     legend=True,
     legend_dark=False,
-    horizontal_legend=False
+    horizontal_legend=False,
+    sort_order=True,
+    legend_sort=False,
+    hover_fontsize=18,
 ):
     # Group the data
     grouped_data = df.groupby(group_col).agg({value_col: 'sum'}).reset_index()
@@ -198,21 +202,24 @@ def make_donut_chart(
 
     if percent:
         grouped_data.loc[:, value_col] = 100 * grouped_data[value_col] / total_emissions
-    
+
+    hover_template_str = f"%{{label}} = %{{value:.2f}} {hover_units} (%{{percent}})"  
     # Create the figure
     fig = go.Figure(data=[go.Pie(
         labels=grouped_data[group_col],
         values=grouped_data[value_col],
         hole=hole,
+        name='',
 
         customdata=grouped_data['percent'],
         textinfo='label+percent',
         textfont_size=15,
         insidetextorientation='horizontal',
         texttemplate="<br>%{value:.2f}<br>%{customdata:.2f}%",
-        sort=True,
+        hovertemplate=hover_template_str,
+        hoverlabel = dict(namelength = -1),
+        sort=sort_order,
         direction="clockwise",
-        hovertemplate="%{label} = %{value} (%{percent})",
     )])
     
     # Update layout
@@ -223,6 +230,7 @@ def make_donut_chart(
         height=height,
         width=width,
         annotations=[dict(text=center_text, x=0.5, y=0.5, font_size=15, showarrow=False)], 
+        hoverlabel=dict(font_size=hover_fontsize)
     )
     fig.update_traces()
     if theme:
@@ -235,6 +243,8 @@ def make_donut_chart(
         fig.update_layout(legend = legend_settings_dark())
     if horizontal_legend:
         fig.update_layout(title_y=1, legend=dict(orientation='h', x=0.5, y=-0.05, xanchor='center', yanchor='top'))
+    if legend_sort:
+        fig.update_layout(legend_traceorder="reversed")
 
     return fig
 

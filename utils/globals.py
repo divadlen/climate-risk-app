@@ -59,8 +59,8 @@ COLUMN_SORT_ORDER = [
 
   # refrigerant descriptions
   'refrigerant_type', 'refrigerant_unit',
-  'refrigerant_capacity',
   'refrigerant_use', 'refrigerant_per_use',
+  'refrigerant_capacity',
 
   # distance descriptions
   'distance_traveled', 'distance', 'distance_unit', 'distance_emission_factor', 
