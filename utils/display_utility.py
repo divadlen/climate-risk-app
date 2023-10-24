@@ -99,8 +99,8 @@ def show_example_form(BaseModelCls, title:str, button_text: str, filename: str, 
                 }
             } else {
                 return {
-                    'color': 'black',
-                    'backgroundColor': 'white',
+                    'backgroundColor': 'darkorange',
+                    'color': 'black'
                 }
             }
         }

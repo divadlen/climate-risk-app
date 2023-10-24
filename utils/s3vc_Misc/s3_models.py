@@ -242,6 +242,7 @@ class S3C6_1_BusinessTravel(S3_BaseModel):
 
     distance_traveled: Optional[float] = Field(None, ge=0)
     distance_unit: Optional[str] = Field(default='km')
+    reported_emissions: Optional[float] = Field(None, ge=0, description='')
 
     @model_validator(mode='before')
     def validate_s3c6(cls, values):
@@ -277,6 +278,7 @@ class S3C6_2_BusinessStay(S3_BaseModel):
 
     no_of_nights: int = Field(default=1, ge=0)
     hotel_emission_factor: Optional[float] = Field(None, ge=0, description='Expedia may have those numbers')
+    reported_emissions: Optional[float] = Field(None, ge=0, description='')
 
 
 

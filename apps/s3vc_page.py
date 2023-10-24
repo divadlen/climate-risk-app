@@ -90,9 +90,7 @@ def s3vc_Page():
           st.experimental_rerun() 
 
 
-    with tab2:
-      footer_md = """*(Highlighted columns with <Blank> and <To fill> are optional. <To fill> indicates fields that can affect calculations. Blue column indicates recommended default values)*"""
-      
+    with tab2:      
       st.subheader('User Guide')
       with st.expander('Show help', expanded=True):
         download_desc = 'Click on the links in Table of Contents to redirect you to the recommended tables to fill. Download the example forms. Each transaction counts as a row.'
@@ -540,3 +538,4 @@ table_of_contents_md="""
   - [5. Sovereign Debt / Government Bonds](#S3C15_5_SovereignDebt)
 """
 
+footer_md = """*(<Blank> and <To fill> are optional. <To fill> indicates optional fields that can affect calculations. Blue indicates REQUIRED fields with recommended default values. Orange indicates REQUIRED fields.)*"""
