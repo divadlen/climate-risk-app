@@ -62,7 +62,7 @@ def s2ie_Page():
       )
 
     with st.expander('Visual help'):
-      with open("resources/mds/s1sc-general-guide-1.md", "r") as gmd:
+      with open("resources/mds/s2ie-general-guide.md", "r") as gmd:
         readme = gmd.read()
       readme = markdown_insert_images(readme)
       st.markdown(readme, unsafe_allow_html=True) 
