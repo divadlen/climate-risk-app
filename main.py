@@ -71,10 +71,11 @@ def run_app():
   # st.image("./resources/G1-long.png", use_column_width=True, width=None)
   col1, col2, col3 = st.columns([1,2,1])
   with col2:
-    st.image("./resources/G1-long.png", use_column_width=True, width=None)
+    pass
+  st.image("./resources/imgs/banner.png", use_column_width=True, width=None)
 
   with st.sidebar:
-    # st.image("./resources/BlackText_Logo_Horizontal.png", use_column_width=True, width=None)
+    # st.image("./resources/imgs/TRACE_logo.png", use_column_width=True, width=None)
 
     if user_level < 2:
       st.info(f"Welcome **{st.session_state.username}**! Your account is not yet verified internally. Please enjoy the demo pages.")
@@ -89,7 +90,7 @@ def run_app():
     #   reconcile_theme_config()  # Apply the theme
 
     with st.expander('App version'):
-      st.write('0.4.5')
+      st.write('0.4.6')
 
     st.markdown('Copyright © 2023 Gecko Technologies')
 

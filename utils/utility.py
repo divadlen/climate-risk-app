@@ -12,6 +12,7 @@ import re
 from typing import List, Optional, Union, Dict, Any, get_args, get_origin
 from fuzzywuzzy import process
 
+import os 
 import sys
 from supabase import create_client
 from supabase.lib.client_options import ClientOptions
@@ -22,7 +23,7 @@ supabase_url= st.secrets['supabase_url']
 supabase_anon_key= st.secrets['supabase_anon_key']
 
 #-----
-# Math 
+# Text formatting
 #-----
 def format_metric(value) -> str:
     if value <= 0:
@@ -44,11 +45,22 @@ def format_metric(value) -> str:
         return f"{value / 10**exponent:.2f}e{exponent} tCO2e"
 
 
+def clamp(n, minn=1, maxn=5):
+  return max(min(maxn, n), minn)
+
+
+def clean_text(text):
+  clean_text = re.sub(r'[^a-zA-Z0-9_,.:\s\[\]]', ' ', text)
+  return clean_text
+
+
+def snake_case_to_label(s:str):
+  return ' '.join(word.capitalize() for word in s.split('_'))
+
+
 #-----
 # Theming
 #-----
-import os 
-
 def set_theme():
     if st.session_state.theme_choice == 'Light':
         st.session_state.theme_colors = {
@@ -198,20 +210,11 @@ def get_lookup(
     
     except Exception as e:
         raise e
-
-
-def clamp(n, minn=1, maxn=5):
-  return max(min(maxn, n), minn)
-
+    
 
 @st.cache_data
 def get_dataframe(data):
   return pd.DataFrame(data)
-
-
-def clean_text(text):
-  clean_text = re.sub(r'[^a-zA-Z0-9_,.:\s\[\]]', ' ', text)
-  return clean_text
 
 
 def find_closest_category(input_str, allowed_list:list, threshold=80, abbrv_dict: dict={}):

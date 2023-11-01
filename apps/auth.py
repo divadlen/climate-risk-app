@@ -26,7 +26,8 @@ def AuthApp():
 
   col1, col2, col3 = st.columns([1,2,1])
   with col2:
-    st.image("./resources/G1-long.png", use_column_width=True, width=None)
+    pass
+  st.image("./resources/imgs/banner.png", use_column_width=True, width=None)
 
   tab1, tab2, tab3 = st.tabs(["Login", "Sign Up", "Forgot Password"])
 

@@ -7,7 +7,7 @@ from datetime import datetime
 from functools import partial
 from typing import Union, get_args, get_origin
 
-from utils.utility import find_closest_category
+from utils.utility import find_closest_category, snake_case_to_label
 from utils.globals import ABBRV_IDX_TO_CATEGORY_NAME, COLUMN_SORT_ORDER
 from utils.model_inferencer import ModelInferencer
 from utils.display_utility import show_example_form, pandas_2_AgGrid
@@ -67,7 +67,7 @@ def build_dynamic_forms(model, cache, field_to_cache_func):
     state['fuel_type'] = 'Select fuel type'
 
   # Init lists
-  country_list = cache.get_allowed_countries()
+  country_list = cache.get_allowed_countries() # pointless to save these into session. You need to write a lot of lines to save a few ms of API call
   state_list = []
   fuel_list = []
 
@@ -77,7 +77,7 @@ def build_dynamic_forms(model, cache, field_to_cache_func):
     fuel_list = cache.get_allowed_fuel_type(fuel_state=state['fuel_state'])
   
   # Create an expander for the dynamic form
-  with st.expander('Form content preview'):
+  with st.expander('Form content preview', expanded=True):
     # Loop based on the custom sort order
     for field_name in COLUMN_SORT_ORDER:
       if field_name not in model.model_fields:
@@ -98,24 +98,24 @@ def build_dynamic_forms(model, cache, field_to_cache_func):
         continue
       
       elif field_name in ['lat']:
-        st.slider(label=field_name, min_value=float(-90), max_value=float(90), value=0.000, step=0.001)
+        st.slider(label=snake_case_to_label(field_name), min_value=float(-90), max_value=float(90), value=0.000, step=0.001)
 
       elif field_name in ['lon']:
-        st.slider(label=field_name, min_value=float(-180), max_value=float(180), value=0.000, step=0.001)
+        st.slider(label=snake_case_to_label(field_name), min_value=float(-180), max_value=float(180), value=0.000, step=0.001)
 
       elif field_name in ['attribution_share', 'install_loss_rate', 'annual_leak_rate', 'recovery_rate', 'ownership_share']:
-        st.slider(label=field_name, min_value=float(0), max_value=float(1), value=0.1, step=0.01)
+        st.slider(label=snake_case_to_label(field_name), min_value=float(0), max_value=float(1), value=0.1, step=0.01)
 
       elif field_name in ['waste_state']:
-        st.selectbox(label=field_name, options=['solid', 'liquid', 'gas'], index=1)
+        st.selectbox(label=snake_case_to_label(field_name), options=['solid', 'liquid', 'gas'], index=1)
 
       elif field_name in ['fuel_state']:
-        state['fuel_state'] = st.selectbox(label=field_name, options=['solid', 'liquid', 'gas'], index=1)
+        state['fuel_state'] = st.selectbox(label=snake_case_to_label(field_name), options=['solid', 'liquid', 'gas'], index=1)
 
       # if field name has dynamic option select
       elif field_name in field_to_cache_func:
         if field_name == 'country':
-          selected_country = st.selectbox(label=field_name, options=country_list)
+          selected_country = st.selectbox(label=snake_case_to_label(field_name), options=country_list if country_list else [None])
           # refresh state if country input is updated
           if selected_country != state['country']:
             state['country'] = selected_country
@@ -124,14 +124,14 @@ def build_dynamic_forms(model, cache, field_to_cache_func):
         elif field_name == 'state':
           if state['country'] != 'Select country':
             options = state_list
-            selected_state = st.selectbox(label=field_name, options=options)
+            selected_state = st.selectbox(label=snake_case_to_label(field_name), options=options if options else [None])
             if selected_state != state['state']:
               state['state'] = selected_state
 
         elif field_name == 'fuel_type':
           if state['fuel_state'] != 'Select fuel state':
             options = fuel_list
-            selected_fuel_type = st.selectbox(label=field_name, options=options)
+            selected_fuel_type = st.selectbox(label=snake_case_to_label(field_name), options=options if options else [None])
             if selected_fuel_type != state['fuel_type']:
               state['fuel_type'] = selected_fuel_type
 
@@ -141,13 +141,13 @@ def build_dynamic_forms(model, cache, field_to_cache_func):
             
       elif origin == None: # if origin has only one type
         if field_type == str:
-          st.text_input(label=field_name, placeholder=placeholder)
+          st.text_input(label=snake_case_to_label(field_name), placeholder=placeholder)
         elif field_type == float:
-          st.number_input(label=field_name)
+          st.number_input(label=snake_case_to_label(field_name))
         elif field_type == int:
-          st.number_input(label=field_name, step=1)
+          st.number_input(label=snake_case_to_label(field_name), step=1)
         elif field_type == bool:
-          st.selectbox(label=field_name, options=[True, False])
+          st.selectbox(label=snake_case_to_label(field_name), options=[True, False])
         elif field_type == datetime:
           st.date_input(label=field_name)
 
@@ -156,18 +156,17 @@ def build_dynamic_forms(model, cache, field_to_cache_func):
         actual_type = valid_types[0] # get the first accepted type for field that is not None
 
         if actual_type == str:
-          st.text_input(label=field_name, placeholder=placeholder)
+          st.text_input(label=snake_case_to_label(field_name), placeholder=placeholder)
         elif actual_type == float:
-          st.number_input(label=field_name)
+          st.number_input(label=snake_case_to_label(field_name))
         elif actual_type == int:
-          st.number_input(label=field_name, step=1)
+          st.number_input(label=snake_case_to_label(field_name), step=1)
         elif actual_type == datetime:
-          st.date_input(label=field_name)
+          st.date_input(label=snake_case_to_label(field_name))
         elif actual_type == bool:
-          st.selectbox(label=field_name, options=[True, False])
+          st.selectbox(label=snake_case_to_label(field_name), options=[True, False])
 
-    # if st.button('Proceed'):
-    #   pass
+
 
 
 

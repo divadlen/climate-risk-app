@@ -299,15 +299,16 @@ class S3C7_EmployeeCommute(S3_BaseModel):
 
     distance_traveled: float = Field(default=1, ge=0)
     distance_unit: str = Field(default='km')
+    distance_cadence: Optional[str] = Field(default='yearly', description='Specify if the distance is a daily, monthly, or yearly total')
 
     frequency: int = Field(default=1, description='Number of times this commuting mode is used')
     sampled_days: int = Field(default=260, description='Working days. 260 is the average number per year')
-    # distance_cadence: str = Field(default='yearly', description='')
 
     @model_validator(mode='before')
     def validate_s3c7(cls, values):
         travel_mode = values.get('travel_mode')
         distance_unit = values.get('distance_unit')
+        cadence = values.get('distance_cadence')
 
         # validate travel mode
         valid_travel_modes = ['foot', 'rail', 'land', 'air', 'water', None]
@@ -321,8 +322,14 @@ class S3C7_EmployeeCommute(S3_BaseModel):
         elif distance_unit.lower() not in supported_distance_unit:
             raise ValueError(f'Invalid distance unit. Supported distance unit {supported_distance_unit}')
         
+        # validate cadence
+        supported_cadence = ['yearly', 'monthly', 'daily', None]
+        if cadence is None:
+            values['distance_cadence'] = 'yearly'
+        elif cadence.lower() not in supported_cadence:
+            raise ValueError(f'Invalid distance cadence. Supported cadence {supported_cadence}')
+
         return values
-    
 
 
 #-- Category 8 : Upstream leased assets
@@ -409,7 +416,7 @@ class S3C9_DownstreamTransport(S3_BaseModel):
     2. vehicle_type >> freight_weight >> distance_traveled
     """
     distributor_name: Optional[str] = Field(default=None, description='Optional if you dont know the distributor')
-    # customer_name
+    customer_name: Optional[str] = Field(default=None, description='Optional if you dont know the customer')
     
     travel_mode: str = Field(default='Land')
     freight_type: str = Field(default='Truck')

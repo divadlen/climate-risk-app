@@ -13,7 +13,7 @@ COLUMN_SORT_ORDER = [
   'uuid', 'date', 'description',
   'employee_id', 'franchisee_id',
   'product_name', 'product_class',
-  'distributor_name', 
+  'distributor_name', 'customer_name',
   'process_name',
   'equipment_name',
 
@@ -32,7 +32,9 @@ COLUMN_SORT_ORDER = [
   'branch', 'department', 'street_address_1', 'street_address_2', 'city', 'postcode',
 
   # Company descriptions
-  'financial_type', 'company_name', 'sector', 'asset_class', 'is_listed', 'owned',
+  'financial_type', 'company_name', 'sector', 'subsector', 
+  'asset_class', 'is_listed', 'owned', 
+  'date_acquired', 'date_disposed',
 
    # supplier descriptions
   'supplier_name', 'purchased_quantity', 'quantity_unit', 'quantity_emission_factor', 'supplier_incurred_emissions',
@@ -63,7 +65,8 @@ COLUMN_SORT_ORDER = [
   'refrigerant_capacity',
 
   # distance descriptions
-  'distance_traveled', 'distance', 'distance_unit', 'distance_emission_factor', 
+  'distance_traveled', 'distance', 'distance_unit', 
+  'distance_cadence', 'distance_emission_factor', 
 
   # building descriptions
   'floor_area', 'area_unit', 'building_energy_use', 'building_emission_factor', 'year_constructed',

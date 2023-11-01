@@ -47,12 +47,31 @@ class S3C15_1_CorporateFinance(S3C15_BaseAsset):
     financial_type: str = 'Corporate Finance'
     company_name: str
     sector: str
+    subsector: Optional[str] = None
+    date_acquired: Optional[Union[datetime, str]] = Field(None)
+    date_disposed: Optional[Union[datetime, str]] = Field(None)
+
     outstanding_amount: float = Field(ge=0, description='Market price times number of shares')
     currency: str = Field(default='USD')
     attribution_share: Optional[float] = Field(None, ge=0, le=1)
     reported_emissions: Optional[float] = Field(None, ge=0)
     estimated_emissions: Optional[float] = Field(None, ge=0)
     emission_estimation_description: Optional[str] = Field(None, max_length=1200, description='Reported, physical, economic, location proxy')
+
+    @model_validator(mode='before')
+    def validate_dates(cls, values):    
+      for key, value in values.items():
+        if value is None: # skip if value is none
+          continue
+        if isinstance(value, datetime): # if value instance is dt, try parse
+          values[key] = value.strftime('%Y-%m-%d')
+        else:
+          try:
+            parsed_date = parser.parse(value)
+            values[key] = parsed_date.strftime('%Y-%m-%d')
+          except:
+            raise ValueError(f'Invalid date format for {key}. Try inputting in YYYY-MM-DD')
+      return values
         
         
 class S3C15_2_ConsumerFinance(S3C15_BaseAsset):
@@ -69,6 +88,7 @@ class S3C15_3_ProjectFinance(S3C15_BaseAsset):
     financial_type: str = 'Project Finance'
     company_name: str
     sector: str
+    subsector: Optional[str] = None
     asset_class: str = None
     outstanding_amount: float = Field(ge=0, description='Market value of debt')
     total_equity: Optional[float] = Field(None, ge=0)
@@ -84,6 +104,7 @@ class S3C15_4_EmissionRemovals(S3C15_BaseAsset):
     financial_type:str='Corporate Finance'
     company_name: str
     sector: str
+    subsector: Optional[str] = None
     asset_class: str = 'Emission Removals'
     outstanding_amount: float = Field(ge=0, description='Market value of holdings')
     enterprise_value: float = Field(ge=0, description='Enterprise value plus cash for company')
