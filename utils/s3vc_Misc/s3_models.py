@@ -302,6 +302,7 @@ class S3C7_EmployeeCommute(S3_BaseModel):
 
     frequency: int = Field(default=1, description='Number of times this commuting mode is used')
     sampled_days: int = Field(default=260, description='Working days. 260 is the average number per year')
+    # distance_cadence: str = Field(default='yearly', description='')
 
     @model_validator(mode='before')
     def validate_s3c7(cls, values):
@@ -340,7 +341,7 @@ class S3C8_1_UpstreamLeasedEstate(S3_BaseModel):
     """
     leased_asset_name: str
     leased_asset_type: str = Field(default='Real Estate')
-    ownership_status: str = Field(default='Renter')
+    ownership_status: str = Field(default='Leased')
     ownership_share: Optional[float] = Field(default=1, ge=0, le=1, description='Applicable for leased buildings with limited floor space. Divide floor space from total for building.')
     
     address: Optional[str] = Field(None, description='Only applicable if rented asset is real estate. Not applicable for automobiles')
@@ -360,7 +361,7 @@ class S3C8_1_UpstreamLeasedEstate(S3_BaseModel):
 
     @model_validator(mode='before')
     def validate_s3c8(cls, values):
-        values['ownership_status'] = 'Renter'
+        values['ownership_status'] = 'Leased'
         values['leased_asset_type'] = 'Real Estate'
         return values
     
@@ -378,7 +379,7 @@ class S3C8_2_UpstreamLeasedAuto(S3_BaseModel):
     """
     leased_asset_name: str
     leased_asset_type: str = Field(default='Automobile')
-    ownership_status: str = Field(default='Renter')
+    ownership_status: str = Field(default='Leased')
 
     fuel_use: Optional[float] = Field(None, ge=0)
     fuel_type: Optional[str] = Field(default='petrol', description='Supports only liquid fuels')
@@ -392,7 +393,7 @@ class S3C8_2_UpstreamLeasedAuto(S3_BaseModel):
 
     @model_validator(mode='before')
     def validate_s3c8(cls, values):
-        values['ownership_status'] = 'Renter'
+        values['ownership_status'] = 'Leased'
         return values
 
 
@@ -408,6 +409,7 @@ class S3C9_DownstreamTransport(S3_BaseModel):
     2. vehicle_type >> freight_weight >> distance_traveled
     """
     distributor_name: Optional[str] = Field(default=None, description='Optional if you dont know the distributor')
+    # customer_name
     
     travel_mode: str = Field(default='Land')
     freight_type: str = Field(default='Truck')
@@ -532,7 +534,7 @@ class S3C13_1_DownstreamLeasedEstate(S3_BaseModel):
     """
     leased_asset_name: str
     leased_asset_type: str = Field(default='Real Estate')
-    ownership_status: str = Field(default='Owner')
+    ownership_status: str = Field(default='Owned')
 
     address: Optional[str] = Field(None)
     state: Optional[str] = Field(None)
@@ -551,7 +553,7 @@ class S3C13_1_DownstreamLeasedEstate(S3_BaseModel):
 
     @model_validator(mode='before')
     def validate_s3c13(cls, values):
-        values['ownership_status'] = 'Owner'
+        values['ownership_status'] = 'Owned'
         return values
     
 
@@ -571,7 +573,7 @@ class S3C13_2_DownstreamLeasedAuto(S3_BaseModel):
     """
     leased_asset_name: str
     leased_asset_type: str = Field(default='Automobile')
-    ownership_status: str = Field(default='Owner')
+    ownership_status: str = Field(default='Owned')
 
     fuel_use: Optional[float] = Field(None, ge=0)
     fuel_type: Optional[str] = Field(default='petrol', description='Supports only liquid fuels')
@@ -585,7 +587,7 @@ class S3C13_2_DownstreamLeasedAuto(S3_BaseModel):
 
     @model_validator(mode='before')
     def validate_s3c13(cls, values):
-        values['ownership_status'] = 'Owner'
+        values['ownership_status'] = 'Owned'
         return values
 
     
@@ -615,6 +617,10 @@ class S3C14_Franchise(S3_BaseModel):
     # floor_area: Optional[float] = Field(None, ge=0) # cannot reliably get building emissions
     # area_unit: Optional[str] = Field(default='m2')
     # building_emission_factor: Optional[float] = Field(None, ge=0)
+
+    # fuel_use
+    # fuel_type
+    # fuel_unit
 
     refrigerant_use: Optional[float] = Field(None, ge=0, description='In practice, this is more often to be leaked than "used".')
     refrigerant_type: Optional[str] = Field(default='R-410A', description='R-410-A is most common refrigerants. In practice, many refrigerants have mixed composites')

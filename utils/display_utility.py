@@ -57,7 +57,16 @@ def pandas_2_AgGrid(df: pd.DataFrame, cellstyle_jscode=None, theme:str='streamli
   )
   return grid_response['data']
 
-def show_example_form(BaseModelCls, title:str, button_text: str, filename: str, markdown:str=None, key=None, expanded=False):
+def show_example_form(
+    BaseModelCls, 
+    title:str, 
+    button_text: str, 
+    filename: str, 
+    markdown:str=None, 
+    key: str=None, 
+    download_button:bool=True, 
+    expanded:bool=False
+  ):
     """ 
     BaseModelCls: 
       Pydantic BaseModel
@@ -89,7 +98,7 @@ def show_example_form(BaseModelCls, title:str, button_text: str, filename: str, 
                 }
             } else if (params.value === '<To fill>') {
                 return {
-                    'backgroundColor': 'orange',
+                    'backgroundColor': '#ecb79c',
                     'color': 'black'
                 }
             } else if (typeof params.value === 'string' && !params.value.includes('EXAMPLE')) {
@@ -99,21 +108,24 @@ def show_example_form(BaseModelCls, title:str, button_text: str, filename: str, 
                 }
             } else {
                 return {
-                    'backgroundColor': 'darkorange',
+                    'backgroundColor': '#db7641',
                     'color': 'black'
                 }
             }
         }
         """)
-        pandas_2_AgGrid(example_df, cellstyle_jscode=cellstyle_jscode, height=None, key=f'{str(uuid.uuid4())}')
+        if not key:
+          key=f'{str(uuid.uuid4())}'
 
-        st.download_button(
+        pandas_2_AgGrid(example_df, cellstyle_jscode=cellstyle_jscode, height=None, key=key)
+
+        if download_button:
+          st.download_button(
             label=button_text,
             data=csv_str,
             file_name=f'{filename}',
             mime='text/csv'
-        )
+          )
 
         if markdown:
           st.markdown(markdown)
-

@@ -89,7 +89,7 @@ def run_app():
     #   reconcile_theme_config()  # Apply the theme
 
     with st.expander('App version'):
-      st.write('0.4.4')
+      st.write('0.4.5')
 
     st.markdown('Copyright © 2023 Gecko Technologies')
 
@@ -158,6 +158,11 @@ def run_app():
       from apps.main_dash import main_dash_Page
       main_dash_Page()
 
+    @app.addapp(title='Forms Builder')
+    def formsApp():
+      from apps.easy_forms import easy_forms_page
+      easy_forms_page()
+
 
   def build_navigation(user_level=1):
     complex_nav = {}
@@ -172,6 +177,7 @@ def run_app():
     if user_level >= 2:
       complex_nav["Emissions Calculator"] = ['Scope 1: Direct Emissions', 'Scope 2: Indirect Emissions', 'Scope 3: Value Chain']
       complex_nav["Graphics"] = ["Overall Dashboard"]
+      complex_nav["Forms Builder"] = ['Forms Builder']
     
     # Always add Logout last
     complex_nav["logout"] = ['Logout']

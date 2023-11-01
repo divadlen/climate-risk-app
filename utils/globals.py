@@ -126,6 +126,44 @@ IDX_TO_CATEGORY_NAME = {
   15: 'Category 15 : Investments',
 }
 
+ABBRV_IDX_TO_CATEGORY_NAME = {
+  'S3C1': 'Category 1 : Purchased goods & services',
+  'S3C2': 'Category 2 : Capital goods',
+  'S3C3': 'Category 3 : Fuel- & energy-related activities (excluded in Scope 1 & 2)',
+  'S3C4': 'Category 4 : Upstream transportation & distribution',
+  'S3C5': 'Category 5 : Waste generated in operations',
+  
+  'S3C6_1': 'Category 6.1 : Business and air travel',
+  'S3C6_2': 'Category 6.2 : Business trips and stays',
+  
+  'S3C7': 'Category 7 : Employee commuting',
+
+  'S3C8_1': 'Category 8.1 : Upstream leased estate',
+  'S3C8_2': 'Category 8.2 : Upstream leased automobiles',
+
+  'S3C9': 'Category 9 : Downstream distribution of sold products',
+  'S3C10': 'Category 10 : Processing of sold products',
+  'S3C11': 'Category 11 : Use of sold products',
+  'S3C12': 'Category 12 : End-of-life treatment of sold products',
+  
+  'S3C13_1': 'Category 13.1 : Downstream leased estate',
+  'S3C13_2': 'Category 13.2 : Downstream leased automobiles',
+  
+  'S3C14': 'Category 14 : Franchises',
+  
+  'S3C15_1A': 'Category 15.1A : Listed Equity',
+  'S3C15_1B': 'Category 15.1B : Unlisted Equity', 
+  'S3C15_1C': 'Category 15.1C : Corporate Bonds',
+  'S3C15_1D': 'Category 15.1D : Business Loans',
+  'S3C15_1E': 'Category 15.1E : Commercial Real Estate',
+  'S3C15_2A': 'Category 15.2A : Mortgage',
+  'S3C15_2B': 'Category 15.2B : Vehicle Loans',
+  'S3C15_3': 'Category 15.3 : Project Finance',
+  'S3C15_4': 'Category 15.4 : Emission Removals',
+  'S3C15_5': 'Category 15.5 : Sovereign Debt',
+}
+
+
 
 class ColorDiscrete:
   tableau = ['#4E79A7', '#F28E2B', '#E15759', '#76B7B2', '#59A14F', '#EDC948', '#B07AA1', '#FF9DA7', '#9C755F', '#BAB0AC']

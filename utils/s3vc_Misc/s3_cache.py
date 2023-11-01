@@ -54,7 +54,7 @@ class S3_Lookup_Cache(BaseModel):
         return result
     
     
-    def get_allowed_states(self, country):
+    def get_allowed_states(self, country=None):
         CACHE_KEY = f'allowed_states_{country}'
         TABLE = 'locations_states'
         STATE_COL = 'state_name'

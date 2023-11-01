@@ -12,6 +12,9 @@ from typing import Optional, Dict, List, Union, Tuple, ClassVar, Any
 #----------
 # 1. Possible for outstanding amount to be greater than debt, which doesnt make practical sense
 # 2. 
+
+# subsector, ccpt_rating # optional
+# date_acquired, date_disposed
     
 
 
@@ -93,6 +96,10 @@ class S3C15_4_EmissionRemovals(S3C15_BaseAsset):
 
 
 class S3C15_5_SovereignDebt(S3C15_BaseAsset):
+    """ 
+    Attribution share is derived either: Outstanding / Debt or outstanding / GDP
+    GHGP recommends outstanding / GDP 
+    """
     financial_type: str = 'Corporate Finance'  
     asset_class: str = 'Sovereign Debt'
     country_code: str = Field(default='MY', max_length=2, description='Alpha-2 country code')
