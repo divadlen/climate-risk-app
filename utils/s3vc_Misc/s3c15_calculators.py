@@ -333,11 +333,11 @@ def calc_S3C15_3_ProjectFinance(asset: S3C15_BaseAsset):
         
         emission_result['reported_emissions_1'] = reported_emissions_1
         metadata.append( create_metadata('reported_emissions_1', reported_emissions_1, f1, data_quality) )
-        
-    f2 = ['outstanding_amount', 'total_equity', 'total_debt', 'project_emissions']
+
+    f2 = ['outstanding_amount', 'project_equity', 'total_debt', 'project_emissions']
     if all(getattr(asset, field, None) is not None for field in f2):
-        EV = asset.total_equity + asset.total_debt
-        reported_emissions_2 = round( (asset.outstanding_amount / EV) * asset.project_emissions, 2)
+        project_value = asset.project_equity + asset.project_debt
+        reported_emissions_2 = round( (asset.outstanding_amount / project_value) * asset.project_emissions, 2)
         data_quality -= 1
         
         emission_result['reported_emissions_2'] = reported_emissions_2
@@ -365,10 +365,11 @@ def calc_S3C15_4_EmissionRemovals(asset: S3C15_BaseAsset):
         
         emission_removals['reported_emissions_1'] = reported_emissions_1
         metadata.append( create_metadata('reported_emissions_1', reported_emissions_1, f1, data_quality) )
-        
-    f2 = ['outstanding_amount', 'enterprise_value', 'emissions_removed']
+
+    f2 = ['outstanding_amount', 'project_equity', 'total_debt', 'project_emissions']
     if all(getattr(asset, field, None) is not None for field in f2):
-        reported_emissions_2 = round( (asset.outstanding_amount / asset.enterprise_value) * asset.emissions_removed, 2)
+        project_value = asset.project_equity + asset.project_debt
+        reported_emissions_2 = round( (asset.outstanding_amount / project_value) * asset.project_emissions, 2)
         data_quality -= 1
         
         emission_removals['reported_emissions_2'] = reported_emissions_2
