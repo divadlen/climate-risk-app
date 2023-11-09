@@ -169,6 +169,7 @@ ABBRV_IDX_TO_CATEGORY_NAME = {
   'S3C15_3': 'Category 15.3 : Project Finance',
   'S3C15_4': 'Category 15.4 : Emission Removals',
   'S3C15_5': 'Category 15.5 : Sovereign Debt',
+  'S3C15_6': 'Category 15.6 : Managed Investments',
 }
 
 
