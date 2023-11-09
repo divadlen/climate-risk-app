@@ -56,6 +56,7 @@ class ModelInferencer:
             'S3C15_3_ProjectFinance': S3C15_3_ProjectFinance,
             'S3C15_4_EmissionRemovals': S3C15_4_EmissionRemovals,
             'S3C15_5_SovereignDebt': S3C15_5_SovereignDebt,
+            'S3C15_6_ManagedInvestments': S3C15_6_ManagedInvestments,
         }
         self.model_instances = {key: [] for key in self.available_models.keys()}
 

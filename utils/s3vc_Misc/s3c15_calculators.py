@@ -65,6 +65,10 @@ class S3C15_Calculator(BaseModel):
             
         elif isinstance(asset, (S3C15_5_SovereignDebt)):
             res = calc_S3C15_5_SovereignDebt(asset)
+        
+        elif isinstance(asset, (S3C15_6_ManagedInvestments)):
+            res = calc_S3C15_6_ManagedInvestments(asset)
+            
         else:
             res = None
             print(f'Asset {asset} not in expected data type. Unable to calculate')
@@ -423,6 +427,39 @@ def calc_S3C15_5_SovereignDebt(asset: S3C15_BaseAsset):
             metadata.append( create_metadata('estimated_emissions', estimated_emissions, ef1, data_quality) )
 
     return {'emission_result': emission_result, 'data_quality': data_quality, 'metadata': metadata}
+
+
+def calc_S3C15_6_ManagedInvestments(asset: S3C15_BaseAsset):
+    emission_result={}
+    data_quality=5
+    metadata=[]
+    
+    f1 = ['attribution_share', 'reported_emissions']
+    if all(getattr(asset, field, None) is not None for field in f1):
+        reported_emissions_1 = round(asset.attribution_share * asset.reported_emissions, 2)
+        
+        emission_result['reported_emissions_1'] = reported_emissions_1
+        metadata.append( create_metadata('reported_emissions_1', reported_emissions_1, f1, data_quality) )
+
+    f2 = ['outstanding_amount', 'total_equity', 'total_debt', 'reported_emissions']
+    if all(getattr(asset, field, None) is not None for field in f2):
+        EV = asset.total_equity + asset.total_debt
+        reported_emissions_2 = round( (asset.outstanding_amount / EV) * asset.reported_emissions, 2)
+        data_quality -= 1
+        
+        emission_result['reported_emissions_2'] = reported_emissions_2
+        metadata.append( create_metadata('reported_emissions_2', reported_emissions_2, f2, data_quality) )
+
+    # When you must estimate emissions
+    if getattr(asset, 'reported_emissions', None) is None:
+        ef1 = ['estimated_emissions']
+        if all(getattr(asset, field, None) is not None for field in ef1):
+            estimated_emissions = asset.estimated_emissions
+            emission_result['estimated_emissions'] = estimated_emissions
+            metadata.append( create_metadata('estimated_emissions', estimated_emissions, ef1, data_quality) )
+        
+    return {'emission_result': emission_result, 'data_quality': data_quality, 'metadata': metadata}
+
 
 
 #--

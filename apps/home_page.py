@@ -223,7 +223,7 @@ s2_models = ['S2_PurchasedPower']
 c15_models =[
   'S3C15_BaseAsset','S3C15_1A_ListedEquity','S3C15_1B_UnlistedEquity','S3C15_1C_CorporateBonds','S3C15_1D_BusinessLoans','S3C15_1E_CommercialRealEstate',
   'S3C15_2A_Mortgage','S3C15_2B_VehicleLoans',
-  'S3C15_3_ProjectFinance','S3C15_4_EmissionRemovals','S3C15_5_SovereignDebt'
+  'S3C15_3_ProjectFinance','S3C15_4_EmissionRemovals','S3C15_5_SovereignDebt', 'S3C15_6_ManagedInvestments',
 ]
 
 qa_md = """

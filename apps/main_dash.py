@@ -47,7 +47,7 @@ def main_dash_Page():
   else:
     st.info('Calculated results for Scope 3 not yet retrieved. Main dashboard will not include results for Scope 3.')
 
-  standardized_dfs = [standardize_scope_df(df) for df in dfs_to_concat]
+  standardized_dfs = [standardize_scope_df(df) for df in dfs_to_concat] # category columns with high cardinal will be REMOVED 
   if standardized_dfs:
     df = pd.concat(standardized_dfs, ignore_index=True)
     df = standardize_merged_df(df)

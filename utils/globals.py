@@ -11,11 +11,12 @@ LOCATION_ABBRV = {
 COLUMN_SORT_ORDER = [
   # Universal
   'uuid', 'date', 'description',
-  'employee_id', 'franchisee_id',
+  'employee_id', 'franchisee_id', 'customer_id',
   'product_name', 'product_class',
   'distributor_name', 'customer_name',
   'process_name',
   'equipment_name',
+  'asset_name',
 
   # counter
   'lifetime_usage_freq', 'number_sold', 
@@ -32,8 +33,9 @@ COLUMN_SORT_ORDER = [
   'branch', 'department', 'street_address_1', 'street_address_2', 'city', 'postcode',
 
   # Company descriptions
-  'financial_type', 'company_name', 'sector', 'subsector', 
-  'asset_class', 'is_listed', 'owned', 
+  'financial_type', 'company_name', 'asset_class',
+  'sector', 'subsector', 
+  'is_listed', 'owned', 
   'date_acquired', 'date_disposed',
 
    # supplier descriptions
@@ -75,7 +77,10 @@ COLUMN_SORT_ORDER = [
   'waste_type', 'waste_quantity', 'waste_state', 'waste_unit', 'waste_treatment_method', 'waste_treatment_provider',
 
   # finances
-  'currency', 'outstanding_amount', 'enterprise_value', 'total_equity', 'total_debt', 'total_government_debt', 'PPP_adj_GDP', 'property_value', 'value_at_origin', 
+  'currency', 'outstanding_amount', 'enterprise_value', 'total_equity', 'total_debt', 
+  'project_equity', 'project_debt',
+  'total_government_debt', 'PPP_adj_GDP', 
+  'property_value', 'value_at_origin', 
 
   # emission related
   'attribution_share', 'reported_emissions', 'project_emissions', 'emissions_removed', 'production_emissions', 'consumption_emissions', 'estimated_emissions', 'emission_estimation_description',

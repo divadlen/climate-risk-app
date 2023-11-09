@@ -212,6 +212,9 @@ def s3vc_Page():
           st.subheader("Category 15-5: Sovereign Debt / Government Bonds", anchor='S3C15_5_SovereignDebt')
           show_example_form(S3C15_5_SovereignDebt, title='Show example form (S3-C15-5: Sovereign Debt)', button_text='Get example form', filename='s3-c15-5-sovereign_debt-example.csv', markdown=footer_md)
 
+          st.subheader("Category 15-6: Managed Investments & Client's Portfolios", anchor='S3C15_6_ManagedInvestments')
+          show_example_form(S3C15_6_ManagedInvestments, title='Show example form (S3-C15-6: Managed Investments)', button_text='Get example form', filename='s3-c15-6-managed_investments-example.csv', markdown=footer_md)
+
 
     with tab3:
       t1, t2 = st.tabs(['Upload/Validate', 'Analyze uploads'])
@@ -242,7 +245,7 @@ def s3vc_Page():
             c15_models = [
               'S3C15_BaseAsset','S3C15_1A_ListedEquity','S3C15_1B_UnlistedEquity','S3C15_1C_CorporateBonds','S3C15_1D_BusinessLoans','S3C15_1E_CommercialRealEstate',
               'S3C15_2A_Mortgage','S3C15_2B_VehicleLoans',
-              'S3C15_3_ProjectFinance','S3C15_4_EmissionRemovals','S3C15_5_SovereignDebt'
+              'S3C15_3_ProjectFinance','S3C15_4_EmissionRemovals','S3C15_5_SovereignDebt', 'S3C15_6_ManagedInvestments',
             ]
 
             # Loop through the uploaded files and convert to models
@@ -541,6 +544,7 @@ table_of_contents_md="""
   - [3. Project Finance](#S3C15_3_ProjectFinance)
   - [4. Emission Removals](#S3C15_4_EmissionRemovals)
   - [5. Sovereign Debt / Government Bonds](#S3C15_5_SovereignDebt)
+  - [6. Managed Investments](#S3C15_6_ManagedInvestments)
 """
 
 footer_md = """*(<Blank> and <To fill> are optional. <To fill> indicates optional fields that can affect calculations. Blue indicates REQUIRED fields with recommended default values. Orange indicates REQUIRED fields.)*"""

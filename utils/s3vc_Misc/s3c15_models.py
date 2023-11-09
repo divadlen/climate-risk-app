@@ -140,6 +140,30 @@ class S3C15_5_SovereignDebt(S3C15_BaseAsset):
     production_emissions: Optional[float] = Field(None)
     consumption_emissions: Optional[float] = Field(None)
     emission_estimation_description: Optional[str] = Field(None, max_length=1200, description='Reported, physical, economic, location proxy')
+
+
+class S3C15_6_ManagedInvestments(S3C15_BaseAsset):
+    """ 
+    Managed investments and holdings for clients. More material for institutional clients.
+    """
+    financial_type: str = 'Corporate Finance'  
+    asset_class: str = 'Managed Investments'
+
+    customer_id: str = Field(description='Name of customer. EG: KWSP, Mr Lee, 324456, w345hgb81, robinhood_2')
+    asset_name: str = Field(description='Name of asset. EG: TSLA, Project Gestalt, Subprime mortgage 1')
+    sector: Optional[str] = None
+    subsector: Optional[str] = None
+    date_acquired: Optional[Union[datetime, str]] = Field(None)
+    date_disposed: Optional[Union[datetime, str]] = Field(None)
+
+    outstanding_amount: float = Field(ge=0, description='Market price times number of shares')
+    total_equity: float = Field(ge=0)
+    total_debt: float = Field(ge=0)
+    currency: str = Field(default='USD')
+    attribution_share: Optional[float] = Field(None, ge=0, le=1, description='Ownership percentage of CUSTOMER holding for ASSET_NAME.')
+    reported_emissions: Optional[float] = Field(None, ge=0)
+    estimated_emissions: Optional[float] = Field(None, ge=0)
+    emission_estimation_description: Optional[str] = Field(None, max_length=1200, description='Reported, physical, economic, location proxy')
     
 
 #---Asset Class---#   
