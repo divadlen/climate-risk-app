@@ -80,7 +80,7 @@ def run_app():
     if user_level < 2:
       st.info(f"Welcome **{st.session_state.username}**! Your account is not yet verified internally. Please enjoy the demo pages.")
 
-    st.info(sidebar_md)
+    st.info(sidebar_md) #
 
     # with st.form(key='theme_form'):
     #   st.session_state['theme_choice'] = st.radio('Choose theme', ['Dark', 'Light'], horizontal=True)  
