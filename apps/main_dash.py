@@ -75,7 +75,7 @@ def main_dash_Page():
         'emission_result', 'metadata'
       ]
       raw_df = pd.concat(dfs_to_concat, ignore_index=True)
-      pandas_2_AgGrid(raw_df[cols], height=None)
+      pandas_2_AgGrid(raw_df[cols], height=350)
 
       st.download_button(
         label='Download calculation results',

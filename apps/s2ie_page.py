@@ -108,7 +108,13 @@ def s2ie_Page():
               st.stop()
             
             model_name = inferred_model['model']
-            Model = modinf.available_models[model_name]  
+            Model = modinf.available_models[model_name]
+
+            # Store the filename with the model name
+            if 'model_filenames' not in state:
+              state['model_filenames'] = {}
+            state['model_filenames'][model_name] = uploaded_file.name
+
             if model_name not in s2_models:
               st.error(f'Uploaded file "{uploaded_file.name}" with columns {list(df.columns)} has no reliable matches against Scope 2 forms. Skipping...')
               st.stop()

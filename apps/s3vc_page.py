@@ -262,7 +262,12 @@ def s3vc_Page():
                   continue
 
                 model_name = inferred_model['model']
-                Model = modinf.available_models[model_name]    
+                Model = modinf.available_models[model_name]
+
+                # Store the filename with the model name
+                if 'model_filenames' not in state:
+                  state['model_filenames'] = {}
+                state['model_filenames'][model_name] = uploaded_file.name
             
                 # Choose calculator based on inferred model
                 if model_name in s1_models:

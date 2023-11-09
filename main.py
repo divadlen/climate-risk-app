@@ -19,7 +19,7 @@ st.set_page_config(
   page_title="Gecko Technologies Emission Calculation Service",
   page_icon=icon,
   layout="wide",
-  initial_sidebar_state="auto",
+  initial_sidebar_state="collapsed",
   menu_items={
     'Get Help': 'https://www.geckointel.com',
     'Report a bug': "https://geckointel.com/contact-us",
@@ -90,7 +90,7 @@ def run_app():
     #   reconcile_theme_config()  # Apply the theme
 
     with st.expander('App version'):
-      st.write('0.4.6')
+      st.write('0.5.1')
 
     st.markdown('Copyright © 2023 Gecko Technologies')
 
