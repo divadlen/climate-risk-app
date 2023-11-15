@@ -65,18 +65,12 @@ def run_app():
     'option_active': '#C4CEBC' 
   }
 
-  
-
-
-  # st.image("./resources/G1-long.png", use_column_width=True, width=None)
   col1, col2, col3 = st.columns([1,2,1])
   with col2:
     pass
   st.image("./resources/imgs/banner.png", use_column_width=True, width=None)
 
   with st.sidebar:
-    # st.image("./resources/imgs/TRACE_logo.png", use_column_width=True, width=None)
-
     if user_level < 2:
       st.info(f"Welcome **{st.session_state.username}**! Your account is not yet verified internally. Please enjoy the demo pages.")
 
@@ -130,6 +124,11 @@ def run_app():
     from apps.logout import logoutPage
     logoutPage()
 
+  @app.addapp(title='Scope 1: Direct Emissions')
+  def s1deApp():
+    from apps.s1de_page import s1de_Page
+    s1de_Page()
+
   #--- Level 1 apps ---#
   if user_level < 2: 
     @app.addapp(title='Sample Dashboard')
@@ -139,11 +138,6 @@ def run_app():
 
   #--- Level 2 apps ---#
   if user_level >= 2:
-    @app.addapp(title='Scope 1: Direct Emissions')
-    def s1deApp():
-      from apps.s1de_page import s1de_Page
-      s1de_Page()
-
     @app.addapp(title='Scope 2: Indirect Emissions')
     def s2ieApp():
       from apps.s2ie_page import s2ie_Page
@@ -174,6 +168,7 @@ def run_app():
     # Conditionally add other navigation items based on user level
     if user_level < 2: 
       complex_nav['Sample Dashboard'] = ['Sample Dashboard']
+      complex_nav["Emissions Calculator"] = ['Scope 1: Direct Emissions']
 
     if user_level >= 2:
       complex_nav["Emissions Calculator"] = ['Scope 1: Direct Emissions', 'Scope 2: Indirect Emissions', 'Scope 3: Value Chain']

@@ -223,9 +223,16 @@ def emissionOverviewPart(df):
     st.divider()
 
     st.subheader('Top contributors')
+
+    # Allowed columns for groupby selection
+    potential_columns = ['country', 'branch', 'department', 'city', 'state']
+
+    # Filter out the columns that actually exist in the DataFrame
+    available_columns = [col for col in potential_columns if col in df.columns]
+
     c1, c2 = st.columns([1, 3])
     with c1:
-      selected_group = st.selectbox('Select group', options=['country', 'branch', 'department', 'city', 'state'])
+      selected_group = st.selectbox('Select group', options=available_columns)
 
     # Group DataFrame by selected option, sum, then sort
     grouped_df = df.groupby(selected_group)['emission_result'].sum().reset_index()

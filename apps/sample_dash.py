@@ -24,14 +24,6 @@ def dash_Page_v1():
     with tab1:
       tdf = generate_toy_df()
 
-      # col1, col2 = st.columns([1, 1])
-      # with col1:
-      #     mode = st.selectbox("Mode", ["Light", "Dark"])
-      # with col2:
-      #     theme_names = [name for name in dir(ColorDiscrete) if not name.startswith("__")]
-      #     theme_name = st.selectbox("Color Theme", theme_names)
-      #     selected_theme = getattr(ColorDiscrete, theme_name)
-
       layout = { # doesnt work streamlit will hijack background settings
           'colorway': ColorDiscrete.gecko_v2,
           'plot_bgcolor': 'rgba(255,255,255,1)',
@@ -49,7 +41,7 @@ def dash_Page_v1():
         select_year = st.selectbox('Year', list(range(2015, 2025)))
       with col2:
         show_pct = st.selectbox('Show as percent', [False, True])
-        scope = st.selectbox("Scope", [None, 1, 2, 3])
+        scope = st.selectbox("Scope", [None, 1, 2, 3], index=2)
 
       figs = []
       fig1 = make_bar(tdf, scope=scope, year=display_year, percent=show_pct, theme='custom')
@@ -60,19 +52,13 @@ def dash_Page_v1():
 
       for fig in figs:
         with st.expander('Show graphic'):  
-          st.plotly_chart(fig, use_container_width=True)
+          c1, c2, c3 = st.columns([1,5,1])
+          with c2:
+            st.plotly_chart(fig, use_container_width=True)
 
 
     with tab2:
       fdf = generate_s3c15_df()
-
-      # col1, col2 = st.columns([1, 1])
-      # with col1:
-      #     mode = st.selectbox("Mode", ["Light", "Dark"], key='00oi9i9u8u')
-      # with col2:
-      #     theme_names = [name for name in dir(ColorDiscrete) if not name.startswith("__")]
-      #     theme_name = st.selectbox("Color Theme", theme_names, key='0o0i9iu8u')
-      #     selected_theme = getattr(ColorDiscrete, theme_name)
 
       layout = { # doesnt work streamlit will hijack background settings
           'colorway': ColorDiscrete.gecko_v2,
@@ -93,8 +79,10 @@ def dash_Page_v1():
       figs.extend([fig1, fig2, fig3, fig4])
 
       for fig in figs:
-        with st.expander('Show graphic'):  
-          st.plotly_chart(fig, use_container_width=True)
+        with st.expander('Show graphic'):
+          c1, c2, c3 = st.columns([1,5,1])
+          with c2:  
+            st.plotly_chart(fig, use_container_width=True)
 
 
 
@@ -516,7 +504,8 @@ def make_line_2(df, financial_type:str, category='sector', percent=False, theme=
     fig.update_layout(
         title=f'Emissions by Year and Sector',
         xaxis_title='Year',
-        yaxis_title='Emissions (%)' if percent else 'Emissions'
+        yaxis_title='Emissions (%)' if percent else 'Emissions',
+        hovermode="x",
     )
     if theme:
         fig.update_layout(template=theme)
