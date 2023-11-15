@@ -27,13 +27,13 @@ from utils.s3vc_Misc.s3_cache import S3_Lookup_Cache
 
 
 def s1de_Page(): 
-  if 'S1SC_Lookup_Cache' not in st.session_state:
-    st.session_state['S1SC_Lookup_Cache'] = S3_Lookup_Cache()
-  if 's1sc_df' not in st.session_state: 
-    st.session_state['s1sc_df'] = None
-  if 'validated_s1sc_df' not in st.session_state:
-    st.session_state['validated_s1sc_df'] = None
-    st.session_state['validated_s1sc_warnings'] = []
+  if 'S1SC_Lookup_Cache' not in state:
+    state['S1SC_Lookup_Cache'] = S3_Lookup_Cache()
+  if 's1sc_df' not in state: 
+    state['s1sc_df'] = None
+  if 'validated_s1sc_df' not in state:
+    state['validated_s1sc_df'] = None
+    state['validated_s1sc_warnings'] = []
 
 
   st.title('Scope 1: Direct Emissions')
@@ -88,14 +88,14 @@ def s1de_Page():
       st.info('*(For best results, upload only csv files containing matching fields from examples and keep edits to recommended default fields to minimum)*')
       
       # State for clear button
-      if 'widget_key' not in st.session_state:
-        st.session_state.widget_key = str(random.randint(1000, 100000000))
+      if 'widget_key' not in state:
+        state.widget_key = str(random.randint(1000, 100000000))
 
       # Maximum number of files allowed
       MAX_FILES = 3  
 
       with st.form('Upload CSV files'):
-        uploaded_files = st.file_uploader("Upload CSV files (accepts only up to 3 files)", type=["csv"], accept_multiple_files=True,  key=st.session_state.widget_key, help='CSV containing any relevant Scope 1 data. Categories are automatically inferred')
+        uploaded_files = st.file_uploader("Upload CSV files (accepts only up to 3 files)", type=["csv"], accept_multiple_files=True,  key=state.widget_key, help='CSV containing any relevant Scope 1 data. Categories are automatically inferred')
 
         c1,c2 = st.columns([1,1])
         with c1:
@@ -106,7 +106,7 @@ def s1de_Page():
         # if clear_button:
         #   # Generate a new random key for the file uploader widget
         #   # https://discuss.streamlit.io/t/are-there-any-ways-to-clear-file-uploader-values-without-using-streamlit-form/40903
-        #   st.session_state.widget_key = str(random.randint(1000, 100000000))
+        #   state.widget_key = str(random.randint(1000, 100000000))
 
           
         if submit_button and uploaded_files:
@@ -114,15 +114,21 @@ def s1de_Page():
             st.warning(f"Maximum number of files reached. Only the first {MAX_FILES} will be processed.")
             uploaded_files = uploaded_files[:MAX_FILES]
 
-          # reset everything if button is clicked
-          st.session_state['s1de_original_dfs'] = {}
-          st.session_state['s1de_result_dfs'] = {}
-          st.session_state['s1de_warnings'] = {}
-          st.session_state['s1de_calc_results'] = {}
+          s1_inits = {
+            's1de_warnings': {},
+            's1de_invalid_indices': {},
+            's1de_original_dfs': {},
+            's1de_result_dfs': {},
+            's1de_calc_results': {},
+          }
+
+          # Loop to initialize variables in state if not present
+          for var_name, default_value in s1_inits.items(): 
+            state[var_name] = default_value # reset everything if button is clicked
 
           # Inferencer and df inits
           modinf = ModelInferencer()
-          cache = st.session_state['S1SC_Lookup_Cache']
+          cache = state['S1SC_Lookup_Cache']
 
           s1_models = [
             'S1_FugitiveEmission', 'S1_MobileCombustion', 'S1_StationaryCombustion'
@@ -167,15 +173,15 @@ def s1de_Page():
                 creator = CREATOR_FUNCTIONS[model_name]
                 
               try:
-                calc, warning_list = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False)
+                calc, warning_list, invalid_indices = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False, return_invalid_indices=True)
                 result_df = calculator_to_df(calc)
 
                 if len(warning_list) > 0:
-                  st.session_state['s1de_warnings'][model_name] = warning_list
-
-                st.session_state['s1de_original_dfs'][model_name] = df
-                st.session_state['s1de_result_dfs'][model_name] = result_df
-                st.session_state['s1de_calc_results'][model_name] = calc
+                  state['s1de_warnings'][model_name] = warning_list
+                  state['s1de_invalid_indices'][model_name] = invalid_indices
+                state['s1de_original_dfs'][model_name] = df
+                state['s1de_result_dfs'][model_name] = result_df
+                state['s1de_calc_results'][model_name] = calc
               
               except Exception as e:
                 raise
@@ -193,43 +199,49 @@ def s1de_Page():
           readme = markdown_insert_images(readme) 
           st.markdown(readme, unsafe_allow_html=True) 
 
-        if 's1de_original_dfs' not in st.session_state or st.session_state['s1de_original_dfs'] in [{}]:
+        if 's1de_original_dfs' not in state or state['s1de_original_dfs'] in [{}]:
           st.info('Please upload at least one valid table at "Upload/Validate" tab to continue')
 
-        if 's1de_original_dfs' in st.session_state and st.session_state['s1de_original_dfs'] not in [{}]:
+        if 's1de_original_dfs' in state and state['s1de_original_dfs'] not in [{}]:
           with st.expander('Show uploaded table', expanded=True):
-            for name, df in st.session_state['s1de_original_dfs'].items():
+            for name, df in state['s1de_original_dfs'].items():
               pandas_2_AgGrid(df.head(20), theme='balham', height=300, key=f's1de_og_{name}_aggrid')
 
-        if 'analyzed_s1de' not in st.session_state:
-          st.session_state['analyzed_s1de'] = False
+        if 'analyzed_s1de' not in state:
+          state['analyzed_s1de'] = False
         
         analyze_button = st.button('Validate uploaded dataframes', help='Attempts to return calculation results for each row for table.')
-        if analyze_button and st.session_state['s1de_original_dfs'] not in [{}]:
-          st.session_state['analyzed_s1de'] = True   
+        if analyze_button and state['s1de_original_dfs'] not in [{}]:
+          state['analyzed_s1de'] = True   
           st.success('Uploaded Scope 1 data tables analyzed!')
           
           st.divider()
           st.subheader('Validation Results')
 
-          if all(key in st.session_state for key in ['s1de_warnings', 's1de_original_dfs']) and st.session_state.get('analyzed_s1de', True):
+          if all(key in state for key in ['s1de_warnings', 's1de_original_dfs']) and state.get('analyzed_s1de', True):
             with st.expander('Show warnings'):
-              for name, warnings in st.session_state['s1de_warnings'].items():
+              for name, warnings in state['s1de_warnings'].items():
                 for warn in warnings:
                   st.warning(f'{name}: {warn}')
+              
+              for name, df in state['s1de_original_dfs'].items():
+                df = df.replace('<Blank>', None)
+                df = df.replace('<To fill>', None)
+                df = df.replace(np.nan, None)
+                pandas_2_AgGrid(df, theme='balham', height=300, key=f's1de_warn_{name}_aggrid', highlighted_rows=state['s1de_invalid_indices'][name])
             
-            for name, df in st.session_state['s1de_result_dfs'].items():
+            for name, df in state['s1de_result_dfs'].items():
               with st.expander(f'Show table for analyzed **{name}**'):
                 pandas_2_AgGrid(df, theme='balham', height=300, key=f's1de_{name}_aggrid')
 
 
     with tab3:
       st.subheader('Executive Insights')
-      if 's1de_calc_results' not in st.session_state or st.session_state['s1de_calc_results'] == {}:
+      if 's1de_calc_results' not in state or state['s1de_calc_results'] == {}:
         st.error('Nothing to display here. Have you uploaded or analyzed your uploaded files?')
 
-      if 's1de_calc_results' in st.session_state and st.session_state['s1de_calc_results'] != {}:
-        res_df = st.session_state['s1de_calc_results'] # key: Model name, val: Calculator
+      if 's1de_calc_results' in state and state['s1de_calc_results'] != {}:
+        res_df = state['s1de_calc_results'] # key: Model name, val: Calculator
         res_df = calculators_2_df(res_df) # convert each k/v to df
 
         emissionOverviewPart(df=res_df)

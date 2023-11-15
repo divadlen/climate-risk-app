@@ -342,8 +342,8 @@ def s3vc_Page():
 
 
       with t2:
-        with st.expander('Show help'):
-          st.markdown('Hi')
+        # with st.expander('Show help'):
+        #   st.markdown('Hi')
 
         if 's3vc_original_dfs' not in state or state['s3vc_original_dfs'] in [{}]:
           st.info('Please upload at least one valid table at "Upload/Validate" tab to continue')

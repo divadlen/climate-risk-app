@@ -86,11 +86,17 @@ def s2ie_Page():
           submit_button = st.form_submit_button('Upload')
 
         if submit_button and uploaded_file:
-          # reset everything if button is clicked
-          state['s2ie_original_dfs'] = {}
-          state['s2ie_result_dfs'] = {}
-          state['s2ie_warnings'] = {}
-          state['s2ie_calc_results'] = {}
+          s2_inits = {
+            's2ie_warnings': {},
+            's2ie_invalid_indices': {},
+            's2ie_original_dfs': {},
+            's2ie_result_dfs': {},
+            's2ie_calc_results': {},
+          }
+
+          # Loop to initialize variables in state if not present
+          for var_name, default_value in s2_inits.items(): 
+            state[var_name] = default_value # reset everything if button is clicked
         
           # Inferencer and df inits
           modinf = ModelInferencer()
@@ -126,11 +132,12 @@ def s2ie_Page():
             creator = CREATOR_FUNCTIONS[model_name]
 
             try:
-              calc, warning_list = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=True)
+              calc, warning_list, invalid_indices = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False, return_invalid_indices=True)
               result_df = calculator_to_df(calc)
 
               if len(warning_list) > 0:
                 state['s2ie_warnings'][model_name] = warning_list
+                state['s1de_invalid_indices'][model_name] = invalid_indices
               state['s2ie_original_dfs'][model_name] = df
               state['s2ie_result_dfs'][model_name] = result_df
               state['s2ie_calc_results'][model_name] = calc
@@ -170,6 +177,12 @@ def s2ie_Page():
             for name, warnings in state['s2ie_warnings'].items():
               for warn in warnings:
                 st.warning(f'{name}: {warn}')
+
+            for name, df in state['s2ie_original_dfs'].items():
+              df = df.replace('<Blank>', None)
+              df = df.replace('<To fill>', None)
+              df = df.replace(np.nan, None)
+              pandas_2_AgGrid(df, theme='balham', height=300, key=f's2ie_warn_{name}_aggrid', highlighted_rows=state['s2ie_invalid_indices'][name])
           
           for name, df in state['s2ie_result_dfs'].items():
             with st.expander(f'Show table for analyzed **{name}**'):

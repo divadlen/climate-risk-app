@@ -6,17 +6,28 @@ import json
 import traceback
 
 
-def df_to_calculator(df:pd.DataFrame, calculator, creator, progress_bar=True):
+def df_to_calculator(df:pd.DataFrame, calculator, creator, progress_bar=True, return_invalid_indices=False):
   """ 
-  df: pd.DataFrame
-
+  Args:
+  df (pd.DataFrame): 
+    The DataFrame to process.
+  
   calculator: 
     Calculator object. 
     Example usage: `calc.add_data( row.to_dict() )`
-
+    
   creator:
     Validator function for rows. Passing `row.to_dict()` might end up creating a Model object that is incompatible to the calculator. 
     Example: `create_data_for_model(**kwargs) -> Model(**kwargs)`. Advised to use `partial(create_data)` as input param. 
+    
+  progress_bar (bool): 
+    Whether to show a progress bar (default is True).
+  
+  return_invalid_indices (bool): 
+    Whether to return indices of invalid rows (default is False).
+
+  Returns:
+    tuple: A tuple containing the calculator, warning messages, and optionally invalid row indices.
   """
   df = df.replace('<Blank>', None)
   df = df.replace('<To fill>', None)
@@ -27,13 +38,15 @@ def df_to_calculator(df:pd.DataFrame, calculator, creator, progress_bar=True):
     nrows = len(df)
 
   warning_messages = []
+  invalid_rows = set()  # Track indices of invalid rows
   for idx, row in df.iterrows():
     try:
       data = creator(row=row) # make sure your creator must have 'row' as parameter
       calculator.add_data(data) # calculator must have internal function 'add_data()'
 
     except Exception as e:
-      warning_messages.append(f'Unable to add data for row {idx+1}. Traceback: {e}')
+      warning_messages.append(f'Unable to add data for row {idx+1}. Traceback: {e}') # idx + 1 because python idx starts from 0
+      invalid_rows.add(idx) 
       traceback.print_exc()
       pass
     
@@ -41,7 +54,10 @@ def df_to_calculator(df:pd.DataFrame, calculator, creator, progress_bar=True):
       progress_pct = (idx+1) / nrows
       progress_bar.progress(progress_pct)
 
-  return calculator, warning_messages
+  if return_invalid_indices:
+    return calculator, warning_messages, invalid_rows
+  else:
+    return calculator, warning_messages
 
 
 def calculator_to_df(calculator):
