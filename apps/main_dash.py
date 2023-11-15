@@ -521,7 +521,7 @@ def dataQualityPart(df):
       hoverlabel=dict(font_size=20),
       images=watermark(),
     )
-    fig.update_xaxes(range=[0, 5])
+    fig.update_xaxes(range=[-0.5, 6])
 
     c1, c2,c3 = st.columns([1,4,1])
     with c2:
@@ -592,7 +592,7 @@ def standardize_merged_df(df):
   return df
 
 
-def watermark(x=0.8, y=0.8, sizex=0.2, sizey=0.2, opacity=0.2, xanchor='left', yanchor='bottom'):
+def watermark(x=0.8, y=0.9, sizex=0.2, sizey=0.2, opacity=0.2, xanchor='left', yanchor='bottom'):
   return [dict(
     source= Image.open("./resources/BlackText_Logo_Horizontal.png"),
     xref="paper", yref="paper",

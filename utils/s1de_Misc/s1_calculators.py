@@ -126,9 +126,9 @@ def calc_S1_StationaryCombustion(data: S1_StationaryCombustion, cache):
 
     # Useless fields, but extra score for answering
     if getattr(data, "fuel_spend", None) is not None:
-        data_quality -= random.uniform(0.5, 1)
+        data_quality -= round( random.uniform(0.5, 1), 2)
     if getattr(data, "heating_value", None) is not None:
-        data_quality -= random.uniform(0.5, 1)
+        data_quality -= round( random.uniform(0.5, 1), 2)
 
     f1 = ['fuel_use', 'fuel_type', 'fuel_unit']
     if all(getattr(data, field, None) is not None for field in f1): 

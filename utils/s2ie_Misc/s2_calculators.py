@@ -116,10 +116,10 @@ def calc_S2_PurchasedPower(data, cache):
         return {'emission_result': emission_result, 'data_quality': round(data_quality, 2), 'metadata': metadata}
     
     if not all(getattr(data, field, None) is not None for field in ['lat', 'lon']):
-        data_quality -= random.uniform(0.3, 0.7)
+        data_quality -= round( random.uniform(0.3, 0.7), 2 )
 
     if not all(getattr(data, field, None) is not None for field in ['energy_spend', 'currency']):
-        data_quality -= random.uniform(0.3, 0.7)
+        data_quality -= round( random.uniform(0.3, 0.7), 2)
 
     TABLE = 's2ie_gef'
     factors = cache.get_grid_emission_factors(table=TABLE, country=data.country, state=data.state)
@@ -136,7 +136,7 @@ def calc_S2_PurchasedPower(data, cache):
     total_co2e = data.energy_use * grid_emission_factor
     emission_result['physical_emissions'] = total_co2e
     data_quality -= 2
-    metadata.append(create_metadata('physical_emissions', total_co2e, ['energy_use', 'grid_emission_factor'], data_quality))
+    metadata.append(create_metadata('physical_emissions', total_co2e, ['energy_use', 'grid_emission_factor'], round(data_quality, 2)))
 
     data_quality = clamp(data_quality)
     return {'emission_result': emission_result, 'data_quality': round(data_quality, 2), 'metadata': metadata}
