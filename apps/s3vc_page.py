@@ -226,11 +226,17 @@ def s3vc_Page():
           uploaded_files = st.file_uploader("Upload CSV files (accepts multiple files)", type=["csv"], accept_multiple_files=True, help='CSV containing any relevant Scope 3 data. Categories are automatically inferred')
 
           if st.form_submit_button('Upload'):
-            # reset everything if button is clicked
-            state['s3vc_original_dfs'] = {}
-            state['s3vc_result_dfs'] = {}
-            state['s3vc_warnings'] = {}
-            state['s3vc_calc_results'] = {}
+            s3_inits = {
+              's3vc_warnings': {},
+              's3vc_invalid_indices': {},
+              's3vc_original_dfs': {},
+              's3vc_result_dfs': {},
+              's3vc_calc_results': {},
+            }
+
+            # Loop to initialize variables in state if not present
+            for var_name, default_value in s3_inits.items(): 
+              state[var_name] = default_value # reset everything if button is clicked
 
             # Inferencer and df inits
             modinf = ModelInferencer()
@@ -311,12 +317,12 @@ def s3vc_Page():
                   creator = CREATOR_FUNCTIONS[model_name]
                   
                 try:
-                  calc, warning_list = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False)
+                  calc, warning_list, invalid_indices = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False, return_invalid_indices=True)
                   result_df = calculator_to_df(calc)
 
                   if len(warning_list) > 0:
                     state['s3vc_warnings'][model_name] = warning_list
-
+                    state['s3vc_invalid_indices'][model_name] = invalid_indices
                   state['s3vc_original_dfs'][model_name] = df
                   state['s3vc_result_dfs'][model_name] = result_df
                   state['s3vc_calc_results'][model_name] = calc
@@ -342,9 +348,6 @@ def s3vc_Page():
 
 
       with t2:
-        # with st.expander('Show help'):
-        #   st.markdown('Hi')
-
         if 's3vc_original_dfs' not in state or state['s3vc_original_dfs'] in [{}]:
           st.info('Please upload at least one valid table at "Upload/Validate" tab to continue')
 
@@ -366,6 +369,12 @@ def s3vc_Page():
               for name, warnings in state['s3vc_warnings'].items():
                 for warn in warnings:
                   st.warning(f'{name}: {warn}')
+
+              for name, df in state['s3vc_original_dfs'].items():
+                df = df.replace('<Blank>', None)
+                df = df.replace('<To fill>', None)
+                df = df.replace(np.nan, None)
+                pandas_2_AgGrid(df, theme='balham', height=300, key=f's3vc_warn_{name}_aggrid', highlighted_rows=state['s3vc_invalid_indices'][name])
             
             for name, df in state['s3vc_result_dfs'].items(): # might not need this
               with st.expander(f'Show table for analyzed **{name}**'):
