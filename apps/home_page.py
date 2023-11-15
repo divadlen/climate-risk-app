@@ -68,8 +68,17 @@ def homePage():
           state['model_filenames'][model_name] = uploaded_file.name
 
           if model_name in s1_models:
-            if 's1de_calc_results' not in state:
-              state['s1de_calc_results'] = {}
+            s1_inits = {
+              's1de_calc_results': {},
+              's1de_warnings': {},
+              's1de_original_dfs': {},
+              's1de_result_dfs': {},
+            }
+
+            # Loop to initialize variables in state if not present
+            for var_name, default_value in s1_inits.items():
+              if var_name not in state:
+                state[var_name] = default_value
             
             CREATOR_FUNCTIONS = {
               'S1_MobileCombustion': partial( create_s1mc_data, Model=Model, cache=cache ),
@@ -80,11 +89,26 @@ def homePage():
             calc = S1_Calculator(cache=cache)
             creator = CREATOR_FUNCTIONS[model_name]  
             calc, warning_list = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False)   
+            result_df = calculator_to_df(calc)
+
+            if len(warning_list) > 0:
+              state['s1de_warnings'][model_name] = warning_list
+            state['s1de_original_dfs'][model_name] = df
+            state['s1de_result_dfs'][model_name] = result_df # required to display validated table in S1 tab, when upload vector from home.
             state['s1de_calc_results'][model_name] = calc
 
           elif model_name in s2_models:
-            if 's2ie_calc_results' not in state:
-              state['s2ie_calc_results'] = {}
+            s2_inits = {
+              's2ie_calc_results': {},
+              's2ie_warnings': {},
+              's2ie_original_dfs': {},
+              's2ie_result_dfs': {},
+            }
+
+            # Loop to initialize variables in state if not present
+            for var_name, default_value in s2_inits.items():
+              if var_name not in state:
+                state[var_name] = default_value
 
             CREATOR_FUNCTIONS = {
               'S2_PurchasedPower': partial( create_s2pp_data, Model=Model, cache=cache, geolocator=gl ),
@@ -93,6 +117,12 @@ def homePage():
             calc = S2_Calculator(cache=cache)
             creator = CREATOR_FUNCTIONS[model_name]
             calc, warning_list = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=True)
+            result_df = calculator_to_df(calc)
+
+            if len(warning_list) > 0:
+              state['s2ie_warnings'][model_name] = warning_list
+            state['s2ie_original_dfs'][model_name] = df
+            state['s2ie_result_dfs'][model_name] = result_df # required to display validated table in S2 tab, when upload vector from home.
             state['s2ie_calc_results'][model_name] = calc
 
           elif model_name in c15_models:
