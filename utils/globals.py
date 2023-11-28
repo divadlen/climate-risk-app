@@ -42,7 +42,7 @@ COLUMN_SORT_ORDER = [
   'supplier_name', 'purchased_quantity', 'quantity_unit', 'quantity_emission_factor', 'supplier_incurred_emissions',
 
   # vehicle descriptions
-  'travel_mode', 'vehicle_type',
+  'travel_mode', 'vehicle_type', 'vehicle_value',
 
   # freight descriptions
   'freight_type', 'freight_weight',
@@ -71,7 +71,7 @@ COLUMN_SORT_ORDER = [
   'distance_cadence', 'distance_emission_factor', 
 
   # building descriptions
-  'floor_area', 'area_unit', 'building_energy_use', 'building_emission_factor', 'year_constructed',
+  'floor_area', 'area_unit', 'building_energy_use', 'building_emission_factor', 'year_constructed', 'property_value',
 
   # waste descriptions
   'waste_type', 'waste_quantity', 'waste_state', 'waste_unit', 'waste_treatment_method', 'waste_treatment_provider',
@@ -80,7 +80,7 @@ COLUMN_SORT_ORDER = [
   'currency', 'outstanding_amount', 'enterprise_value', 'total_equity', 'total_debt', 
   'project_equity', 'project_debt',
   'total_government_debt', 'PPP_adj_GDP', 
-  'property_value', 'value_at_origin', 
+  'value_at_origin', 
 
   # emission related
   'attribution_share', 'reported_emissions', 'project_emissions', 'emissions_removed', 'production_emissions', 'consumption_emissions', 'estimated_emissions', 'emission_estimation_description',

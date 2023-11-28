@@ -137,7 +137,7 @@ def s2ie_Page():
 
               if len(warning_list) > 0:
                 state['s2ie_warnings'][model_name] = warning_list
-                state['s1de_invalid_indices'][model_name] = invalid_indices
+                state['s2ie_invalid_indices'][model_name] = invalid_indices
               state['s2ie_original_dfs'][model_name] = df
               state['s2ie_result_dfs'][model_name] = result_df
               state['s2ie_calc_results'][model_name] = calc

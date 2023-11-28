@@ -131,9 +131,9 @@ class S3C3_EnergyRelated(S3_BaseModel):
     state: Optional[str] = Field(default=None)
     country: Optional[str] = Field(default='Malaysia', max_length=35)
 
-    fuel_use: Optional[float] = Field(None, ge=0)
-    fuel_type: Optional[str] = Field(default='Diesel')
-    fuel_unit: Optional[str] = Field(default='litre')
+    # fuel_use: Optional[float] = Field(None, ge=0)
+    # fuel_type: Optional[str] = Field(default='Diesel')
+    # fuel_unit: Optional[str] = Field(default='litre')
     
     electric_use: Optional[float] = Field(None, ge=0)
     grid_emission_factor: Optional[float] = Field(default=0.776, ge=0)
@@ -625,9 +625,10 @@ class S3C14_Franchise(S3_BaseModel):
     # area_unit: Optional[str] = Field(default='m2')
     # building_emission_factor: Optional[float] = Field(None, ge=0)
 
-    # fuel_use
-    # fuel_type
-    # fuel_unit
+    fuel_use: Optional[float] = Field(None, ge=0)
+    fuel_state: Optional[str] = Field(default='liquid')
+    fuel_type: Optional[str] = Field(default='Diesel')
+    fuel_unit: Optional[str] = Field(default='litre')
 
     refrigerant_use: Optional[float] = Field(None, ge=0, description='In practice, this is more often to be leaked than "used".')
     refrigerant_type: Optional[str] = Field(default='R-410A', description='R-410-A is most common refrigerants. In practice, many refrigerants have mixed composites')
