@@ -178,9 +178,15 @@ def homePage():
     with st.expander('View Processed Files', expanded=True):
       df_for_grid = get_df_from_uploads()
       grid = create_grid_from_upload_df(df_for_grid)
+
       if st.button('Delete selected'):
         aggrid_row_delete(grid)
-        st.experimental_rerun()
+        
+        if st.__version__ >= '1.28.0':
+          st.rerun() # experimental deprecated in 2024-04-01
+        else:
+          st.experimental_rerun()
+  
   else:
     st.info('File not yet uploaded or all models have been deleted.')
 
@@ -204,15 +210,24 @@ def get_df_from_uploads() -> pd.DataFrame:
 
 def aggrid_row_delete(grid):
   """ 
-  Deletes selected rows from AG Grid
+  Deletes selected rows from AG Grid and associated state variables.
   """
   selected_rows = grid['selected_rows']
+  prefixes = ['s1de', 's2ie', 's3vc']
+  suffixes = ['calc_results', 'warnings', 'original_dfs', 'result_dfs']
+
   for row in selected_rows:
     model_name = row['Model Name']
 
-    for calc_result in ['s1de_calc_results', 's2ie_calc_results', 's3vc_calc_results']:
-      if calc_result in state and model_name in state[calc_result]:
-        del state[calc_result][model_name]
+    for prefix in prefixes:
+      for suffix in suffixes:
+        key = f'{prefix}_{suffix}' # example: s1de_warnings
+        try:
+          if model_name in state[key]:
+            del state[key][model_name] # example: state['s1de_warnings']['S1MobileCombustion']
+        except KeyError:
+          continue
+
 
 
 def create_grid_from_upload_df(df, theme='streamlit'):
