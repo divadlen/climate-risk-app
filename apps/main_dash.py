@@ -212,15 +212,14 @@ def categoryPerformancePart(df):
       category_col = 'category_name'
       value_col='emission_result'
       unit='kg'
-
       grouped_df = scope_df.copy()
+      
       if show_percent:
         total_value = grouped_df[value_col].sum()
         grouped_df[value_col] = 100 * grouped_df[value_col] / total_value
         unit='%'
       
       grouped_df = sort_str_column_numeric(grouped_df, category_col, ascending=False)
-
       height = 200
       nuniq = len( grouped_df[category_col].unique() )
       height += nuniq * 50
@@ -228,18 +227,19 @@ def categoryPerformancePart(df):
       fig = go.Figure()
       for cat in grouped_df[category_col].unique() if category_col else [None]:
         cat_data = grouped_df[grouped_df[category_col] == cat] if category_col else grouped_df
-        hover_template_str = f"<b>%{{label}}</b><br>%{{value:.2f}} {unit}"  
+        sum_of_cat = cat_data[value_col].sum() # total all values for each category
+        hover_template_str = f"<b>%{{label}}</b><br>%{{value:.2f}} {unit}" 
 
         if nuniq <= 3:
-          name = str(cat)
+          name = str(cat) # Full name of category (EG: C9: Downstream Transport)
         else:
-          name = str(cat)[:2]
+          name = str(cat)[:2] # Short name of category (EG: C9)
         
         fig.add_trace(go.Bar(
           y=[cat],
-          x=cat_data[value_col],
+          x=[sum_of_cat],
           name=name,
-          text=cat_data[value_col].apply(lambda x: f"<b>{cat}</b><br><b>{x:.2f}</b>"),
+          text=[f"<b>{cat}</b><br><b>{sum_of_cat:.2f}</b>"],
           textposition='inside',
           orientation='h',
           hovertemplate=hover_template_str,
