@@ -54,7 +54,12 @@ def AuthApp():
             state["authenticated"] = True
             state["username"] = username
             state["user_level"] = user['user_level']
-            st.experimental_rerun()
+            
+            if st.__version__ >= '1.28.0':
+              st.rerun() # experimental deprecated in 2024-04-01
+            else:
+              st.experimental_rerun()
+
           else:
             st.error('Username/password is incorrect')
     

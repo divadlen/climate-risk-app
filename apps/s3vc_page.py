@@ -45,7 +45,11 @@ def s3vc_Page():
         with st.spinner():
           state["s3_settings"] = True
           state['s3_sector'] = sector
-          st.experimental_rerun()
+
+          if st.__version__ >= '1.28.0':
+            st.rerun() # experimental deprecated in 2024-04-01
+          else:
+            st.experimental_rerun()
 
 
   if 's3_settings' in state and state['s3_settings'] == True:
@@ -87,7 +91,10 @@ def s3vc_Page():
 
         if st.form_submit_button('Reset settings'):
           del state['s3_settings']
-          st.experimental_rerun() 
+          if st.__version__ >= '1.28.0':
+            st.rerun() # experimental deprecated in 2024-04-01
+          else:
+            st.experimental_rerun()
 
 
     with tab2:      
