@@ -212,7 +212,7 @@ def categoryPerformancePart(df):
       category_col = 'category_name'
       value_col='emission_result'
       unit='kg'
-      grouped_df = scope_df.copy()
+      grouped_df = scope_df.copy() # 
       
       if show_percent:
         total_value = grouped_df[value_col].sum()
