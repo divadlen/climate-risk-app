@@ -100,7 +100,7 @@ class S2_PurchasedPower(S2_BaseModel):
         
         # validate currency
         supported_currency = ['usd', 'myr', 'sgd']
-        if energy_spend is not None and energy_spend > 0:
+        if energy_spend is not None and float(energy_spend) > 0:
             if currency is None:
                 values['currency'] = 'myr'
             else:
