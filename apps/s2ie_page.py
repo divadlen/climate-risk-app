@@ -182,7 +182,10 @@ def s2ie_Page():
               df = df.replace('<Blank>', None)
               df = df.replace('<To fill>', None)
               df = df.replace(np.nan, None)
-              pandas_2_AgGrid(df, theme='balham', height=300, key=f's2ie_warn_{name}_aggrid', highlighted_rows=state['s2ie_invalid_indices'][name])
+              pandas_2_AgGrid(
+                df, theme='balham', height=300, key=f's2ie_warn_{name}_aggrid', 
+                highlighted_rows=state['s2ie_invalid_indices'].get(name, [])  # Returns an empty list if 'name' is not in the dictionary
+              )
           
           for name, df in state['s2ie_result_dfs'].items():
             with st.expander(f'Show table for analyzed **{name}**'):

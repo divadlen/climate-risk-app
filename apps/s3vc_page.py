@@ -374,7 +374,10 @@ def s3vc_Page():
                 df = df.replace('<Blank>', None)
                 df = df.replace('<To fill>', None)
                 df = df.replace(np.nan, None)
-                pandas_2_AgGrid(df, theme='balham', height=300, key=f's3vc_warn_{name}_aggrid', highlighted_rows=state['s3vc_invalid_indices'][name])
+                pandas_2_AgGrid(
+                  df, theme='balham', height=300, key=f's3vc_warn_{name}_aggrid',
+                  highlighted_rows=state['s3vc_invalid_indices'].get(name, [])  # Returns an empty list if 'name' is not in the dictionary
+                )
             
             for name, df in state['s3vc_result_dfs'].items(): # might not need this
               with st.expander(f'Show table for analyzed **{name}**'):
