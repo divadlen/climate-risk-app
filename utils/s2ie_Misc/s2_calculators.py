@@ -31,7 +31,7 @@ class S2_Calculator(BaseModel):
             # Logic to get the required emission factors
             res = self._calculate_emissions(data, cache=self.cache)
             if res is None:
-                print('Unable to calculate emissions for data')
+                print('Unable to calculate emissions for data') 
                 return
             
             # Create emission result dict
@@ -39,7 +39,7 @@ class S2_Calculator(BaseModel):
             idx = len(self.calculated_emissions)
             self.calculated_emissions[idx] = {'input_data': data.model_dump(), 'calculated_emissions': emission_result}
 
-            print(emission_result)
+            print(emission_result) # 
             
         except TypeError as te:
             print(te)
