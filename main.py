@@ -88,7 +88,7 @@ def run_app():
 
     st.markdown('Copyright © 2023 Gecko Technologies')
 
-    #--- DEBUGGING PURPOSES ---#
+    # # --- DEBUGGING PURPOSES ---#
     # with st.expander('Show states'): 
     #   size_dict = {}
     #   for key in st.session_state.keys():
@@ -99,6 +99,10 @@ def run_app():
     #   sorted_items = sorted(size_dict.items(), key=lambda x: x[1], reverse=True)
     #   for key, size in sorted_items:
     #     st.write(f"{key}: {size/1000} kb")
+
+    # for key in st.session_state.keys():
+    #   with st.expander(f'Inspect {key}'):
+    #     st.write(st.session_state[key])
 
 
   app = hy.HydraApp(
