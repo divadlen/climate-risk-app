@@ -60,18 +60,21 @@ class S3C15_1_CorporateFinance(S3C15_BaseAsset):
 
     @model_validator(mode='before')
     def validate_dates(cls, values):    
-      for key, value in values.items():
-        if value is None: # skip if value is none
-          continue
-        if isinstance(value, datetime): # if value instance is dt, try parse
-          values[key] = value.strftime('%Y-%m-%d')
-        else:
-          try:
-            parsed_date = parser.parse(value)
-            values[key] = parsed_date.strftime('%Y-%m-%d')
-          except:
-            raise ValueError(f'Invalid date format for {key}. Try inputting in YYYY-MM-DD')
-      return values
+        date_fields = ['date_acquired', 'date_disposed']  # Specify which fields are date fields
+        for key in date_fields:
+            value = values.get(key)
+            if value is None: 
+                continue
+            if isinstance(value, datetime):
+                values[key] = value.strftime('%Y-%m-%d')
+            else:
+                try:
+                    parsed_date = parser.parse(value)
+                    values[key] = parsed_date.strftime('%Y-%m-%d')
+                except:
+                    raise ValueError(f'Invalid date format for {key}. Try inputting in YYYY-MM-DD')
+        return values
+
         
         
 class S3C15_2_ConsumerFinance(S3C15_BaseAsset):
