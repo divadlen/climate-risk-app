@@ -25,7 +25,7 @@ st.set_page_config(
     'Report a bug': "https://geckointel.com/contact-us",
     'About': "# Gecko Technologies. GHG Emission Calculation Service",
   }
-)
+) # 
 
 sidebar_md = """
 ## Resources
