@@ -32,7 +32,7 @@ sidebar_md = """
 - [Account verification](https://geckointel.com/contact-us)
 - [Submit a bug report](https://geckointel.com/contact-us)
 - Privacy policy
-- Terms and condition
+- [Terms and condition](https://form.jotform.com/233541354243450)
 """
 
 #---Start app---#
