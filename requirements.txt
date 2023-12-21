@@ -18,5 +18,6 @@ pydantic>=2.1.1, <2.2
 supabase==1.0.4
 
 fuzzywuzzy==0.18.0
+python-levenshtein
 #spacy==3.6.0
 #https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.6.0/en_core_web_md-3.6.0-py3-none-any.whl
