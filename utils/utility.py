@@ -302,6 +302,7 @@ def convert_BaseModel(cls, examples:bool=False, return_as_string:bool=True):
       non_calculation_fields = [
         'lat', 'lon', 'postcode', 'employee_id', 
         'reported_emissions', 'estimated_emissions',
+        'energy_spend',
       ]
 
       row = {}
