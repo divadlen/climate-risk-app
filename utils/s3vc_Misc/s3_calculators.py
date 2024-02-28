@@ -347,14 +347,20 @@ def calc_S3C7_EmployeeCommute(data:S3C7_EmployeeCommute, cache):
     data_quality=5
     metadata=[]
 
-    f1 = ['vehicle_type', 'distance_traveled']    
+    f1 = ['vehicle_type', 'distance_traveled', 'frequency', 'sampled_days']    
     if all(getattr(data, field, None) is not None for field in f1): 
         # Retrieve the emission factors from the cache
         TABLE = 's3c6_travel_factors'
         factors = cache.get_vehicle_emission_factors(table=TABLE, vehicle_type=data.vehicle_type)
         relevant_factors =  get_relevant_factors(factors, unit='unit')
-        total_co2e = calculate_co2e(relevant_factors, unit_value=data.distance_traveled)
-    
+        total_distance=data.distance_traveled
+
+        if data.frequency:
+            total_distance = total_distance * data.frequency
+        if data.sampled_days:
+            total_distance = total_distance * data.sampled_days
+
+        total_co2e = calculate_co2e(relevant_factors, unit_value=total_distance)
         emission_result['distance_based_emissions'] = total_co2e
         data_quality -= 1
         metadata.append( create_metadata('distance_based_emissions', total_co2e, f1, data_quality) )    
