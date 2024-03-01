@@ -31,8 +31,6 @@ sidebar_md = """
 ## Resources
 - [Account verification](https://geckointel.com/contact-us)
 - [Submit a bug report](https://geckointel.com/contact-us)
-- [Privacy policy](https://form.jotform.com/233541821343450)
-- [Terms and condition](https://form.jotform.com/233541354243450)
 - [Privacy policy](https://neldivad.github.io/climate-risk-app/privacy-policy/)
 - [Terms and condition](https://neldivad.github.io/climate-risk-app/terms/)
 """ #
