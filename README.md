@@ -1,2 +1,4 @@
-# climate-risk-app
-climate risk app for gecko
+# Resources
+- [Privacy policy](/privacy-policy/)
+- [Terms and condition](/terms/)
+
