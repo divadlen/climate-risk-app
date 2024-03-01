@@ -35,7 +35,7 @@ sidebar_md = """
 - [Terms and condition](https://form.jotform.com/233541354243450)
 - [Privacy policy](https://neldivad.github.io/climate-risk-app/privacy-policy/)
 - [Terms and condition](https://neldivad.github.io/climate-risk-app/terms/)
-"""
+""" #
 
 #---Start app---#
 def run_app():
