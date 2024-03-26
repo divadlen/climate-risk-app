@@ -46,7 +46,7 @@ class S1_StationaryCombustion(S1_BaseModel):
     
     heating_value: Optional[float] = Field(None)        
     fuel_spend: Optional[float] = Field(None, ge=0)
-    currency: Optional[str] = Field(default='USD') 
+    currency: Optional[str] = Field(default='MYR') 
 
     @model_validator(mode='before')
     def validate_data(cls, values):
