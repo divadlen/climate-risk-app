@@ -53,7 +53,7 @@ class S2_PurchasedPower(S2_BaseModel):
     energy_use: Optional[float] = Field(None, ge=0)
     energy_unit: Optional[str] = Field(default='kwh')
     energy_spend: Optional[float] = Field(None, ge=0)
-    currency: Optional[str] = Field(default='USD')
+    currency: Optional[str] = Field(default='MYR')
         
     @model_validator(mode='before')
     def validate_PPD(cls, values):
