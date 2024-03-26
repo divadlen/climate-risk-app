@@ -223,7 +223,7 @@ class S3C15_2A_Mortgage(S3C15_2_ConsumerFinance):
 class S3C15_2B_VehicleLoans(S3C15_2_ConsumerFinance):
     asset_class: str = 'Vehicle Loans'
     vehicle_type: str = Field(default='car')
-    vehicle_value: float = Field(default=0)
+    vehicle_value: float
     value_at_origin: bool = Field(default=True)
         
     distance_traveled: Optional[float] = Field(None)
