@@ -155,7 +155,7 @@ class S3C4_UpstreamTransport(S3_BaseModel):
     2. fuel type + fuel use (use * factor)
     """ 
     supplier_name: str
-    #address_from: Optional[str] = Field(default=None) # no reliable way of inferring distance
+    #address_from: Optional[str] = Field(default=None) # no reliable way of inferring distance #
     #address_to: Optional[str] = Field(default=None)
 
     travel_mode: str = Field(default='Land')
