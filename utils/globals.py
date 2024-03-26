@@ -147,7 +147,7 @@ ABBRV_IDX_TO_CATEGORY_NAME = {
   'S3C7': 'Category 7 : Employee commuting',
 
   'S3C8_1': 'Category 8.1 : Upstream leased estate',
-  'S3C8_2': 'Category 8.2 : Upstream leased automobiles',
+  'S3C8_2': 'Category 8.2 : Upstream leased automobiles & machinery',
 
   'S3C9': 'Category 9 : Downstream distribution of sold products',
   'S3C10': 'Category 10 : Processing of sold products',
@@ -155,7 +155,7 @@ ABBRV_IDX_TO_CATEGORY_NAME = {
   'S3C12': 'Category 12 : End-of-life treatment of sold products',
   
   'S3C13_1': 'Category 13.1 : Downstream leased estate',
-  'S3C13_2': 'Category 13.2 : Downstream leased automobiles',
+  'S3C13_2': 'Category 13.2 : Downstream leased automobiles & machinery',
   
   'S3C14': 'Category 14 : Franchises',
   
