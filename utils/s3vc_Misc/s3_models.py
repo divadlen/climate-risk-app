@@ -276,7 +276,7 @@ class S3C6_2_BusinessStay(S3_BaseModel):
     lat: Optional[float] = Field(None)
     lon: Optional[float] = Field(None)
 
-    no_of_nights: int = Field(default=1, ge=0)
+    no_of_nights: int = Field(ge=0)
     hotel_emission_factor: Optional[float] = Field(None, ge=0, description='Expedia may have those numbers')
     reported_emissions: Optional[float] = Field(None, ge=0, description='')
 
