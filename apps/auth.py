@@ -138,7 +138,7 @@ def register_user(username, password, email):
     return False
     
   # Check if email is legit
-  if '@' not in email or '.com' not in email[-4:]:
+  if '@' not in email:
     st.error('Not a valid email address')
     return False
   
