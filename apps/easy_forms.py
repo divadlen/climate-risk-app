@@ -112,6 +112,9 @@ def build_dynamic_forms(model, cache, field_to_cache_func):
       elif field_name in ['fuel_state']:
         state['fuel_state'] = st.selectbox(label=snake_case_to_label(field_name), options=['solid', 'liquid', 'gas'], index=1)
 
+      elif field_name in ['travel_mode']:
+        state['travel_mode'] = st.selectbox(label=snake_case_to_label(field_name), options=['Rail', 'Air', 'Land', 'Water', None], index=1)
+
       # if field name has dynamic option select
       elif field_name in field_to_cache_func:
         if field_name == 'country':
