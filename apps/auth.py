@@ -105,7 +105,7 @@ def AuthApp():
 
         # reset attempt
         with st.spinner():
-          if '@' not in identifier or '.com' not in identifier[-4:] or identifier in [None, '']:
+          if '@' not in identifier or identifier in [None, '']:
             st.error('Email not valid')
             return
 
