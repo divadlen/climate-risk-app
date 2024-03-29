@@ -1,0 +1,6 @@
+date,description,branch,sector,fuel_state,fuel_type,fuel_unit,fuel_use,heating_value,fuel_spend,currency
+<Blank>,<Blank>,<Blank>,energy,liquid,Crude Oil,litre,<To fill>,<To fill>,1000,USD
+3/11/2022,<Blank>,Kuala Lumpur,energy,liquid,Crude Oil,litre,1000,20,<To fill>,USD
+<Blank>,<Blank>,Kuala Lumpur,energy,liquid,Crude Oil,litre,1000,20,3000,USD
+<Blank>,fuel,<Blank>,energy,liquid,test error,litre,<To fill>,<To fill>,1000,USD
+3/11/2022,fuel,<Blank>,energy,test error,Ethane,litre,1000,20,<To fill>,USD

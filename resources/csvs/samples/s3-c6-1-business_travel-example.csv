@@ -1,0 +1,6 @@
+date,description,travel_mode,vehicle_type,fuel_type,fuel_unit,fuel_use,distance_traveled,distance_unit
+<Blank>,<Blank>,Air,Aircraft,Aviation Gasoline,litre,100,10000,km
+<Blank>,<Blank>,Land,Aircraft,Aviation Gasoline,litre,70,100000,km
+<Blank>,<Blank>,Land,Car,petrol,litre,100,100,km
+<Blank>,<Blank>,Land,Car,petrol,litre,100,100,km
+<Blank>,<Blank>,Land,Car,petrol,litre,100,100,km

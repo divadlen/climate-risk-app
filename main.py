@@ -175,14 +175,14 @@ def run_app():
       complex_nav['Sample Dashboard'] = ['Sample Dashboard']
       complex_nav["Emissions Calculator"] = ['Scope 1: Direct Emissions']
 
-    if user_level >= 2 and user_level <10:
+    if user_level >= 2:
       complex_nav["Emissions Calculator"] = ['Scope 1: Direct Emissions', 'Scope 2: Indirect Emissions', 'Scope 3: Value Chain']
       complex_nav["Graphics"] = ["Overall Dashboard"]
       complex_nav["Forms Builder"] = ['Forms Builder']
 
-    if user_level >=10:
-      complex_nav["Emissions Calculator"] = ['Scope 1: Direct Emissions', 'Scope 2: Indirect Emissions', 'Scope 3: Value Chain']
-      complex_nav["Forms Builder"] = ['Forms Builder']
+    # if user_level >=10:
+    #   complex_nav["Emissions Calculator"] = ['Scope 1: Direct Emissions', 'Scope 2: Indirect Emissions', 'Scope 3: Value Chain']
+    #   complex_nav["Forms Builder"] = ['Forms Builder']
     
     # Always add Logout last
     complex_nav["logout"] = ['Logout']

@@ -1,0 +1,6 @@
+date,description,product_name,product_class,supplier_name,purchased_quantity,quantity_unit,quantity_emission_factor,supplier_incurred_emissions
+1/1/2023,<Blank>,EXAMPLE_12yrs,Capital Goods,EXAMPLE_ajw9o,<To fill>,kg,<To fill>,1000
+<Blank>,<Blank>,EXAMPLE_qx0nf,Capital Goods,EXAMPLE_p3eqt,<To fill>,kg,<To fill>,2000
+<Blank>,<Blank>,EXAMPLE_55hme,Capital Goods,EXAMPLE_y6nv9,100,kg,20,200
+<Blank>,for office,EXAMPLE_wxuua,Capital Goods,EXAMPLE_gsx52,100,kg,20,30
+1/1/2023,for office,EXAMPLE_en2ky,Capital Goods,EXAMPLE_fbwv9,100,kg,20,1000

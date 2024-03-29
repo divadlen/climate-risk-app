@@ -1,0 +1,6 @@
+date,description,leased_asset_name,leased_asset_type,ownership_status,fuel_type,fuel_unit,fuel_use,refrigerant_type,refrigerant_unit,refrigerant_use,reported_emissions
+1/1/2023,<Blank>,EXAMPLE_e53on,Automobile,Leased,petrol,litre,100,R-410A,kg,10,<Blank>
+<Blank>,<Blank>,EXAMPLE_9ter6,Automobile,Leased,petrol,litre,100,R-410A,kg,10,<Blank>
+<Blank>,<Blank>,EXAMPLE_9c4h3,Automobile,Leased,petrol,litre,100,R-410A,kg,10,<Blank>
+<Blank>,for office,EXAMPLE_31gbq,Automobile,Leased,petrol,litre,100,R-410A,kg,10,<Blank>
+1/1/2023,for office,EXAMPLE_kuaa6,Automobile,Leased,petrol,litre,100,R-410A,kg,10,<Blank>

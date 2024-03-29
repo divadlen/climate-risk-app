@@ -1,0 +1,6 @@
+date,description,franchisee_id,country,address,lat,lon,state,fuel_state,fuel_type,fuel_unit,fuel_use,electric_use,grid_emission_factor,refrigerant_type,refrigerant_unit,refrigerant_use,reported_emissions
+<Blank>,<Blank>,ABC-1,Malaysia,<Blank>,<Blank>,<Blank>,<Blank>,liquid,Diesel,litre,100,100,0.776,R-410A,kg,10,100
+<Blank>,<Blank>,ABC-1,Malaysia,<Blank>,<Blank>,<Blank>,<Blank>,liquid,Diesel,litre,<To fill>,100,0.776,R-410A,kg,10,100
+<Blank>,<Blank>,ABC-1,Malaysia,<Blank>,<Blank>,<Blank>,<Blank>,liquid,Diesel,litre,<To fill>,100,0.776,R-410A,kg,10,100
+<Blank>,<Blank>,ABC-1,Malaysia,<Blank>,<Blank>,<Blank>,<Blank>,liquid,Diesel,litre,<To fill>,100,0.776,R-410A,kg,10,100
+<Blank>,<Blank>,ABC-1,Malaysia,<Blank>,<Blank>,<Blank>,<Blank>,liquid,Diesel,litre,<To fill>,100,0.776,R-410A,kg,10,100

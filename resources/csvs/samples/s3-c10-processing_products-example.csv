@@ -1,0 +1,6 @@
+date,description,process_name,fuel_state,fuel_type,fuel_unit,fuel_use,electric_use,grid_emission_factor,refrigerant_type,refrigerant_unit,refrigerant_use,reported_emissions
+1/1/2023,<Blank>,EXAMPLE_k1m4d,liquid,Diesel,litre,100,100,0.776,R-410A,kg,10,100
+<Blank>,<Blank>,EXAMPLE_596hw,liquid,Diesel,litre,100,100,0.776,R-410A,kg,10,100
+<Blank>,<Blank>,EXAMPLE_lnx0a,liquid,Diesel,litre,100,100,0.776,R-410A,kg,10,100
+<Blank>,for office,EXAMPLE_wfpvd,liquid,Diesel,litre,100,100,0.776,R-410A,kg,10,100
+1/1/2023,for office,EXAMPLE_la3xv,liquid,Diesel,litre,100,100,0.776,R-410A,kg,10,100

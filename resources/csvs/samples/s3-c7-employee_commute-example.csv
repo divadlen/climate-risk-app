@@ -1,0 +1,6 @@
+date,description,employee_id,frequency,sampled_days,branch,travel_mode,vehicle_type,distance_traveled,distance_unit,distance_cadence
+<Blank>,<Blank>,<Blank>,1,260,<Blank>,Land,Car,50,km,yearly
+<Blank>,<Blank>,<Blank>,2,260,<Blank>,Land,Car,70,km,yearly
+<Blank>,<Blank>,<Blank>,260,1,<Blank>,Land,Car,50,km,yearly
+<Blank>,<Blank>,<Blank>,1,260,<Blank>,Land,Car,100,km,yearly
+<Blank>,<Blank>,<Blank>,1,260,<Blank>,Land,Car,-,km,yearly

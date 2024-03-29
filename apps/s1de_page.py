@@ -27,14 +27,11 @@ from utils.s3vc_Misc.s3_cache import S3_Lookup_Cache
 
 
 def s1de_Page(): 
-  if 'S1SC_Lookup_Cache' not in state:
-    state['S1SC_Lookup_Cache'] = S3_Lookup_Cache()
-  if 's1sc_df' not in state: 
-    state['s1sc_df'] = None
-  if 'validated_s1sc_df' not in state:
-    state['validated_s1sc_df'] = None
-    state['validated_s1sc_warnings'] = []
-
+  user_level = state.get("user_level", 1)
+  state['S1SC_Lookup_Cache'] = state.get('S1SC_Lookup_Cache', S3_Lookup_Cache())
+  state['s1sc_df'] = state.get('s1sc_df', None)
+  state['validated_s1sc_df'] = state.get('validated_s1sc_df', None)
+  state['validated_s1sc_warnings'] = state.get('validated_s1sc_warnings', [])
 
   st.title('Scope 1: Direct Emissions')
   tab1, tab2, tab3 = st.tabs(['Get Forms/Guidelines', 'Submit & Review', 'Analysis'])
@@ -88,186 +85,179 @@ def s1de_Page():
       st.info('*(For best results, upload only csv files containing matching fields from examples and keep edits to recommended default fields to minimum)*')
       
       # State for clear button
-      if 'widget_key' not in state:
-        state.widget_key = str(random.randint(1000, 100000000))
+      state.get('widget_key', str(random.randint(1000, 100000000)))
 
-      # Maximum number of files allowed
-      MAX_FILES = 3  
+      if user_level >=10:
+        st.error('File upload feature not available for demo accounts')
+      else:
+        # Maximum number of files allowed
+        MAX_FILES = 3  
+        with st.form('Upload CSV files'):
+          uploaded_files = st.file_uploader("Upload CSV files (accepts only up to 3 files)", type=["csv"], accept_multiple_files=True,  key=state.widget_key, help='CSV containing any relevant Scope 1 data. Categories are automatically inferred')
 
-      with st.form('Upload CSV files'):
-        uploaded_files = st.file_uploader("Upload CSV files (accepts only up to 3 files)", type=["csv"], accept_multiple_files=True,  key=state.widget_key, help='CSV containing any relevant Scope 1 data. Categories are automatically inferred')
+          c1,c2 = st.columns([1,1])
+          with c1:
+            submit_button = st.form_submit_button('Upload')
 
-        c1,c2 = st.columns([1,1])
-        with c1:
-          submit_button = st.form_submit_button('Upload')
-        # with c2:
-        #   clear_button = st.form_submit_button('Clear Files')
+          if submit_button and uploaded_files:
+            if len(uploaded_files) > MAX_FILES:
+              st.warning(f"Maximum number of files reached. Only the first {MAX_FILES} will be processed.")
+              uploaded_files = uploaded_files[:MAX_FILES]
 
-        # if clear_button:
-        #   # Generate a new random key for the file uploader widget
-        #   # https://discuss.streamlit.io/t/are-there-any-ways-to-clear-file-uploader-values-without-using-streamlit-form/40903
-        #   state.widget_key = str(random.randint(1000, 100000000))
+            s1_inits = {
+              's1de_warnings': {},
+              's1de_invalid_indices': {},
+              's1de_original_dfs': {},
+              's1de_result_dfs': {},
+              's1de_calc_results': {},
+            }
 
-          
-        if submit_button and uploaded_files:
-          if len(uploaded_files) > MAX_FILES:
-            st.warning(f"Maximum number of files reached. Only the first {MAX_FILES} will be processed.")
-            uploaded_files = uploaded_files[:MAX_FILES]
+            # Loop to initialize variables in state if not present
+            for var_name, default_value in s1_inits.items(): 
+              state[var_name] = default_value # reset everything if button is clicked
 
-          s1_inits = {
-            's1de_warnings': {},
-            's1de_invalid_indices': {},
-            's1de_original_dfs': {},
-            's1de_result_dfs': {},
-            's1de_calc_results': {},
-          }
+            # Inferencer and df inits
+            modinf = ModelInferencer()
+            cache = state['S1SC_Lookup_Cache']
 
-          # Loop to initialize variables in state if not present
-          for var_name, default_value in s1_inits.items(): 
-            state[var_name] = default_value # reset everything if button is clicked
+            s1_models = [
+              'S1_FugitiveEmission', 'S1_MobileCombustion', 'S1_StationaryCombustion'
+            ]
 
-          # Inferencer and df inits
-          modinf = ModelInferencer()
-          cache = state['S1SC_Lookup_Cache']
-
-          s1_models = [
-            'S1_FugitiveEmission', 'S1_MobileCombustion', 'S1_StationaryCombustion'
-          ]
-
-          # Loop through the uploaded files and convert to models
-          progress_bar = st.progress(0)
-          nfiles = len(uploaded_files)
-          progress_idx = 1
-          
-          for uploaded_file in uploaded_files:
-            data = pd.read_csv(uploaded_file)
-            if data is not None:
-              df = get_dataframe(data)
-
-              # infer model from df
-              inferred_model = modinf.infer_model_from_df(df=df)
-              if inferred_model is None:
-                st.error(f'Uploaded file "{uploaded_file.name}" with columns {list(df.columns)} has no reliable matches. Please make sure you are submitting a file that closely resemble the examples.')
-                continue
-
-              model_name = inferred_model['model']
-              Model = modinf.available_models[model_name]
-              
-              # Store the filename with the model name
-              if 'model_filenames' not in state:
-                state['model_filenames'] = {}
-              state['model_filenames'][model_name] = uploaded_file.name
-          
-              # Choose calculator based on inferred model
-              if model_name not in s1_models:
-                st.error(f'Uploaded file "{uploaded_file.name}" with columns {list(df.columns)} has no reliable matches against Scope 1 forms. Skipping...')
-                continue
-
-              else:
-                CREATOR_FUNCTIONS = {
-                  'S1_MobileCombustion': partial( create_s1mc_data, Model=Model, cache=cache ),
-                  'S1_StationaryCombustion': partial( create_s1sc_data, Model=Model, cache=cache ),
-                  'S1_FugitiveEmission': partial( create_s1fe_data, Model=Model, cache=cache ),
-                }
-                calc = S1_Calculator(cache=cache)
-                creator = CREATOR_FUNCTIONS[model_name]
-                
-              try:
-                calc, warning_list, invalid_indices = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False, return_invalid_indices=True)
-                result_df = calculator_to_df(calc)
-
-                if len(warning_list) > 0:
-                  state['s1de_warnings'][model_name] = warning_list
-                  state['s1de_invalid_indices'][model_name] = invalid_indices
-                state['s1de_original_dfs'][model_name] = df
-                state['s1de_result_dfs'][model_name] = result_df
-                state['s1de_calc_results'][model_name] = calc
-              
-              except Exception as e:
-                raise
-      
-              # update progress bar
-              progress_pct = progress_idx / nfiles
-              progress_bar.progress(progress_pct)
-              progress_idx += 1 
-
-
-      with t2:
-        with st.expander('Show help', expanded=False):
-          with open("resources/mds/s1sc-validation-guide-1.md", "r") as gmd:
-            readme = gmd.read()
-          readme = markdown_insert_images(readme) 
-          st.markdown(readme, unsafe_allow_html=True) 
-
-        if 's1de_original_dfs' not in state or state['s1de_original_dfs'] in [{}]:
-          st.info('Please upload at least one valid table at "Upload/Validate" tab to continue')
-
-        if 's1de_original_dfs' in state and state['s1de_original_dfs'] not in [{}]:
-          with st.expander('Show uploaded table', expanded=True):
-            for name, df in state['s1de_original_dfs'].items():
-              pandas_2_AgGrid(df.head(20), theme='balham', height=300, key=f's1de_og_{name}_aggrid')
-
-        if 'analyzed_s1de' not in state:
-          state['analyzed_s1de'] = False
-        
-        analyze_button = st.button('Validate uploaded dataframes', help='Attempts to return calculation results for each row for table.')
-        if analyze_button and state['s1de_original_dfs'] not in [{}]:
-          state['analyzed_s1de'] = True   
-          st.success('Uploaded Scope 1 data tables analyzed!')
-          
-          st.divider()
-          st.subheader('Validation Results')
-
-          if all(key in state for key in ['s1de_warnings', 's1de_original_dfs']) and state.get('analyzed_s1de', True):
-            with st.expander('Show warnings'):
-              for name, warnings in state['s1de_warnings'].items():
-                for warn in warnings:
-                  st.warning(f'{name}: {warn}')
-              
-              for name, df in state['s1de_original_dfs'].items():
-                df = df.replace('<Blank>', None)
-                df = df.replace('<To fill>', None)
-                df = df.replace(np.nan, None)
-                pandas_2_AgGrid(
-                  df, theme='balham', height=300, key=f's1de_warn_{name}_aggrid', 
-                  highlighted_rows=state['s1de_invalid_indices'].get(name, [])  # Returns an empty list if 'name' is not in the dictionary
-                )
+            # Loop through the uploaded files and convert to models
+            progress_bar = st.progress(0)
+            nfiles = len(uploaded_files)
+            progress_idx = 1
             
-            for name, df in state['s1de_result_dfs'].items():
-              with st.expander(f'Show table for analyzed **{name}**'):
-                pandas_2_AgGrid(df, theme='balham', height=300, key=f's1de_{name}_aggrid')
+            for uploaded_file in uploaded_files:
+              data = pd.read_csv(uploaded_file)
+              if data is not None:
+                df = get_dataframe(data)
+
+                # infer model from df
+                inferred_model = modinf.infer_model_from_df(df=df)
+                if inferred_model is None:
+                  st.error(f'Uploaded file "{uploaded_file.name}" with columns {list(df.columns)} has no reliable matches. Please make sure you are submitting a file that closely resemble the examples.')
+                  continue
+
+                model_name = inferred_model['model']
+                Model = modinf.available_models[model_name]
+                
+                # Store the filename with the model name
+                if 'model_filenames' not in state:
+                  state['model_filenames'] = {}
+                state['model_filenames'][model_name] = uploaded_file.name
+            
+                # Choose calculator based on inferred model
+                if model_name not in s1_models:
+                  st.error(f'Uploaded file "{uploaded_file.name}" with columns {list(df.columns)} has no reliable matches against Scope 1 forms. Skipping...')
+                  continue
+
+                else:
+                  CREATOR_FUNCTIONS = {
+                    'S1_MobileCombustion': partial( create_s1mc_data, Model=Model, cache=cache ),
+                    'S1_StationaryCombustion': partial( create_s1sc_data, Model=Model, cache=cache ),
+                    'S1_FugitiveEmission': partial( create_s1fe_data, Model=Model, cache=cache ),
+                  }
+                  calc = S1_Calculator(cache=cache)
+                  creator = CREATOR_FUNCTIONS[model_name]
+                  
+                try:
+                  calc, warning_list, invalid_indices = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False, return_invalid_indices=True)
+                  result_df = calculator_to_df(calc)
+
+                  if len(warning_list) > 0:
+                    state['s1de_warnings'][model_name] = warning_list
+                    state['s1de_invalid_indices'][model_name] = invalid_indices
+                  state['s1de_original_dfs'][model_name] = df
+                  state['s1de_result_dfs'][model_name] = result_df
+                  state['s1de_calc_results'][model_name] = calc
+                
+                except Exception as e:
+                  raise
+        
+                # update progress bar
+                progress_pct = progress_idx / nfiles
+                progress_bar.progress(progress_pct)
+                progress_idx += 1 
 
 
-    with tab3:
-      st.subheader('Executive Insights')
-      if 's1de_calc_results' not in state or state['s1de_calc_results'] == {}:
-        st.error('Nothing to display here. Have you uploaded or analyzed your uploaded files?')
+    with t2:
+      with st.expander('Show help', expanded=False):
+        with open("resources/mds/s1sc-validation-guide-1.md", "r") as gmd:
+          readme = gmd.read()
+        readme = markdown_insert_images(readme) 
+        st.markdown(readme, unsafe_allow_html=True) 
 
-      if 's1de_calc_results' in state and state['s1de_calc_results'] != {}:
-        res_df = state['s1de_calc_results'] # key: Model name, val: Calculator
-        res_df = calculators_2_df(res_df) # convert each k/v to df
+      if 's1de_original_dfs' not in state or state['s1de_original_dfs'] in [{}]:
+        st.info('Please upload at least one valid table at "Upload/Validate" tab to continue')
 
-        emissionOverviewPart(df=res_df)
+      if 's1de_original_dfs' in state and state['s1de_original_dfs'] not in [{}]:
+        with st.expander('Show uploaded table', expanded=True):
+          for name, df in state['s1de_original_dfs'].items():
+            pandas_2_AgGrid(df.head(20), theme='balham', height=300, key=f's1de_og_{name}_aggrid')
 
-        st.write('')
-        st.write('')
-        st.write('')
-        st.write('')
-        st.write('')
-        st.write('')
-        st.write('')
-        st.write('')
-        st.write('')
-        st.write('')
-        st.write('')
-        st.write('')
-        st.write('')
-        st.write('')
-        st.write('')
-        st.write('')
-        st.write('')
-        st.write('')
-        st.write('')
+      if 'analyzed_s1de' not in state:
+        state['analyzed_s1de'] = False
+      
+      analyze_button = st.button('Validate uploaded dataframes', help='Attempts to return calculation results for each row for table.')
+      if analyze_button and state['s1de_original_dfs'] not in [{}]:
+        state['analyzed_s1de'] = True   
+        st.success('Uploaded Scope 1 data tables analyzed!')
+        
+        st.divider()
+        st.subheader('Validation Results')
+
+        if all(key in state for key in ['s1de_warnings', 's1de_original_dfs']) and state.get('analyzed_s1de', True):
+          with st.expander('Show warnings'):
+            for name, warnings in state['s1de_warnings'].items():
+              for warn in warnings:
+                st.warning(f'{name}: {warn}')
+            
+            for name, df in state['s1de_original_dfs'].items():
+              df = df.replace('<Blank>', None)
+              df = df.replace('<To fill>', None)
+              df = df.replace(np.nan, None)
+              pandas_2_AgGrid(
+                df, theme='balham', height=300, key=f's1de_warn_{name}_aggrid', 
+                highlighted_rows=state['s1de_invalid_indices'].get(name, [])  # Returns an empty list if 'name' is not in the dictionary
+              )
+          
+          for name, df in state['s1de_result_dfs'].items():
+            with st.expander(f'Show table for analyzed **{name}**'):
+              pandas_2_AgGrid(df, theme='balham', height=300, key=f's1de_{name}_aggrid')
+
+
+  with tab3:
+    st.subheader('Executive Insights')
+    if 's1de_calc_results' not in state or state['s1de_calc_results'] == {}:
+      st.error('Nothing to display here. Have you uploaded or analyzed your uploaded files?')
+
+    if 's1de_calc_results' in state and state['s1de_calc_results'] != {}:
+      res_df = state['s1de_calc_results'] # key: Model name, val: Calculator
+      res_df = calculators_2_df(res_df) # convert each k/v to df
+
+      emissionOverviewPart(df=res_df)
+
+      st.write('')
+      st.write('')
+      st.write('')
+      st.write('')
+      st.write('')
+      st.write('')
+      st.write('')
+      st.write('')
+      st.write('')
+      st.write('')
+      st.write('')
+      st.write('')
+      st.write('')
+      st.write('')
+      st.write('')
+      st.write('')
+      st.write('')
+      st.write('')
+      st.write('')
 
 
         

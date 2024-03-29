@@ -2,6 +2,7 @@ import streamlit as st
 from streamlit import session_state as state
 from st_aggrid import AgGrid, AgGridTheme, GridOptionsBuilder, JsCode, DataReturnMode
 
+import os
 import pandas as pd
 from functools import partial
 
@@ -21,157 +22,37 @@ from utils.s3vc_Misc.s3_creators import *
 from utils.s3vc_Misc.s3_cache import S3_Lookup_Cache
 
 def homePage():
+  user_level = state.get("user_level", 1)
+  if 'geolocator' not in state: 
+    state['geolocator'] = GeoLocator()
+  if 'S3VC_Lookup_Cache' not in state:
+    state['S3VC_Lookup_Cache'] = S3_Lookup_Cache()
+
   st.title('Welcome to Trace')
   st.divider()
 
-  st.subheader('Quick Access')
-  st.info(qa_md)
-  with st.form('Upload CSV files'):
-    uploaded_files = st.file_uploader("Upload CSV files (accepts multiple files)", type=["csv"], accept_multiple_files=True, help='CSV containing any Scope1, Scope2, Scope3 data.')
+  if user_level >= 10:
+    st.subheader('Using preset data files for analysis')
 
-    if st.form_submit_button('Upload'):
-      if len(uploaded_files) > 40:
-        st.error('Number of uploaded files exceeded limit of 40!')
-        st.stop()
-      
-      if 'geolocator' not in state:
-        state['geolocator'] = GeoLocator()
-      if 'S3VC_Lookup_Cache' not in state:
-        state['S3VC_Lookup_Cache'] = S3_Lookup_Cache()
+    with st.form('Load presets'):
+      if st.form_submit_button('Load presets'):
+        preset_files = [os.path.join('resources/csvs/samples', f) for f in os.listdir('resources/csvs/samples')]
+        process_files(preset_files, state, pbar=True)
 
-      # Inferencer and df inits
-      modinf = ModelInferencer()
-      gl = state['geolocator']
-      cache = state['S3VC_Lookup_Cache']
+  else:
+    st.subheader('Quick Access')
+    st.info(qa_md)
 
-      # Loop through the uploaded files and convert to models
-      progress_bar = st.progress(0)
-      nfiles = len(uploaded_files)
-      progress_idx = 1
+    with st.form('Upload CSV files'):
+      uploaded_files = st.file_uploader("Upload CSV files (accepts multiple files)", type=["csv"], accept_multiple_files=True, help='CSV containing any Scope1, Scope2, Scope3 data.')
 
-      for uploaded_file in uploaded_files:
-        data = pd.read_csv(uploaded_file)
-        
-        if data is not None:
-          df = get_dataframe(data)
-          inferred_model = modinf.infer_model_from_df(df=df)
-          if inferred_model is None:
-            st.error(f'Uploaded file "{uploaded_file.name}" with columns {list(df.columns)} has no reliable matches. Please make sure you are submitting a file that closely resemble the examples.')
-            continue
+      if st.form_submit_button('Upload'):
+        if len(uploaded_files) > 40:
+          st.error('Number of uploaded files exceeded limit of 40!')
+          st.stop()
 
-          model_name = inferred_model['model']
-          Model = modinf.available_models[model_name]    
+        process_files(uploaded_files, state, pbar=True)
 
-          # Store the filename with the model name
-          if 'model_filenames' not in state:
-            state['model_filenames'] = {}
-          state['model_filenames'][model_name] = uploaded_file.name
-
-          if model_name in s1_models:
-            s1_inits = {
-              's1de_calc_results': {},
-              's1de_warnings': {},
-              's1de_original_dfs': {},
-              's1de_result_dfs': {},
-            }
-
-            # Loop to initialize variables in state if not present
-            for var_name, default_value in s1_inits.items():
-              if var_name not in state:
-                state[var_name] = default_value
-            
-            CREATOR_FUNCTIONS = {
-              'S1_MobileCombustion': partial( create_s1mc_data, Model=Model, cache=cache ),
-              'S1_StationaryCombustion': partial( create_s1sc_data, Model=Model, cache=cache ),
-              'S1_FugitiveEmission': partial( create_s1fe_data, Model=Model, cache=cache ),
-            }
-
-            calc = S1_Calculator(cache=cache)
-            creator = CREATOR_FUNCTIONS[model_name]  
-            calc, warning_list = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False)   
-            result_df = calculator_to_df(calc)
-
-            if len(warning_list) > 0:
-              state['s1de_warnings'][model_name] = warning_list
-            state['s1de_original_dfs'][model_name] = df
-            state['s1de_result_dfs'][model_name] = result_df # required to display validated table in S1 tab, when upload vector from home.
-            state['s1de_calc_results'][model_name] = calc
-
-          elif model_name in s2_models:
-            s2_inits = {
-              's2ie_calc_results': {},
-              's2ie_warnings': {},
-              's2ie_original_dfs': {},
-              's2ie_result_dfs': {},
-            }
-
-            # Loop to initialize variables in state if not present
-            for var_name, default_value in s2_inits.items():
-              if var_name not in state:
-                state[var_name] = default_value
-
-            CREATOR_FUNCTIONS = {
-              'S2_PurchasedPower': partial( create_s2pp_data, Model=Model, cache=cache, geolocator=gl ),
-            }
-
-            calc = S2_Calculator(cache=cache)
-            creator = CREATOR_FUNCTIONS[model_name]
-            calc, warning_list = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=True)
-            result_df = calculator_to_df(calc)
-
-            if len(warning_list) > 0:
-              state['s2ie_warnings'][model_name] = warning_list
-            state['s2ie_original_dfs'][model_name] = df
-            state['s2ie_result_dfs'][model_name] = result_df # required to display validated table in S2 tab, when upload vector from home.
-            state['s2ie_calc_results'][model_name] = calc
-
-          elif model_name in c15_models:
-            if 's3vc_calc_results' not in state:
-              state['s3vc_calc_results'] = {}
-            
-            calc = S3C15_Calculator()
-            creator = partial(create_s3c15_data, Model=Model) 
-            calc, warning_list = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False)
-            state['s3vc_calc_results'][model_name] = calc
-
-          else:
-            if 's3vc_calc_results' not in state:
-              state['s3vc_calc_results'] = {}
-
-            CREATOR_FUNCTIONS = {
-              'S3C1_PurchasedGoods': partial( create_s3c1_data, Model=Model, cache=cache ),
-              'S3C2_CapitalGoods': partial( create_s3c2_data, Model=Model, cache=cache ),
-              'S3C3_EnergyRelated': partial( create_s3c3_data, Model=Model, cache=cache ),
-              'S3C4_UpstreamTransport': partial( create_s3c4_data, Model=Model, cache=cache ),
-              'S3C5_WasteGenerated': partial( create_s3c5_data, Model=Model, cache=cache ),
-              
-              'S3C6_1_BusinessTravel': partial( create_s3c6_1_data, Model=Model, cache=cache ),
-              'S3C6_2_BusinessStay': partial( create_s3c6_2_data, Model=Model, cache=cache ),
-              
-              'S3C7_EmployeeCommute': partial( create_s3c7_data, Model=Model, cache=cache ),
-            
-              'S3C8_1_UpstreamLeasedEstate': partial( create_s3c8_1_data, Model=Model, cache=cache, geolocator=gl ),
-              'S3C8_2_UpstreamLeasedAuto': partial( create_s3c8_2_data, Model=Model, cache=cache ),
-
-              'S3C9_DownstreamTransport':partial( create_s3c9_data, Model=Model, cache=cache ),
-              'S3C10_ProcessingProducts': partial( create_s3c10_data, Model=Model, cache=cache ),
-              'S3C11_UseOfSold': partial( create_s3c11_data, Model=Model, cache=cache ),
-              'S3C12_EOLTreatment': partial( create_s3c12_data, Model=Model, cache=cache ),
-
-              'S3C13_1_DownstreamLeasedEstate': partial( create_s3c13_1_data, Model=Model, cache=cache, geolocator=gl ),
-              'S3C13_2_DownstreamLeasedAuto': partial( create_s3c13_2_data, Model=Model, cache=cache ),             
-              
-              'S3C14_Franchise': partial( create_s3c14_data, Model=Model, cache=cache, geolocator=gl ),
-            }
-            calc = S3_Calculator(cache=cache)
-            creator = CREATOR_FUNCTIONS[model_name]
-            calc, warning_list = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False)
-            state['s3vc_calc_results'][model_name] = calc  
-
-          # update progress bar
-          progress_pct = progress_idx / nfiles
-          progress_bar.progress(progress_pct)
-          progress_idx += 1 
 
   
   if any(state.get(calc_result) for calc_result in ['s1de_calc_results', 's2ie_calc_results', 's3vc_calc_results']):
@@ -189,6 +70,192 @@ def homePage():
   
   else:
     st.info('File not yet uploaded or all models have been deleted.')
+
+
+
+
+
+
+
+
+
+
+#----------
+#
+#-------
+def process_files(files, state, pbar=False):
+  """
+  files: uploaded csvs file
+  state: streamlit session state obj
+  pbar: Progress bar for streamlit
+  """
+
+  modinf = ModelInferencer()
+  gl = state['geolocator']
+  cache = state['S3VC_Lookup_Cache']
+
+  if pbar:
+   # Loop through the uploaded files and convert to models
+    progress_bar = st.progress(0)
+    nfiles = len(files)
+    progress_idx = 1
+
+  for file in files:
+    if isinstance(file, str):  # When file is a path string
+      data = pd.read_csv(file)
+      file_name = os.path.basename(file)
+    else:  # When file is a file-like object
+      data = pd.read_csv(file)
+      file_name = file.name
+    
+    if data is not None:
+      df = get_dataframe(data)
+      inferred_model = modinf.infer_model_from_df(df=df)
+      if inferred_model is None:
+        st.error(f'File "{file.name}" with columns {list(df.columns)} has no reliable matches. Please make sure you are submitting a file that closely resemble the examples.')
+        continue
+
+      model_name = inferred_model['model']
+      Model = modinf.available_models[model_name]    
+
+      # Store the filename with the model name
+      if 'model_filenames' not in state:
+        state['model_filenames'] = {}
+      state['model_filenames'][model_name] = file_name
+
+      if model_name in s1_models:
+        s1_inits = {
+          's1de_calc_results': {},
+          's1de_warnings': {},
+          's1de_original_dfs': {},
+          's1de_result_dfs': {},
+          's1de_invalid_indices': {},
+        }
+
+        # Loop to initialize variables in state if not present
+        for var_name, default_value in s1_inits.items():
+          if var_name not in state:
+            state[var_name] = default_value
+        
+        CREATOR_FUNCTIONS = {
+          'S1_MobileCombustion': partial( create_s1mc_data, Model=Model, cache=cache ),
+          'S1_StationaryCombustion': partial( create_s1sc_data, Model=Model, cache=cache ),
+          'S1_FugitiveEmission': partial( create_s1fe_data, Model=Model, cache=cache ),
+        }
+
+        calc = S1_Calculator(cache=cache)
+        creator = CREATOR_FUNCTIONS[model_name]  
+        calc, warning_list, invalid_indices = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False, return_invalid_indices=True) 
+        result_df = calculator_to_df(calc)
+
+        if len(warning_list) > 0:
+          state['s1de_warnings'][model_name] = warning_list
+          state['s1de_invalid_indices'][model_name] = invalid_indices
+        state['s1de_original_dfs'][model_name] = df
+        state['s1de_result_dfs'][model_name] = result_df # required to display validated table in S1 tab, when upload vector from home.
+        state['s1de_calc_results'][model_name] = calc
+
+      elif model_name in s2_models:
+        s2_inits = {
+          's2ie_calc_results': {},
+          's2ie_warnings': {},
+          's2ie_invalid_indices': {},
+          's2ie_original_dfs': {},
+          's2ie_result_dfs': {},
+        }
+
+        # Loop to initialize variables in state if not present
+        for var_name, default_value in s2_inits.items():
+          if var_name not in state:
+            state[var_name] = default_value
+
+        CREATOR_FUNCTIONS = {
+          'S2_PurchasedPower': partial( create_s2pp_data, Model=Model, cache=cache, geolocator=gl ),
+        }
+
+        calc = S2_Calculator(cache=cache)
+        creator = CREATOR_FUNCTIONS[model_name]
+        calc, warning_list, invalid_indices = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False, return_invalid_indices=True) 
+        result_df = calculator_to_df(calc)
+
+        if len(warning_list) > 0:
+          state['s2ie_warnings'][model_name] = warning_list
+          state['s2ie_invalid_indices'][model_name] = invalid_indices
+        state['s2ie_original_dfs'][model_name] = df
+        state['s2ie_result_dfs'][model_name] = result_df # required to display validated table in S2 tab, when upload vector from home.
+        state['s2ie_calc_results'][model_name] = calc
+
+      else:
+        s3_inits = {
+          's3vc_calc_results': {},
+          's3vc_warnings': {},
+          's3vc_invalid_indices': {},
+          's3vc_original_dfs': {},
+          's3vc_result_dfs': {},
+        }
+        for var_name, default_value in s3_inits.items():
+          if var_name not in state:
+            state[var_name] = default_value
+                
+        # S3 INVESTMENT CATEGORIES
+        if model_name in c15_models:        
+          calc = S3C15_Calculator()
+          creator = partial(create_s3c15_data, Model=Model) 
+          calc, warning_list, invalid_indices = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False, return_invalid_indices=True) 
+          result_df = calculator_to_df(calc)
+
+          if len(warning_list) > 0:
+            state['s3vc_warnings'][model_name] = warning_list
+            state['s3vc_invalid_indices'][model_name] = invalid_indices
+          state['s3vc_original_dfs'][model_name] = df
+          state['s3vc_result_dfs'][model_name] = result_df
+          state['s3vc_calc_results'][model_name] = calc
+
+        # S3 NORMAL CATEGORIES
+        else:
+          CREATOR_FUNCTIONS = {
+          'S3C1_PurchasedGoods': partial( create_s3c1_data, Model=Model, cache=cache ),
+          'S3C2_CapitalGoods': partial( create_s3c2_data, Model=Model, cache=cache ),
+          'S3C3_EnergyRelated': partial( create_s3c3_data, Model=Model, cache=cache ),
+          'S3C4_UpstreamTransport': partial( create_s3c4_data, Model=Model, cache=cache ),
+          'S3C5_WasteGenerated': partial( create_s3c5_data, Model=Model, cache=cache ),
+          
+          'S3C6_1_BusinessTravel': partial( create_s3c6_1_data, Model=Model, cache=cache ),
+          'S3C6_2_BusinessStay': partial( create_s3c6_2_data, Model=Model, cache=cache ),
+          
+          'S3C7_EmployeeCommute': partial( create_s3c7_data, Model=Model, cache=cache ),
+        
+          'S3C8_1_UpstreamLeasedEstate': partial( create_s3c8_1_data, Model=Model, cache=cache, geolocator=gl ),
+          'S3C8_2_UpstreamLeasedAuto': partial( create_s3c8_2_data, Model=Model, cache=cache ),
+
+          'S3C9_DownstreamTransport':partial( create_s3c9_data, Model=Model, cache=cache ),
+          'S3C10_ProcessingProducts': partial( create_s3c10_data, Model=Model, cache=cache ),
+          'S3C11_UseOfSold': partial( create_s3c11_data, Model=Model, cache=cache ),
+          'S3C12_EOLTreatment': partial( create_s3c12_data, Model=Model, cache=cache ),
+
+          'S3C13_1_DownstreamLeasedEstate': partial( create_s3c13_1_data, Model=Model, cache=cache, geolocator=gl ),
+          'S3C13_2_DownstreamLeasedAuto': partial( create_s3c13_2_data, Model=Model, cache=cache ),             
+          
+          'S3C14_Franchise': partial( create_s3c14_data, Model=Model, cache=cache, geolocator=gl ),
+        }
+          calc = S3_Calculator(cache=cache)
+          creator = CREATOR_FUNCTIONS[model_name]
+          calc, warning_list, invalid_indices = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False, return_invalid_indices=True) 
+          result_df = calculator_to_df(calc)
+
+          if len(warning_list) > 0:
+            state['s3vc_warnings'][model_name] = warning_list
+            state['s3vc_invalid_indices'][model_name] = invalid_indices
+          state['s3vc_original_dfs'][model_name] = df
+          state['s3vc_result_dfs'][model_name] = result_df
+          state['s3vc_calc_results'][model_name] = calc
+
+      # update progress bar
+      if pbar:
+        progress_pct = progress_idx / nfiles
+        progress_bar.progress(progress_pct)
+        progress_idx += 1 
+
 
 
 #------

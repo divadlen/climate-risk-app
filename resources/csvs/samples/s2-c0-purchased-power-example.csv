@@ -1,0 +1,6 @@
+date,description,lat,lon,country,state,branch,department,street_address_1,street_address_2,city,postcode,owned,energy_provider,energy_type,energy_unit,energy_use,energy_spend,currency
+1/1/2023,<Blank>,<Blank>,<Blank>,malaysia,KL,<Blank>,<Blank>,<Blank>,<Blank>,<Blank>,<Blank>,TRUE,<Blank>,electric,kwh,100,<To fill>,USD
+<Blank>,<Blank>,<Blank>,<Blank>,malaysia,KL,Mont Kiara,Finance,<Blank>,<Blank>,<Blank>,<Blank>,TRUE,<Blank>,electric,kwh,200,<To fill>,USD
+<Blank>,<Blank>,<Blank>,<Blank>,malaysia,<Blank>,<Blank>,<Blank>,<Blank>,<Blank>,<Blank>,<Blank>,TRUE,<Blank>,electric,kwh,<To fill>,1000,USD
+<Blank>,for office,<Blank>,<Blank>,malaysia,<Blank>,<Blank>,<Blank>,<Blank>,<Blank>,<Blank>,<Blank>,TRUE,<Blank>,electric,kwh,<To fill>,1200,USD
+1/1/2023,for office,<Blank>,<Blank>,malaysia,KL,Mont Kiara,Finance,"5, Jalan XXX,","Solaris Dutamas,",Segambut,51200,TRUE,<Blank>,electric,kwh,100,1000,USD
