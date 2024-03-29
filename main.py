@@ -85,7 +85,7 @@ def run_app():
     #   reconcile_theme_config()  # Apply the theme
 
     with st.expander('App version'):
-      st.write('0.5.1')
+      st.write('0.6.1')
 
     st.markdown('Copyright © 2023 Gecko Technologies')
 
