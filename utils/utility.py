@@ -58,6 +58,17 @@ def snake_case_to_label(s:str):
   return ' '.join(word.capitalize() for word in s.split('_'))
 
 
+def humanize_field(field_name, invert=False):
+  if invert:
+    # Convert from 'Column Name 1' to 'column_name_1'
+    # Strip leading and trailing spaces, replace multiple spaces with one, and convert spaces to underscores
+    return re.sub(' +', '_', field_name.strip()).lower()
+  else:
+    # Convert from 'column_name_1' to 'Column Name 1'
+    # Split on underscores and capitalize each word, then join with spaces
+    return ' '.join(word.capitalize() for word in field_name.split('_'))
+    
+
 #-----
 # Theming
 #-----

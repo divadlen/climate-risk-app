@@ -134,7 +134,6 @@ def show_example_form(
 
     with st.expander(title, expanded=expanded):
         csv_str = convert_BaseModel(BaseModelCls, examples=True)
-        # example_df = convert_BaseModel(BaseModelCls, examples=True, return_as_string=False)
         example_df = get_cached_df(BaseModelCls) # cache doesnt work with aggrid
 
         cellstyle_jscode = JsCode("""

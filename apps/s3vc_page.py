@@ -53,20 +53,20 @@ def s3vc_Page():
 
 
   if 's3_settings' in state and state['s3_settings'] == True:
-    tab1, tab2, tab3, tab4 = st.tabs(['Settings', 'Get Forms/Guidelines', 'Submit & Review', 'Analysis'])
+    tab1, tab2, tab3, tab4 = st.tabs(['Settings', 'Get Forms/Guidelines', 'Submit and Review', 'Analysis'])
     applicable_indices = SECTOR_TO_CATEGORY_IDX.get(state['s3_sector'], None)
     
     try:
       sorted_applicable_indices = sorted(list(set(applicable_indices)))
-      applicable_bools = ["Highly applicable" if i in sorted_applicable_indices else "Less Applicable"  for i in range(1, 16)]        
+      applicable_bools = ["Highly Applicable" if i in sorted_applicable_indices else "Less Applicable"  for i in range(1, 16)]        
     except:
       sorted_applicable_indices = None
-      applicable_bools = ["Less applicable"] * 15
+      applicable_bools = ["Less Applicable"] * 15
 
     with tab1:
       with st.form(key='scope_3_reset'):
         st.success(f"Current sector: {state['s3_sector']}")
-        st.info(f'Highighted rows indicate the *recommended* categories to be covered by industry. Navigate to **Get Forms/Guidelines** or **Submit & Review** to get started!')
+        st.info(f'Highlighted rows indicate the recommended categories to be covered by the selected industry. Navigate to **Get Forms/Guidelines** or **Submit and Review** to get started!')
 
         df = pd.DataFrame({
           'Category': [IDX_TO_CATEGORY_NAME[i] for i in range(1,16)],
@@ -102,15 +102,15 @@ def s3vc_Page():
       with st.expander('Show help', expanded=True):
         download_desc = 'Click on the links in Table of Contents to redirect you to the recommended tables to fill. Download the example forms. Each transaction counts as a row.'
         fill_desc = 'Each form is represented as CSV, each row is one transaction. Example 1: in "S3C15_ListedEquity" file, each holding company counts as one row. Example 2: In "S3C7_EmployeeCommute", each employee journey counts as one row (If employee uses multiple transport method, submit multiple rows for the same employee). Details at "More help" and "Visual help"'
-        upload_desc = 'In "Submit & Review" tab, drag and drop your csv files in the upload window.'
-        validate_desc = 'In "Submit & Review" tab, go to "Analyze uploads" to verify your uploaded files. From there, our AI validator will simulate the results of your submitted files.'
+        upload_desc = 'In "Submit and Review" tab, drag and drop your csv files in the upload window.'
+        validate_desc = 'In "Submit and Review" tab, go to "Analyze uploads" to verify your uploaded files. From there, our AI validator will simulate the results of your submitted files.'
 
         sac.steps(
           items=[
             sac.StepsItem(title='Download relevant forms', subtitle='', description=download_desc),
             sac.StepsItem(title='Fill relevant forms', subtitle='', description=fill_desc),
             sac.StepsItem(title='Upload relevant forms', subtitle='', description=upload_desc),
-            sac.StepsItem(title='Validate & submit forms', subtitle='', description=validate_desc),
+            sac.StepsItem(title='Validate and submit forms', subtitle='', description=validate_desc),
           ], 
           format_func='title',
           direction='vertical',
@@ -129,16 +129,16 @@ def s3vc_Page():
 
       t1, t2, t3, t4 = st.tabs(['Category 1-5', 'Category 6-10', 'Category 11-14', 'Category 15: Investments'])
       with t1:
-        st.subheader("Category 1 : Purchased goods & services", anchor='S3C1_PurchasedGoods')
-        show_example_form(S3C1_PurchasedGoods, key='c1', title='Show example form (S3-C1: Purchased goods & services)', button_text='Get example form', filename='s3-c1-purchased_goods-example.csv', markdown=footer_md)
+        st.subheader("Category 1 : Purchased goods and services", anchor='S3C1_PurchasedGoods')
+        show_example_form(S3C1_PurchasedGoods, key='c1', title='Show example form (S3-C1: Purchased goods and services)', button_text='Get example form', filename='s3-c1-purchased_goods-example.csv', markdown=footer_md)
 
         st.subheader("Category 2 : Capital goods", anchor='S3C2_CapitalGoods')
         show_example_form(S3C2_CapitalGoods, key='c2', title='Show example form (S3-C2: Capital Goods)', button_text='Get example form', filename='s3-c2-capital_goods-example.csv', markdown=footer_md)
 
-        st.subheader("Category 3 : Fuel- & energy-related activities (excluded in Scope 1 & 2)", anchor='S3C3_EnergyRelated')
+        st.subheader("Category 3 : Fuel and energy-related activities (excluded in Scope 1 and 2)", anchor='S3C3_EnergyRelated')
         show_example_form(S3C3_EnergyRelated, key='c3', title='Show example form (S3-C3: Energy-related activities)', button_text='Get example form', filename='s3-c3-energy_related-example.csv', markdown=footer_md)
 
-        st.subheader("Category 4 : Upstream transportation & distribution", anchor='S3C4_UpstreamTransport')
+        st.subheader("Category 4 : Upstream transportation and distribution", anchor='S3C4_UpstreamTransport')
         show_example_form(S3C4_UpstreamTransport, key='c4', title='Show example form (S3-C4: Upstream transportation and distribution)', button_text='Get example form', filename='s3-c4-upstream_transport-example.csv', markdown=footer_md)
         
         st.subheader("Category 5 : Waste generated in operations", anchor='S3C5_WasteGenerated')
@@ -219,7 +219,7 @@ def s3vc_Page():
           st.subheader("Category 15-5: Sovereign Debt / Government Bonds", anchor='S3C15_5_SovereignDebt')
           show_example_form(S3C15_5_SovereignDebt, title='Show example form (S3-C15-5: Sovereign Debt)', button_text='Get example form', filename='s3-c15-5-sovereign_debt-example.csv', markdown=footer_md)
 
-          st.subheader("Category 15-6: Managed Investments & Client's Portfolios", anchor='S3C15_6_ManagedInvestments')
+          st.subheader("Category 15-6: Managed Investments and Client's Portfolios", anchor='S3C15_6_ManagedInvestments')
           show_example_form(S3C15_6_ManagedInvestments, title='Show example form (S3-C15-6: Managed Investments)', button_text='Get example form', filename='s3-c15-6-managed_investments-example.csv', markdown=footer_md)
 
 
@@ -539,15 +539,15 @@ general_guide_md = """
 """
 
 table_of_contents_md="""
-- [**Category 1 : Purchased goods & services**](#S3C1_PurchasedGoods)
+- [**Category 1 : Purchased goods and services**](#S3C1_PurchasedGoods)
 - [**Category 2 : Capital goods**](#S3C2_CapitalGoods)
-- [**Category 3 : Fuel- & energy-related activities (excluded in Scope 1 & 2)**](#S3C3_EnergyRelated)
-- [**Category 4 : Upstream transportation & distribution**](#S3C4_UpstreamTransport)
+- [**Category 3 : Fuel and energy-related activities (excluded in Scope 1 and 2)**](#S3C3_EnergyRelated)
+- [**Category 4 : Upstream transportation and distribution**](#S3C4_UpstreamTransport)
 - [**Category 5 : Waste generated in operations**](#S3C5_WasteGenerated)
 - [**Category 6 : Business and air travel**](#S3C6_BusinessTravel)
 - [**Category 7 : Employee commuting**](#S3C7_EmployeeCommute)
 - [**Category 8 : Upstream leased assets**](#S3C8_UpstreamLeased)
-- [**Category 9 : Transportation & distribution of sold products**](#S3C9_DownstreamTransport)
+- [**Category 9 : Transportation and distribution of sold products**](#S3C9_DownstreamTransport)
 - [**Category 10 : Processing of sold products**](#S3C10_ProcessingProducts)
 - [**Category 11 : Use of sold products**](#S3C11_UseOfSold)
 - [**Category 12 : End-of-life treatment of sold products**](#S3C12_EOLTreatment)

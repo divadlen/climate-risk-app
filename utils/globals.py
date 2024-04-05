@@ -117,10 +117,10 @@ SECTOR_TO_CATEGORY_IDX = {
 }
 
 IDX_TO_CATEGORY_NAME = {
-  1: 'Category 1 : Purchased goods & services',
+  1: 'Category 1 : Purchased goods and services',
   2: 'Category 2 : Capital goods',
-  3: 'Category 3 : Fuel- & energy-related activities (excluded in Scope 1 & 2)',
-  4: 'Category 4 : Upstream transportation & distribution',
+  3: 'Category 3 : Fuel- and energy-related activities (excluded in Scope 1 and 2)',
+  4: 'Category 4 : Upstream transportation and distribution',
   5: 'Category 5 : Waste generated in operations',
   6: 'Category 6 : Business and air travel',
   7: 'Category 7 : Employee commuting',
@@ -135,10 +135,10 @@ IDX_TO_CATEGORY_NAME = {
 }
 
 ABBRV_IDX_TO_CATEGORY_NAME = {
-  'S3C1': 'Category 1 : Purchased goods & services',
+  'S3C1': 'Category 1 : Purchased goods and services',
   'S3C2': 'Category 2 : Capital goods',
-  'S3C3': 'Category 3 : Fuel- & energy-related activities (excluded in Scope 1 & 2)',
-  'S3C4': 'Category 4 : Upstream transportation & distribution',
+  'S3C3': 'Category 3 : Fuel-and-energy-related activities (excluded in Scope 1 and 2)',
+  'S3C4': 'Category 4 : Upstream transportation and distribution',
   'S3C5': 'Category 5 : Waste generated in operations',
   
   'S3C6_1': 'Category 6.1 : Business and air travel',
@@ -147,7 +147,7 @@ ABBRV_IDX_TO_CATEGORY_NAME = {
   'S3C7': 'Category 7 : Employee commuting',
 
   'S3C8_1': 'Category 8.1 : Upstream leased estate',
-  'S3C8_2': 'Category 8.2 : Upstream leased automobiles & machinery',
+  'S3C8_2': 'Category 8.2 : Upstream leased automobiles and machinery',
 
   'S3C9': 'Category 9 : Downstream distribution of sold products',
   'S3C10': 'Category 10 : Processing of sold products',
@@ -155,7 +155,7 @@ ABBRV_IDX_TO_CATEGORY_NAME = {
   'S3C12': 'Category 12 : End-of-life treatment of sold products',
   
   'S3C13_1': 'Category 13.1 : Downstream leased estate',
-  'S3C13_2': 'Category 13.2 : Downstream leased automobiles & machinery',
+  'S3C13_2': 'Category 13.2 : Downstream leased automobiles and machinery',
   
   'S3C14': 'Category 14 : Franchises',
   
