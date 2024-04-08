@@ -71,7 +71,7 @@ def build_dynamic_forms(model, cache, field_to_cache_func):
   state_list = []
   fuel_list = []
 
-  if state['country'] != 'Select Country':
+  if state['country'] != 'Select country':
     state_list = cache.get_allowed_states(country=state['country'])
   if state['fuel_state'] != 'Select fuel state':
     fuel_list = cache.get_allowed_fuel_type(fuel_state=state['fuel_state'])
@@ -140,7 +140,7 @@ def build_dynamic_forms(model, cache, field_to_cache_func):
 
         else:
           options = field_to_cache_func[field_name]()  # Run the function to get the list of allowed fields
-          st.selectbox(label=field_name, options=options)
+          st.selectbox(label=snake_case_to_label(field_name), options=options)
             
       elif origin == None: # if origin has only one type
         if field_type == str:
