@@ -49,7 +49,7 @@ class S2_PurchasedPower(S2_BaseModel):
     owned: Optional[bool] = Field(default=True)
     
     energy_provider: Optional[str] = Field(None, max_length=99)
-    energy_type: Optional[str] = Field(default='electric')
+    energy_type: Optional[str] = Field(default='Electric')
     energy_use: Optional[float] = Field(None, ge=0)
     energy_unit: Optional[str] = Field(default='kwh')
     energy_spend: Optional[float] = Field(None, ge=0)
@@ -73,7 +73,7 @@ class S2_PurchasedPower(S2_BaseModel):
         if owned is None:
             values['owned'] = True
         if energy_type is None:
-            values['energy_type'] = 'electric'
+            values['energy_type'] = 'Electric'
         if energy_unit is None:
             values['energy_unit'] = 'kwh'
            

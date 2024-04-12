@@ -402,9 +402,9 @@ def calc_S3C15_5_SovereignDebt(asset: S3C15_BaseAsset):
         emission_result['reported_emissions_1'] = reported_emissions_1
         metadata.append( create_metadata('reported_emissions_1', reported_emissions_1, f1, data_quality) )
          
-    f2 = ['outstanding_amount', 'PPP_adj_GDP', 'reported_emissions']
+    f2 = ['outstanding_amount', 'ppp_adj_gdp', 'reported_emissions']
     if all(getattr(asset, field, None) is not None for field in f2):
-        reported_emissions_2 = round( (asset.outstanding_amount / asset.PPP_adj_GDP) * asset.reported_emissions, 2)
+        reported_emissions_2 = round( (asset.outstanding_amount / asset.ppp_adj_gdp) * asset.reported_emissions, 2)
         data_quality -=1
         
         emission_result['reported_emissions_2'] = reported_emissions_2
@@ -529,8 +529,8 @@ def calculator_test():
       if 'total_government_debt' in cls.model_fields:
           asset['total_government_debt'] = random.uniform(10000000000, 50000000000)
       
-      if 'PPP_adj_GDP' in cls.model_fields:
-          asset['PPP_adj_GDP'] = random.uniform(1000000000, 5000000000)
+      if 'ppp_adj_gdp' in cls.model_fields:
+          asset['ppp_adj_gdp'] = random.uniform(1000000000, 5000000000)
       
       if 'consumption_emissions' in cls.model_fields:
           asset['consumption_emissions'] = random.uniform(444444444444, 777777777777)
