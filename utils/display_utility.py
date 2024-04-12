@@ -136,31 +136,43 @@ def show_example_form(
         csv_str = convert_BaseModel(BaseModelCls, examples=True)
         example_df = get_cached_df(BaseModelCls) # cache doesnt work with aggrid
 
+        # Coloring the example forms are just terrible implementation
+
+        # cellstyle_jscode = JsCode("""
+        # function(params){
+        #     if (params.value === '<Blank>') {
+        #         return {
+        #             'backgroundColor': 'teal',
+        #             'color': 'white'
+        #         }
+        #     } else if (params.value === '<To fill>') {
+        #         return {
+        #             'backgroundColor': '#ecb79c',
+        #             'color': 'black'
+        #         }
+        #     } else if (typeof params.value === 'string' && !params.value.includes('EXAMPLE')) {
+        #         return {
+        #             'backgroundColor': 'turquoise',
+        #             'color': 'black'
+        #         }
+        #     } else {
+        #         return {
+        #             'backgroundColor': '#db7641',
+        #             'color': 'black'
+        #         }
+        #     }
+        # }
+        # """)
+
         cellstyle_jscode = JsCode("""
         function(params){
-            if (params.value === '<Blank>') {
-                return {
-                    'backgroundColor': 'teal',
-                    'color': 'white'
-                }
-            } else if (params.value === '<To fill>') {
-                return {
-                    'backgroundColor': '#ecb79c',
-                    'color': 'black'
-                }
-            } else if (typeof params.value === 'string' && !params.value.includes('EXAMPLE')) {
-                return {
-                    'backgroundColor': 'turquoise',
-                    'color': 'black'
-                }
-            } else {
-                return {
-                    'backgroundColor': '#db7641',
-                    'color': 'black'
-                }
+            return {
+                'backgroundColor': 'turquoise',
+                'color': 'black'
             }
         }
         """)
+
         if not key:
           key=f'{str(uuid.uuid4())}'
 
