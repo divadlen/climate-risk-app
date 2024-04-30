@@ -32,6 +32,7 @@ def s1de_Page():
   state['s1sc_df'] = state.get('s1sc_df', None)
   state['validated_s1sc_df'] = state.get('validated_s1sc_df', None)
   state['validated_s1sc_warnings'] = state.get('validated_s1sc_warnings', [])
+  state['widget_key'] = state.get('widget_key', str(random.randint(1000, 100000000))) # hotfix
 
   st.title('Scope 1: Direct Emissions')
   tab1, tab2, tab3 = st.tabs(['Get Forms/Guidelines', 'Submit & Review', 'Analysis'])
@@ -85,7 +86,7 @@ def s1de_Page():
       st.info('*(For best results, upload only csv files containing matching fields from examples and keep edits to recommended default fields to minimum)*')
       
       # State for clear button
-      state.get('widget_key', str(random.randint(1000, 100000000)))
+      state['widget_key'] = state.get('widget_key', str(random.randint(1000, 100000000)))
 
       if user_level >=10:
         st.error('File upload feature not available for demo accounts')
