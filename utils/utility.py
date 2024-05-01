@@ -54,11 +54,11 @@ def clean_text(text):
   return clean_text
 
 
-def snake_case_to_label(s:str):
+def snake_case_to_label(s:str) -> str:
   return ' '.join(word.capitalize() for word in s.split('_'))
 
 
-def humanize_field(field_name, invert=False):
+def humanize_field(field_name:str, invert=False) -> str:
   if invert:
     # Convert from 'Column Name 1' to 'column_name_1'
     # Strip leading and trailing spaces, replace multiple spaces with one, and convert spaces to underscores
@@ -350,6 +350,10 @@ def convert_BaseModel(cls, examples:bool=False, return_as_string:bool=True):
 
   # Sort columns according to globals
   df = df[[col for col in COLUMN_SORT_ORDER if col in df.columns]] 
+
+  # Humanize all field names in the DataFrame
+  df.columns = [humanize_field(col) for col in df.columns]
+     
     
   if return_as_string:
     csv_buffer = StringIO()
