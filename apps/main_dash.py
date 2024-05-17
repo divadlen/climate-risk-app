@@ -43,7 +43,7 @@ def main_dash_Page():
     st.info('Calculated results of Scope 2 has yet to be retrieved. Main dashboard will not include results for Scope 2.')
 
   if 's3vc_calc_results' in state and state['s3vc_calc_results'] != {}:
-    s3_res = state['s3vc_calc_results'] # key: Model name, val: Calculator
+    s3_res = state['s3vc_calc_results'] # key: Model name, val: Calculator # 
     s3_df = calculators_2_df(s3_res) # convert each k/v to df
     dfs_to_concat.append(s3_df)
   else:
