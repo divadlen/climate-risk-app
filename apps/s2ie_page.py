@@ -195,7 +195,7 @@ def s2ie_Page():
     with tab3:
       st.subheader('Executive Insights')
       if 's2ie_calc_results' not in st.session_state or st.session_state['s2ie_calc_results'] == {}:
-        st.error('Nothing to display here. Have you uploaded or analyzed your uploaded files?')
+        st.error('No display available. Have you uploaded and analyzed your uploaded files?')
 
       if 's2ie_calc_results' in st.session_state and st.session_state['s2ie_calc_results'] != {}:
         # Check if warnings are discovered

@@ -69,7 +69,8 @@ def homePage():
           st.experimental_rerun()
   
   else:
-    st.info('File not yet uploaded or all models have been deleted.')
+    st.info('Files have yet to be uploaded or all models have been deleted.')
+    
 
 
 

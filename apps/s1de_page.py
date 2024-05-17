@@ -232,7 +232,8 @@ def s1de_Page():
   with tab3:
     st.subheader('Executive Insights')
     if 's1de_calc_results' not in state or state['s1de_calc_results'] == {}:
-      st.error('Nothing to display here. Have you uploaded or analyzed your uploaded files?')
+      st.error('No display available. Have you uploaded and analyzed your uploaded files?')
+      
 
     if 's1de_calc_results' in state and state['s1de_calc_results'] != {}:
       res_df = state['s1de_calc_results'] # key: Model name, val: Calculator
