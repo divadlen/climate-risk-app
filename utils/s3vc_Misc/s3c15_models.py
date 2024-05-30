@@ -135,7 +135,7 @@ class S3C15_5_SovereignDebt(S3C15_BaseAsset):
     currency: str = Field(default='MYR')
     outstanding_amount: float = Field(ge=0)
     total_government_debt: Optional[float] = Field(None, ge=0)
-    pp_adj_gdp: Optional[float] = Field(None, ge=0)
+    ppp_adj_gdp: Optional[float] = Field(None, ge=0)
     
     attribution_share: Optional[float] = Field(None, ge=0, le=1)    
     reported_emissions: Optional[float] = Field(None, ge=0)

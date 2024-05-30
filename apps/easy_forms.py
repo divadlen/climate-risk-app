@@ -69,12 +69,13 @@ def build_dynamic_forms(model, cache, field_to_cache_func):
   # Init lists
   country_list = cache.get_allowed_countries() # pointless to save these into session. You need to write a lot of lines to save a few ms of API call
   state_list = []
-  fuel_list = []
+  fuel_list = cache.get_allowed_fuel_type(fuel_state='liquid')
 
   if state['country'] != 'Select country':
     state_list = cache.get_allowed_states(country=state['country'])
   if state['fuel_state'] != 'Select fuel state':
     fuel_list = cache.get_allowed_fuel_type(fuel_state=state['fuel_state'])
+  
   
   # Create an expander for the dynamic form
   with st.expander('Form content preview', expanded=True):
