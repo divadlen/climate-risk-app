@@ -87,7 +87,7 @@ def s3vc_Page():
             }
         }
         """)
-        pandas_2_AgGrid(df, cellstyle_jscode=cellstyle_jscode, height=None, pagination=None)
+        pandas_2_AgGrid(df, cellstyle_jscode=cellstyle_jscode, height=None, pagination=None) # bruh fk the web cache 
 
         if st.form_submit_button('Reset settings'):
           del state['s3_settings']
