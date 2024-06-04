@@ -75,7 +75,7 @@ def s3vc_Page():
 
         cellstyle_jscode = JsCode("""
         function(params){
-            if (params.data.Applicable === 'Highly applicable') {
+            if (params.data.Applicable === 'Highly Applicable') {
                 return {
                     'backgroundColor': 'lightblue',
                 }
