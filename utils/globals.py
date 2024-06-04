@@ -79,7 +79,7 @@ COLUMN_SORT_ORDER = [
   # finances
   'currency', 'outstanding_amount', 'enterprise_value', 'total_equity', 'total_debt', 
   'project_equity', 'project_debt',
-  'total_government_debt', 'PPP_adj_GDP', 
+  'total_government_debt', 'ppp_adj_gdp', 
   'value_at_origin', 
 
   # emission related
