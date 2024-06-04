@@ -138,7 +138,7 @@ class S3C15_5_SovereignDebt(S3C15_BaseAsset):
     ppp_adj_gdp: Optional[float] = Field(None, ge=0)
     
     attribution_share: Optional[float] = Field(None, ge=0, le=1)    
-    reported_emissions: Optional[float] = Field(None, ge=0)
+    # reported_emissions: Optional[float] = Field(None, ge=0)
     estimated_emissions: Optional[float] = Field(None, ge=0)
     production_emissions: Optional[float] = Field(None)
     consumption_emissions: Optional[float] = Field(None)
