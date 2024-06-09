@@ -52,13 +52,13 @@ def run_app():
   # st.markdown(hide_st_style, unsafe_allow_html=True)
 
   #---Start Hydra instance---#
-  hydra_theme = None # init hydra theme
-  navbar_theme_light = {
-    'txc_inactive': '#FFFFFF',
-    'txc_active':'grey',
-    'menu_background':'#05F1E3',
-    'option_active':'#004457'
-  }
+  # hydra_theme = None # init hydra theme
+  # navbar_theme_light = {
+  #   'txc_inactive': '#FFFFFF',
+  #   'txc_active':'grey',
+  #   'menu_background':'#05F1E3',
+  #   'option_active':'#004457'
+  # }
   navbar_theme_dark = {
     'txc_inactive': '#ecc0d1',
     'txc_active': 'black',  
@@ -77,15 +77,8 @@ def run_app():
 
     st.info(sidebar_md) #
 
-    # with st.form(key='theme_form'):
-    #   st.session_state['theme_choice'] = st.radio('Choose theme', ['Dark', 'Light'], horizontal=True)  
-    #   submit_button = st.form_submit_button('Double click to apply theme')
-
-    # if submit_button:
-    #   reconcile_theme_config()  # Apply the theme
-
     with st.expander('App version'):
-      st.write('0.6.1')
+      st.write('0.6.2')
 
     st.markdown('Copyright © 2023 Gecko Technologies')
 
@@ -125,7 +118,7 @@ def run_app():
     homePage()
 
   @app.addapp(title='User Manual')
-  def user_manual_page():
+  def usermanualApp():
     from apps.usermanual import main
     main()
 
