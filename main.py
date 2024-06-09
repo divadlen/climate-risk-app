@@ -124,6 +124,11 @@ def run_app():
     from apps.home_page import homePage
     homePage()
 
+  @app.addapp(title='User Manual')
+  def user_manual_page():
+    from apps.usermanual import main
+    main()
+
   @app.addapp(title='Logout')
   def logout_button():
     from apps.logout import logoutPage
@@ -185,7 +190,8 @@ def run_app():
     #   complex_nav["Forms Builder"] = ['Forms Builder']
     
     # Always add Logout last
-    complex_nav["logout"] = ['Logout']
+    complex_nav["User Manual"] = ['User Manual']
+    complex_nav["logout"] = ['Logout'] # key must be 'logout' idk why 
     return complex_nav
   
 
