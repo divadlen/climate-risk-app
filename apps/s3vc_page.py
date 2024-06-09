@@ -569,4 +569,4 @@ table_of_contents_md="""
   - [6. Managed Investments](#S3C15_6_ManagedInvestments)
 """
 
-footer_md = """*(<Blank> and <To fill> are optional. <To fill> indicates optional fields that can affect calculations. Blue indicates REQUIRED fields with recommended default values. Orange indicates REQUIRED fields.)*"""
+footer_md = """"""

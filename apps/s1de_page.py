@@ -412,7 +412,7 @@ analysis_md = """
   - "Show results table" to display the raw output of the model
 """
 
-footer_md = """*(<Blank> and <To fill> are optional. <To fill> indicates optional fields that can affect calculations. Blue indicates REQUIRED fields with recommended default values. Orange indicates REQUIRED fields.)*"""
+footer_md = """"""
 
 
 
