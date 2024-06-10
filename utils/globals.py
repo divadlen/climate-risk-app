@@ -104,7 +104,7 @@ SUPPORTED_ASSET_CLASS = [
   'Emission Removal', 'Sovereign Debt',
 ]
 
-# Mapping sectors to applicable categories by index
+# Mapping sectors to applicable categories by index # 
 SECTOR_TO_CATEGORY_IDX = {
   'Energy': [1, 4, 9, 11],
   'Industrial': [1, 3, 4, 5, 6, 7, 9, 10, 11],
