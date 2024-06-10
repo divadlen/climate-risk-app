@@ -112,7 +112,7 @@ SECTOR_TO_CATEGORY_IDX = {
   'Telecommunication': [5, 6, 7, 9],
   'Transportation': [3, 5, 6, 7],
   'Automobile': [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
-  'Real Estate': [5, 6, 7, 13],
+  'Real Estate': [1, 2, 4, 5, 6, 7, 13],
   'Banking and Finance': [6, 7, 15],
 }
 
