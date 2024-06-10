@@ -31,8 +31,8 @@ sidebar_md = """
 ## Resources
 - [Account verification](https://geckointel.com/contact-us)
 - [Submit a bug report](https://geckointel.com/contact-us)
-- [Privacy policy](https://storage.googleapis.com/gecko-s3-public/trace/TRACE%20(Streamlit)%20Privacy%20Policy.docx)
-- [Terms and condition](https://storage.googleapis.com/gecko-s3-public/trace/Trace%20(Streamlit)%20TOS.docx)
+- [Privacy policy](https://storage.googleapis.com/gecko-s3-public/trace/TRACE%20(Streamlit)%20Privacy%20Policy.pdf)
+- [Terms and condition](https://storage.googleapis.com/gecko-s3-public/trace/Trace%20(Streamlit)%20TOS.pdf)
 
 """ #
 
