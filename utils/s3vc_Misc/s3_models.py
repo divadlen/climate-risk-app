@@ -349,7 +349,7 @@ class S3C8_1_UpstreamLeasedEstate(S3_BaseModel):
     leased_asset_name: str
     leased_asset_type: str = Field(default='Real Estate')
     ownership_status: str = Field(default='Leased')
-    ownership_share: Optional[float] = Field(default=1, ge=0, le=1, description='Applicable for leased buildings with limited floor space. Divide floor space from total for building.')
+    # ownership_share: Optional[float] = Field(default=1, ge=0, le=1, description='Applicable for leased buildings with limited floor space. Divide floor space from total for building.')
     
     address: Optional[str] = Field(None, description='Only applicable if rented asset is real estate. Not applicable for automobiles')
     state: Optional[str] = Field(None)
