@@ -80,7 +80,7 @@ def run_app():
     with st.expander('App version'):
       st.write('0.6.2')
 
-    st.markdown('Copyright © 2023 Gecko Technologies')
+    st.markdown('Copyright © 2023 - 2024 Gecko Technologies')
 
     # # --- DEBUGGING PURPOSES ---#
     # with st.expander('Show states'): 
