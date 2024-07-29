@@ -60,9 +60,22 @@ class ModelInferencer:
         }
         self.model_instances = {key: [] for key in self.available_models.keys()}
 
+
+    @staticmethod
+    def normalize_column_name(column_name: str) -> str:
+        """
+        Normalize column name by replacing spaces and hyphens with underscores.
+        Example: 
+            'Column Name' -> 'column_name', 
+            'column name' -> 'column_name', 
+            'column-name' -> 'column_name'
+        """
+        return column_name.strip().lower().replace(' ', '_').replace('-', '_')
+
+
     def infer_model_from_df(self, df: pd.DataFrame):
         scores = {}
-        df_columns = set(df.columns)
+        df_columns = set(self.normalize_column_name(col) for col in df.columns)
 
         for name, Model in self.available_models.items():
             all_fields = set(Model.model_fields.keys()) # model fields

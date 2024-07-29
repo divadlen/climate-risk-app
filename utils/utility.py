@@ -138,6 +138,7 @@ def get_supabase_secrets():
         key = os.getenv('supabase_anon_key')
     return url, key
 
+
 def supabase_query(table:str, url:str, key:str,  schema: Optional[str]=None, limit: Optional[int]=10000):
     if schema:
         opts = ClientOptions().replace(schema=schema)
