@@ -1,0 +1,6 @@
+date,description,product_name,waste_type,waste_quantity,waste_state,waste_unit,waste_treatment_method,waste_treatment_provider
+1/1/2023,<Blank>,EXAMPLE_gce6o,plastic,7719.85424,solid,kg,Recycled,<Blank>
+<Blank>,<Blank>,EXAMPLE_xhbhp,copper wire,560.192665,solid,kg,Recycled,<Blank>
+<Blank>,<Blank>,EXAMPLE_n5gia,CRT displays,3000.970627,solid,kg,Landfilled,<Blank>
+<Blank>,for office,EXAMPLE_aa7n1,plastic,97.49653583,solid,kg,Recycled,EXAMPLE_abc
+1/1/2023,for office,EXAMPLE_o8690,food waste,500.1103199,solid,kg,Combusted,EXAMPLE_abc

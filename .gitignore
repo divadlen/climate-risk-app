@@ -5,6 +5,7 @@ mui_elements/
 # Environments
 .env
 .venv
+.conda
 env/
 venv/
 ENV/

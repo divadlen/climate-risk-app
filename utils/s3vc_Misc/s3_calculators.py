@@ -437,12 +437,12 @@ def calc_S3C8_UpstreamLeased(data: Union[S3C8_1_UpstreamLeasedEstate, S3C8_2_Ups
             metadata.append( create_metadata('physical_emissions', total_co2e, fields, data_quality) )
 
         f3 = ['reported_emissions']
-        if all(getattr(data, field, None) is not None for field in f2): 
+        if all(getattr(data, field, None) is not None for field in f3): 
             total_co2e = data.reported_emissions
             
             emission_result['reported_emissions'] = total_co2e
             data_quality = 1.5
-            metadata.append( create_metadata('reported_emissions', total_co2e, f3, data_quality) )  
+            metadata.append( create_metadata('reported_emissions', total_co2e, f3, data_quality) )   
 
     return {'emission_result': emission_result, 'data_quality': data_quality, 'metadata': metadata}
 

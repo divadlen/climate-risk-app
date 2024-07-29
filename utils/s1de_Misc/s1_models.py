@@ -37,16 +37,16 @@ class S1_StationaryCombustion(S1_BaseModel):
     """ 
     """
     branch: Optional[str] = Field(None, max_length=1600)
-    sector: str = Field(default='energy')
+    sector: str = Field(default='Energy')
 
-    fuel_state: Optional[str] = Field(default='liquid')
+    fuel_state: Optional[str] = Field(default='Liquid')
     fuel_type: Optional[str] = Field(default='Diesel')
     fuel_use: Optional[float] = Field(None, ge=0)
-    fuel_unit: Optional[str] = Field(default='litre')
+    fuel_unit: Optional[str] = Field(default='Litre')
     
     heating_value: Optional[float] = Field(None)        
     fuel_spend: Optional[float] = Field(None, ge=0)
-    currency: Optional[str] = Field(default='USD') 
+    currency: Optional[str] = Field(default='MYR') 
 
     @model_validator(mode='before')
     def validate_data(cls, values):
@@ -66,13 +66,13 @@ class S1_MobileCombustion(S1_BaseModel):
     """ 
     """
     branch: Optional[str] = Field(None, max_length=1600)
-    sector: str = Field(default='energy')
-    vehicle_type: str = Field(default='car')
+    sector: str = Field(default='Energy')
+    vehicle_type: str = Field(default='Car')
 
-    fuel_state: Optional[str] = Field(default='liquid')
+    fuel_state: Optional[str] = Field(default='Liquid')
     fuel_type: Optional[str] = Field(default='Diesel')
     fuel_use: Optional[float] = Field(None, ge=0)
-    fuel_unit: Optional[str] = Field(default='litre')
+    fuel_unit: Optional[str] = Field(default='Litre')
 
     distance_traveled: Optional[float] = Field(None, ge=0)
     distance_unit: Optional[str] = Field(default='km')

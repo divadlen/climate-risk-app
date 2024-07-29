@@ -1,0 +1,9 @@
+date,description,equipment_name,refrigerant_type,refrigerant_unit,refrigerant_capacity,refrigerant_use,install_loss_rate,annual_leak_rate,recovery_rate,number_of_year
+<Blank>,<Blank>,EXAMPLE_jc4n7,R-410A,kg,10,1,<Blank>,1,0.7,1.5
+<Blank>,<Blank>,EXAMPLE_0nof3,R-410A,kg,10,1,0.01,0.1,0.8,1.5
+<Blank>,<Blank>,EXAMPLE_9p3if,R-410A,kg,10,1,0.01,0.1,0.9,1.5
+<Blank>,<Blank>,EXAMPLE_igzcq,R-410A,kg,10,,0.01,0.1,1,1.5
+<Blank>,<Blank>,EXAMPLE_u930e,R-410A,kg,10,,<Blank>,,,
+,,abc,R-134A,kg,,2,,,,
+,,def,R-134A,kg,20,2,,,,
+,,ghi,R-134A,kg,20,1,,,,

@@ -1,0 +1,6 @@
+date,description,product_name,lifetime_usage_freq,number_sold,fuel_state,fuel_type,fuel_unit,fuel_per_use,electric_per_use,grid_emission_factor,refrigerant_type,refrigerant_unit,refrigerant_per_use
+1/1/2023,<Blank>,EXAMPLE_b55gr,0,2,liquid,Diesel,litre,0.1,50,0.776,R-134A,kg,0
+<Blank>,<Blank>,EXAMPLE_jz6lm,1,3,liquid,Diesel,litre,0.1,50,0.776,R-410A,kg,0.1
+<Blank>,<Blank>,EXAMPLE_gus9f,7,50,liquid,Diesel,litre,0,50,0.776,R-410A,kg,0.1
+<Blank>,for office,EXAMPLE_jui2v,1,1000,liquid,Diesel,litre,0,100,0.776,R-134A,kg,0
+1/1/2023,for office,EXAMPLE_mnybr,6,1,liquid,Diesel,litre,0.1,0,0.776,R-410A,kg,0.1

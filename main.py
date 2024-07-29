@@ -31,8 +31,8 @@ sidebar_md = """
 ## Resources
 - [Account verification](https://geckointel.com/contact-us)
 - [Submit a bug report](https://geckointel.com/contact-us)
-- [Privacy policy](https://neldivad.github.io/climate-risk-app/resources/mds/privacy_policy.html)
-- [Terms and condition](https://neldivad.github.io/climate-risk-app/resources/mds/terms.html)
+- [Privacy policy](https://storage.googleapis.com/gecko-s3-public/trace/TRACE%20(Streamlit)%20Privacy%20Policy.pdf)
+- [Terms and condition](https://storage.googleapis.com/gecko-s3-public/trace/Trace%20(Streamlit)%20TOS.pdf)
 
 """ #
 
@@ -52,13 +52,13 @@ def run_app():
   # st.markdown(hide_st_style, unsafe_allow_html=True)
 
   #---Start Hydra instance---#
-  hydra_theme = None # init hydra theme
-  navbar_theme_light = {
-    'txc_inactive': '#FFFFFF',
-    'txc_active':'grey',
-    'menu_background':'#05F1E3',
-    'option_active':'#004457'
-  }
+  # hydra_theme = None # init hydra theme
+  # navbar_theme_light = {
+  #   'txc_inactive': '#FFFFFF',
+  #   'txc_active':'grey',
+  #   'menu_background':'#05F1E3',
+  #   'option_active':'#004457'
+  # }
   navbar_theme_dark = {
     'txc_inactive': '#ecc0d1',
     'txc_active': 'black',  
@@ -77,17 +77,10 @@ def run_app():
 
     st.info(sidebar_md) #
 
-    # with st.form(key='theme_form'):
-    #   st.session_state['theme_choice'] = st.radio('Choose theme', ['Dark', 'Light'], horizontal=True)  
-    #   submit_button = st.form_submit_button('Double click to apply theme')
-
-    # if submit_button:
-    #   reconcile_theme_config()  # Apply the theme
-
     with st.expander('App version'):
-      st.write('0.5.1')
+      st.write('0.6.2')
 
-    st.markdown('Copyright © 2023 Gecko Technologies')
+    st.markdown('Copyright © 2023 - 2024 Gecko Technologies')
 
     # # --- DEBUGGING PURPOSES ---#
     # with st.expander('Show states'): 
@@ -123,6 +116,11 @@ def run_app():
   def homeApp():
     from apps.home_page import homePage
     homePage()
+
+  @app.addapp(title='User Manual')
+  def usermanualApp():
+    from apps.usermanual import main
+    main()
 
   @app.addapp(title='Logout')
   def logout_button():
@@ -179,9 +177,14 @@ def run_app():
       complex_nav["Emissions Calculator"] = ['Scope 1: Direct Emissions', 'Scope 2: Indirect Emissions', 'Scope 3: Value Chain']
       complex_nav["Graphics"] = ["Overall Dashboard"]
       complex_nav["Forms Builder"] = ['Forms Builder']
+
+    # if user_level >=10:
+    #   complex_nav["Emissions Calculator"] = ['Scope 1: Direct Emissions', 'Scope 2: Indirect Emissions', 'Scope 3: Value Chain']
+    #   complex_nav["Forms Builder"] = ['Forms Builder']
     
     # Always add Logout last
-    complex_nav["logout"] = ['Logout']
+    complex_nav["User Manual"] = ['User Manual']
+    complex_nav["logout"] = ['Logout'] # key must be 'logout' idk why 
     return complex_nav
   
 

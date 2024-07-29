@@ -1,0 +1,6 @@
+date,description,financial_type,company_name,asset_class,sector,subsector,date_acquired,date_disposed,currency,outstanding_amount,enterprise_value,attribution_share,reported_emissions,estimated_emissions,emission_estimation_description
+<Blank>,Kuala Lumpur,Corporate Finance,EXAMPLE_doye9,Listed Equity,EXAMPLE_34eki,<Blank>,<Blank>,<Blank>,USD,93.65757977,27.57402271,<To fill>,10000,<Blank>,<Blank>
+<Blank>,Penang,Corporate Finance,EXAMPLE_7mihv,Listed Equity,EXAMPLE_gfiab,<Blank>,<Blank>,<Blank>,USD,40.92983888,40.52362889,<To fill>,10000,<Blank>,<Blank>
+<Blank>,<Blank>,Corporate Finance,EXAMPLE_qe2vr,Listed Equity,EXAMPLE_gy6yw,<Blank>,<Blank>,<Blank>,USD,34.46948859,71.17685865,<To fill>,<Blank>,<Blank>,<Blank>
+<Blank>,<Blank>,Corporate Finance,EXAMPLE_6tpd6,Listed Equity,EXAMPLE_e0fy0,<Blank>,<Blank>,<Blank>,USD,71.21536019,77.05510037,<To fill>,<Blank>,<Blank>,<Blank>
+<Blank>,<Blank>,Corporate Finance,EXAMPLE_wakm9,Listed Equity,EXAMPLE_zztw7,<Blank>,<Blank>,<Blank>,USD,9.311399004,58.4326619,<To fill>,<Blank>,<Blank>,<Blank>

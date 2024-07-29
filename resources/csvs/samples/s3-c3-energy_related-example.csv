@@ -1,0 +1,6 @@
+date,description,country,state,supplier_name,fuel_type,fuel_unit,fuel_use,electric_use,grid_emission_factor,upstream_emission_factor,life_cycle_emission_factor,combustion_emission_factor,energy_loss_rate
+<Blank>,<Blank>,Malaysia,<Blank>,EXAMPLE_6rdvo,Diesel,litre,100,100,0.776,<Blank>,<Blank>,<Blank>,<Blank>
+<Blank>,<Blank>,Malaysia,<Blank>,EXAMPLE_fb8wb,Diesel,litre,100,100,0.776,<Blank>,<Blank>,<Blank>,<Blank>
+<Blank>,<Blank>,Malaysia,<Blank>,EXAMPLE_5gd8f,Diesel,litre,100,100,0.776,<Blank>,<Blank>,<Blank>,<Blank>
+<Blank>,<Blank>,Malaysia,<Blank>,EXAMPLE_0ehvh,Diesel,litre,100,100,0.776,<Blank>,<Blank>,<Blank>,<Blank>
+<Blank>,<Blank>,Malaysia,<Blank>,EXAMPLE_a7sst,Diesel,litre,100,100,0.776,<Blank>,<Blank>,<Blank>,<Blank>

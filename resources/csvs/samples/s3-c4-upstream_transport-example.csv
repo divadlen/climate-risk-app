@@ -1,0 +1,6 @@
+date,description,supplier_name,travel_mode,freight_type,freight_weight,fuel_type,fuel_unit,fuel_use,distance_traveled,distance_unit
+1/1/2023,<Blank>,EXAMPLE_r9561,Land,Truck,100000,Diesel,litre,3000,20000,km
+<Blank>,<Blank>,EXAMPLE_vi20w,Land,Truck,100000,Diesel,litre,50,10000,km
+<Blank>,<Blank>,EXAMPLE_rjpjv,Land,Truck,<To fill>,Diesel,litre,100,<To fill>,km
+<Blank>,for office,EXAMPLE_al9bc,Land,Truck,<To fill>,Diesel,litre,100,<To fill>,km
+1/1/2023,for office,EXAMPLE_336od,Land,Truck,10000,Diesel,litre,100,10000,km

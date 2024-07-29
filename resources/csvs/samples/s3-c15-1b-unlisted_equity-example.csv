@@ -1,0 +1,6 @@
+date,description,financial_type,company_name,asset_class,sector,subsector,date_acquired,date_disposed,currency,outstanding_amount,total_equity,total_debt,attribution_share,reported_emissions,estimated_emissions,emission_estimation_description
+<Blank>,<Blank>,Corporate Finance,EXAMPLE_casl5,Unlisted Equity,EXAMPLE_l039x,<Blank>,<Blank>,<Blank>,USD,10.26030814,96.48055393,63.84527012,<To fill>,30000,<Blank>,<Blank>
+<Blank>,<Blank>,Corporate Finance,EXAMPLE_8m5ps,Unlisted Equity,EXAMPLE_5tl1i,<Blank>,<Blank>,<Blank>,USD,52.22371557,22.43080409,3.378284958,<To fill>,1000,<Blank>,<Blank>
+<Blank>,<Blank>,Corporate Finance,EXAMPLE_b3g2w,Unlisted Equity,EXAMPLE_zpz17,<Blank>,<Blank>,<Blank>,USD,98.25551853,74.60613595,89.23952921,<To fill>,<Blank>,<Blank>,<Blank>
+<Blank>,<Blank>,Corporate Finance,EXAMPLE_6yuoo,Unlisted Equity,EXAMPLE_yznpp,<Blank>,<Blank>,<Blank>,USD,48.77839774,86.75280377,90.14242207,<To fill>,<Blank>,<Blank>,<Blank>
+<Blank>,<Blank>,Corporate Finance,EXAMPLE_oi457,Unlisted Equity,EXAMPLE_l5b76,<Blank>,<Blank>,<Blank>,USD,53.83251599,9.303254966,75.65586158,<To fill>,<Blank>,<Blank>,<Blank>

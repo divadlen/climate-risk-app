@@ -1,0 +1,6 @@
+date,description,leased_asset_name,leased_asset_type,ownership_status,ownership_share,country,address,lat,lon,state,electric_use,grid_emission_factor,refrigerant_type,refrigerant_unit,refrigerant_use,reported_emissions
+1/1/2023,<Blank>,EXAMPLE_tv0y7,Real Estate,Leased,1,Malaysia,<Blank>,<Blank>,<Blank>,<Blank>,100,0.776,R-410A,kg,10,<Blank>
+<Blank>,<Blank>,EXAMPLE_tqsow,Real Estate,Leased,1,Malaysia,<Blank>,<Blank>,<Blank>,<Blank>,100,0.776,R-134A,kg,10,<Blank>
+<Blank>,<Blank>,EXAMPLE_gve4r,Real Estate,Leased,1,Malaysia,<Blank>,<Blank>,<Blank>,<Blank>,100,0.776,R-134A,kg,10,<Blank>
+<Blank>,for office,EXAMPLE_7czd5,Real Estate,Leased,1,Malaysia,<Blank>,<Blank>,<Blank>,<Blank>,100,0.776,R-134A,kg,10,<Blank>
+1/1/2023,for office,EXAMPLE_kfq7w,Real Estate,Leased,1,Malaysia,<Blank>,<Blank>,<Blank>,<Blank>,100,0.776,R-410A,kg,10,<Blank>

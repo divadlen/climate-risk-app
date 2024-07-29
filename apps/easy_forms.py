@@ -69,12 +69,13 @@ def build_dynamic_forms(model, cache, field_to_cache_func):
   # Init lists
   country_list = cache.get_allowed_countries() # pointless to save these into session. You need to write a lot of lines to save a few ms of API call
   state_list = []
-  fuel_list = []
+  fuel_list = cache.get_allowed_fuel_type(fuel_state='liquid')
 
-  if state['country'] != 'Select Country':
+  if state['country'] != 'Select country':
     state_list = cache.get_allowed_states(country=state['country'])
   if state['fuel_state'] != 'Select fuel state':
     fuel_list = cache.get_allowed_fuel_type(fuel_state=state['fuel_state'])
+  
   
   # Create an expander for the dynamic form
   with st.expander('Form content preview', expanded=True):
@@ -107,15 +108,20 @@ def build_dynamic_forms(model, cache, field_to_cache_func):
         st.slider(label=snake_case_to_label(field_name), min_value=float(0), max_value=float(1), value=0.1, step=0.01)
 
       elif field_name in ['waste_state']:
-        st.selectbox(label=snake_case_to_label(field_name), options=['solid', 'liquid', 'gas'], index=1)
+        st.selectbox(label=snake_case_to_label(field_name), options=['Solid', 'Liquid', 'Gas'], index=1)
 
       elif field_name in ['fuel_state']:
-        state['fuel_state'] = st.selectbox(label=snake_case_to_label(field_name), options=['solid', 'liquid', 'gas'], index=1)
+        fuel_state = st.selectbox(label=snake_case_to_label(field_name), options=['Solid', 'Liquid', 'Gas'], index=1)
+        state['fuel_state'] = fuel_state.lower() # field name corrupted during display
+
+
+      elif field_name in ['travel_mode']:
+        state['travel_mode'] = st.selectbox(label=snake_case_to_label(field_name), options=['Rail', 'Air', 'Land', 'Water', None], index=1)
 
       # if field name has dynamic option select
       elif field_name in field_to_cache_func:
         if field_name == 'country':
-          selected_country = st.selectbox(label=snake_case_to_label(field_name), options=country_list if country_list else [None])
+          selected_country = st.selectbox(label=snake_case_to_label(field_name), options=[snake_case_to_label(name) for name in country_list] if country_list else [None])
           # refresh state if country input is updated
           if selected_country != state['country']:
             state['country'] = selected_country
@@ -131,13 +137,13 @@ def build_dynamic_forms(model, cache, field_to_cache_func):
         elif field_name == 'fuel_type':
           if state['fuel_state'] != 'Select fuel state':
             options = fuel_list
-            selected_fuel_type = st.selectbox(label=snake_case_to_label(field_name), options=options if options else [None])
+            selected_fuel_type = st.selectbox(label=snake_case_to_label(field_name), options=[snake_case_to_label(name) for name in options] if options else [None])
             if selected_fuel_type != state['fuel_type']:
               state['fuel_type'] = selected_fuel_type
 
         else:
           options = field_to_cache_func[field_name]()  # Run the function to get the list of allowed fields
-          st.selectbox(label=field_name, options=options)
+          st.selectbox(label=snake_case_to_label(field_name), options=[snake_case_to_label(name) for name in options])
             
       elif origin == None: # if origin has only one type
         if field_type == str:

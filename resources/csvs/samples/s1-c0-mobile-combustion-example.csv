@@ -1,0 +1,7 @@
+date,description,branch,sector,vehicle_type,fuel_state,fuel_type,fuel_unit,fuel_use,distance_traveled,distance_unit
+<Blank>,<Blank>,<Blank>,energy,light duty car,liquid,Diesel,litre,1000,<To fill>,km
+3/11/2022,<Blank>,<Blank>,energy,light duty car,liquid,Diesel,litre,1000,<To fill>,km
+3/11/2022,transport,<Blank>,energy,light duty car,liquid,Diesel,litre,1000,300,km
+3/11/2022,transport,Kuala Lumpur,energy,aircraft,liquid,Jet Fuel,litre,<To fill>,1000,km
+<Blank>,<Blank>,Kuala Lumpur,energy,aircraft,liquid,Jet Fuel,litre,3000,1000,km
+,,,,,,,,,,

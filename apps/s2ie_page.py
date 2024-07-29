@@ -25,18 +25,15 @@ from utils.geolocator import GeoLocator
 
 def s2ie_Page():
   if 'geolocator' not in state:
-    state['geolocator'] = GeoLocator()
+    state['geolocator'] = GeoLocator() # constructors cant use state.get() method
   if 'S2IE_Lookup_Cache' not in state:
     state['S2IE_Lookup_Cache'] = S3_Lookup_Cache()
-  if 's2ie_original_dfs' not in state:
-    state['s2ie_original_dfs'] = {}
-  if 's2ie_result_dfs' not in state:
-    state['s2ie_result_dfs'] = {}
-  if 's2ie_warnings' not in state:
-    state['s2ie_warnings'] = {}
-  if 's2ie_calc_results' not in state:
-    st.session_state['s2ie_calc_results'] = {}
 
+  user_level = state.get("user_level", 1)
+  state['s2ie_original_dfs'] = state.get('s2ie_original_dfs', {})
+  state['s2ie_result_dfs'] = state.get('s2ie_result_dfs', {})
+  state['s2ie_warnings'] = state.get('s2ie_warnings', {})
+  state['s2ie_calc_results'] = state.get('s2ie_calc_results', {})
 
   st.title('Scope 2: Indirect Emissions')
   tab1, tab2, tab3 = st.tabs(['Get Forms/Guidelines', 'Submit & Review', 'Analysis'])
@@ -78,72 +75,75 @@ def s2ie_Page():
     with t1:        
       st.info('*(For best results, upload only csv files containing matching fields from examples and keep edits to recommended default fields to minimum)*')
 
-      with st.form('Upload CSV files'):
-        uploaded_file = st.file_uploader("Upload a CSV file (accepts only 1 file)", type=["csv"], accept_multiple_files=False, help='CSV containing purchased power data for S2: Indirect Emissions')
+      if user_level >=10:
+        st.error('File upload feature not available for demo accounts')
+      else:
+        with st.form('Upload CSV files'):
+          uploaded_file = st.file_uploader("Upload a CSV file (accepts only 1 file)", type=["csv"], accept_multiple_files=False, help='CSV containing purchased power data for S2: Indirect Emissions')
 
-        c1,c2 = st.columns([1,1])
-        with c1:
-          submit_button = st.form_submit_button('Upload')
+          c1,c2 = st.columns([1,1])
+          with c1:
+            submit_button = st.form_submit_button('Upload')
 
-        if submit_button and uploaded_file:
-          s2_inits = {
-            's2ie_warnings': {},
-            's2ie_invalid_indices': {},
-            's2ie_original_dfs': {},
-            's2ie_result_dfs': {},
-            's2ie_calc_results': {},
-          }
-
-          # Loop to initialize variables in state if not present
-          for var_name, default_value in s2_inits.items(): 
-            state[var_name] = default_value # reset everything if button is clicked
-        
-          # Inferencer and df inits
-          modinf = ModelInferencer()
-          cache = state['S2IE_Lookup_Cache']
-          gl = state['geolocator']
-          s2_models = ['S2_PurchasedPower']
-
-          data = pd.read_csv(uploaded_file)
-          if data is not None:
-            df = get_dataframe(data)
-            inferred_model = modinf.infer_model_from_df(df=df)
-            
-            if inferred_model is None:
-              st.error(f'Uploaded file "{uploaded_file.name}" with columns {list(df.columns)} has no reliable matches. Please make sure you are submitting a file that closely resemble the examples.')
-              st.stop()
-            
-            model_name = inferred_model['model']
-            Model = modinf.available_models[model_name]
-
-            # Store the filename with the model name
-            if 'model_filenames' not in state:
-              state['model_filenames'] = {}
-            state['model_filenames'][model_name] = uploaded_file.name
-
-            if model_name not in s2_models:
-              st.error(f'Uploaded file "{uploaded_file.name}" with columns {list(df.columns)} has no reliable matches against Scope 2 forms. Skipping...')
-              st.stop()
-            
-            CREATOR_FUNCTIONS = {
-              'S2_PurchasedPower': partial( create_s2pp_data, Model=Model, cache=cache, geolocator=gl ),
+          if submit_button and uploaded_file:
+            s2_inits = {
+              's2ie_warnings': {},
+              's2ie_invalid_indices': {},
+              's2ie_original_dfs': {},
+              's2ie_result_dfs': {},
+              's2ie_calc_results': {},
             }
-            calc = S2_Calculator(cache=cache)
-            creator = CREATOR_FUNCTIONS[model_name]
 
-            try:
-              calc, warning_list, invalid_indices = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False, return_invalid_indices=True)
-              result_df = calculator_to_df(calc)
+            # Loop to initialize variables in state if not present
+            for var_name, default_value in s2_inits.items(): 
+              state[var_name] = default_value # reset everything if button is clicked
+          
+            # Inferencer and df inits
+            modinf = ModelInferencer()
+            cache = state['S2IE_Lookup_Cache']
+            gl = state['geolocator']
+            s2_models = ['S2_PurchasedPower']
 
-              if len(warning_list) > 0:
-                state['s2ie_warnings'][model_name] = warning_list
-                state['s2ie_invalid_indices'][model_name] = invalid_indices
-              state['s2ie_original_dfs'][model_name] = df
-              state['s2ie_result_dfs'][model_name] = result_df
-              state['s2ie_calc_results'][model_name] = calc
-            
-            except Exception as e:
-              raise
+            data = pd.read_csv(uploaded_file)
+            if data is not None:
+              df = get_dataframe(data)
+              inferred_model = modinf.infer_model_from_df(df=df)
+              
+              if inferred_model is None:
+                st.error(f'Uploaded file "{uploaded_file.name}" with columns {list(df.columns)} has no reliable matches. Please make sure you are submitting a file that closely resemble the examples.')
+                st.stop()
+              
+              model_name = inferred_model['model']
+              Model = modinf.available_models[model_name]
+
+              # Store the filename with the model name
+              if 'model_filenames' not in state:
+                state['model_filenames'] = {}
+              state['model_filenames'][model_name] = uploaded_file.name
+
+              if model_name not in s2_models:
+                st.error(f'Uploaded file "{uploaded_file.name}" with columns {list(df.columns)} has no reliable matches against Scope 2 forms. Skipping...')
+                st.stop()
+              
+              CREATOR_FUNCTIONS = {
+                'S2_PurchasedPower': partial( create_s2pp_data, Model=Model, cache=cache, geolocator=gl ),
+              }
+              calc = S2_Calculator(cache=cache)
+              creator = CREATOR_FUNCTIONS[model_name]
+
+              try:
+                calc, warning_list, invalid_indices = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False, return_invalid_indices=True)
+                result_df = calculator_to_df(calc)
+
+                if len(warning_list) > 0:
+                  state['s2ie_warnings'][model_name] = warning_list
+                  state['s2ie_invalid_indices'][model_name] = invalid_indices
+                state['s2ie_original_dfs'][model_name] = df
+                state['s2ie_result_dfs'][model_name] = result_df
+                state['s2ie_calc_results'][model_name] = calc
+              
+              except Exception as e:
+                raise
 
 
     with t2:
@@ -195,7 +195,7 @@ def s2ie_Page():
     with tab3:
       st.subheader('Executive Insights')
       if 's2ie_calc_results' not in st.session_state or st.session_state['s2ie_calc_results'] == {}:
-        st.error('Nothing to display here. Have you uploaded or analyzed your uploaded files?')
+        st.error('No display available. Have you uploaded and analyzed your uploaded files?')
 
       if 's2ie_calc_results' in st.session_state and st.session_state['s2ie_calc_results'] != {}:
         # Check if warnings are discovered
@@ -341,4 +341,4 @@ analysis_md = """
   - "Show results table" to display the raw output of the model
 """
 
-footer_md = """*(<Blank> and <To fill> are optional. <To fill> indicates optional fields that can affect calculations. Blue indicates REQUIRED fields with recommended default values. Orange indicates REQUIRED fields.)*"""
+footer_md = """"""

@@ -155,7 +155,7 @@ class S3C4_UpstreamTransport(S3_BaseModel):
     2. fuel type + fuel use (use * factor)
     """ 
     supplier_name: str
-    #address_from: Optional[str] = Field(default=None) # no reliable way of inferring distance
+    #address_from: Optional[str] = Field(default=None) # no reliable way of inferring distance #
     #address_to: Optional[str] = Field(default=None)
 
     travel_mode: str = Field(default='Land')
@@ -164,7 +164,7 @@ class S3C4_UpstreamTransport(S3_BaseModel):
 
     fuel_use: Optional[float] = Field(None, ge=0)
     fuel_type: Optional[str] = Field(default='Diesel', description='Applicable to liquid fuel only')
-    fuel_unit: Optional[str] = Field(default='litre')
+    fuel_unit: Optional[str] = Field(default='Litre')
 
     distance_traveled: Optional[float] = Field(ge=0)
     distance_unit: Optional[str] = Field(default='km')
@@ -195,9 +195,9 @@ class S3C5_WasteGenerated(S3_BaseModel):
 
     EMISSION FACTORS REQUIRED FROM BACKEND (waste type, quantity, treatment method)
     """
-    waste_type: str = Field(default='plastic')
+    waste_type: str = Field(default='Plastic')
     waste_quantity: float = Field(ge=0)
-    waste_state: str = Field(default='solid')
+    waste_state: str = Field(default='Solid')
     waste_unit: str = Field(default='kg')
 
     waste_treatment_method: Optional[str] = Field(default='Recycled')
@@ -237,8 +237,8 @@ class S3C6_1_BusinessTravel(S3_BaseModel):
     vehicle_type: Optional[str] = Field(default='Car', description='If vehicle emission factor is by passenger (Plane, rail), each passenger files separately (IE: duplicate the entries for plane).')
 
     fuel_use: Optional[float] = Field(None, ge=0)
-    fuel_type: Optional[str] = Field(default='petrol', description='Supports only liquid fuels')
-    fuel_unit: Optional[str] = Field(default='litre')
+    fuel_type: Optional[str] = Field(default='Petrol', description='Supports only liquid fuels')
+    fuel_unit: Optional[str] = Field(default='Litre')
 
     distance_traveled: Optional[float] = Field(None, ge=0)
     distance_unit: Optional[str] = Field(default='km')
@@ -276,7 +276,7 @@ class S3C6_2_BusinessStay(S3_BaseModel):
     lat: Optional[float] = Field(None)
     lon: Optional[float] = Field(None)
 
-    no_of_nights: int = Field(default=1, ge=0)
+    no_of_nights: int = Field(ge=0)
     hotel_emission_factor: Optional[float] = Field(None, ge=0, description='Expedia may have those numbers')
     reported_emissions: Optional[float] = Field(None, ge=0, description='')
 
@@ -299,7 +299,7 @@ class S3C7_EmployeeCommute(S3_BaseModel):
 
     distance_traveled: float = Field(default=1, ge=0)
     distance_unit: str = Field(default='km')
-    distance_cadence: Optional[str] = Field(default='yearly', description='Specify if the distance is a daily, monthly, or yearly total')
+    distance_cadence: Optional[str] = Field(default='Yearly', description='Specify if the distance is a daily, monthly, or yearly total')
 
     frequency: int = Field(default=1, description='Number of times this commuting mode is used')
     sampled_days: int = Field(default=260, description='Working days. 260 is the average number per year')
@@ -325,7 +325,7 @@ class S3C7_EmployeeCommute(S3_BaseModel):
         # validate cadence
         supported_cadence = ['yearly', 'monthly', 'daily', None]
         if cadence is None:
-            values['distance_cadence'] = 'yearly'
+            values['distance_cadence'] = 'Yearly'
         elif cadence.lower() not in supported_cadence:
             raise ValueError(f'Invalid distance cadence. Supported cadence {supported_cadence}')
 
@@ -349,7 +349,7 @@ class S3C8_1_UpstreamLeasedEstate(S3_BaseModel):
     leased_asset_name: str
     leased_asset_type: str = Field(default='Real Estate')
     ownership_status: str = Field(default='Leased')
-    ownership_share: Optional[float] = Field(default=1, ge=0, le=1, description='Applicable for leased buildings with limited floor space. Divide floor space from total for building.')
+    # ownership_share: Optional[float] = Field(default=1, ge=0, le=1, description='Applicable for leased buildings with limited floor space. Divide floor space from total for building.')
     
     address: Optional[str] = Field(None, description='Only applicable if rented asset is real estate. Not applicable for automobiles')
     state: Optional[str] = Field(None)
@@ -389,8 +389,8 @@ class S3C8_2_UpstreamLeasedAuto(S3_BaseModel):
     ownership_status: str = Field(default='Leased')
 
     fuel_use: Optional[float] = Field(None, ge=0)
-    fuel_type: Optional[str] = Field(default='petrol', description='Supports only liquid fuels')
-    fuel_unit: Optional[str] = Field(default='litre')
+    fuel_type: Optional[str] = Field(default='Petrol', description='Supports only liquid fuels')
+    fuel_unit: Optional[str] = Field(default='Litre')
 
     refrigerant_use: Optional[float] = Field(None, ge=0, description='In practice, this is more often to be leaked than "used".')
     refrigerant_type: Optional[str] = Field(default='R-410A', description='R-410-A is most common refrigerants. In practice, many refrigerants have mixed composites')
@@ -427,7 +427,7 @@ class S3C9_DownstreamTransport(S3_BaseModel):
 
     fuel_use: Optional[float] = Field(None, ge=0)
     fuel_type: Optional[str] = Field(default='Diesel', description='Applicable to liquid fuel only')
-    fuel_unit: Optional[str] = Field(default='litre')
+    fuel_unit: Optional[str] = Field(default='Litre')
 
     distance_traveled: Optional[float] = Field(None, ge=0)
     distance_unit: Optional[str] = Field(default='km')
@@ -464,9 +464,9 @@ class S3C10_ProcessingProducts(S3_BaseModel):
     process_name: str 
 
     fuel_use: Optional[float] = Field(None, ge=0)
-    fuel_state: Optional[str] = Field(default='liquid')
+    fuel_state: Optional[str] = Field(default='Liquid')
     fuel_type: Optional[str] = Field(default='Diesel')
-    fuel_unit: Optional[str] = Field(default='litre')
+    fuel_unit: Optional[str] = Field(default='Litre')
 
     electric_use: Optional[float] = Field(None, ge=0)
     grid_emission_factor: Optional[float] = Field(default=0.776, ge=0)
@@ -493,9 +493,9 @@ class S3C11_UseOfSold(S3_BaseModel):
     number_sold: int
 
     fuel_per_use: Optional[float] = Field(None, ge=0)
-    fuel_state: Optional[str] = Field(default='liquid')
+    fuel_state: Optional[str] = Field(default='Liquid')
     fuel_type: Optional[str] = Field(default='Diesel')
-    fuel_unit: Optional[str] = Field(default='litre')
+    fuel_unit: Optional[str] = Field(default='Litre')
 
     electric_per_use: Optional[float] = Field(None, ge=0)
     grid_emission_factor: Optional[float] = Field(default=0.776, ge=0)
@@ -517,9 +517,9 @@ class S3C12_EOLTreatment(S3_BaseModel):
     """
     product_name: str
 
-    waste_type: str = Field(default='plastic')
+    waste_type: str = Field(default='Plastic')
     waste_quantity: float = Field(ge=0)
-    waste_state: str = Field(default='solid')
+    waste_state: str = Field(default='Solid')
     waste_unit: str = Field(default='kg')
     waste_treatment_method: Optional[str] = Field(default='Recycled')
     waste_treatment_provider: Optional[str] = Field(None)
@@ -583,8 +583,8 @@ class S3C13_2_DownstreamLeasedAuto(S3_BaseModel):
     ownership_status: str = Field(default='Owned')
 
     fuel_use: Optional[float] = Field(None, ge=0)
-    fuel_type: Optional[str] = Field(default='petrol', description='Supports only liquid fuels')
-    fuel_unit: Optional[str] = Field(default='litre')
+    fuel_type: Optional[str] = Field(default='Petrol', description='Supports only liquid fuels')
+    fuel_unit: Optional[str] = Field(default='Litre')
 
     refrigerant_use: Optional[float] = Field(None, ge=0, description='In practice, this is more often to be leaked than "used".')
     refrigerant_type: Optional[str] = Field(default='R-410A', description='R-410-A is most common refrigerants. In practice, many refrigerants have mixed composites')
@@ -626,9 +626,9 @@ class S3C14_Franchise(S3_BaseModel):
     # building_emission_factor: Optional[float] = Field(None, ge=0)
 
     fuel_use: Optional[float] = Field(None, ge=0)
-    fuel_state: Optional[str] = Field(default='liquid')
+    fuel_state: Optional[str] = Field(default='Liquid')
     fuel_type: Optional[str] = Field(default='Diesel')
-    fuel_unit: Optional[str] = Field(default='litre')
+    fuel_unit: Optional[str] = Field(default='Litre')
 
     refrigerant_use: Optional[float] = Field(None, ge=0, description='In practice, this is more often to be leaked than "used".')
     refrigerant_type: Optional[str] = Field(default='R-410A', description='R-410-A is most common refrigerants. In practice, many refrigerants have mixed composites')

@@ -33,7 +33,7 @@ def s3vc_Page():
     state['geolocator'] = GeoLocator()
   if 'S3VC_Lookup_Cache' not in state:
     state['S3VC_Lookup_Cache'] = S3_Lookup_Cache()
-
+  user_level = state.get('user_level', 1)
 
   st.title('Scope 3: Value Chain')  
   if not state.get('s3_settings'):
@@ -53,20 +53,20 @@ def s3vc_Page():
 
 
   if 's3_settings' in state and state['s3_settings'] == True:
-    tab1, tab2, tab3, tab4 = st.tabs(['Settings', 'Get Forms/Guidelines', 'Submit & Review', 'Analysis'])
+    tab1, tab2, tab3, tab4 = st.tabs(['Settings', 'Get Forms/Guidelines', 'Submit and Review', 'Analysis'])
     applicable_indices = SECTOR_TO_CATEGORY_IDX.get(state['s3_sector'], None)
     
     try:
       sorted_applicable_indices = sorted(list(set(applicable_indices)))
-      applicable_bools = ["Highly applicable" if i in sorted_applicable_indices else "Less Applicable"  for i in range(1, 16)]        
+      applicable_bools = ["Highly Applicable" if i in sorted_applicable_indices else "Less Applicable"  for i in range(1, 16)]        
     except:
       sorted_applicable_indices = None
-      applicable_bools = ["Less applicable"] * 15
+      applicable_bools = ["Less Applicable"] * 15
 
     with tab1:
       with st.form(key='scope_3_reset'):
         st.success(f"Current sector: {state['s3_sector']}")
-        st.info(f'Highighted rows indicate the *recommended* categories to be covered by industry. Navigate to **Get Forms/Guidelines** or **Submit & Review** to get started!')
+        st.info(f'Highlighted rows indicate the recommended categories to be covered by the selected industry. Navigate to **Get Forms/Guidelines** or **Submit and Review** to get started!')
 
         df = pd.DataFrame({
           'Category': [IDX_TO_CATEGORY_NAME[i] for i in range(1,16)],
@@ -75,7 +75,7 @@ def s3vc_Page():
 
         cellstyle_jscode = JsCode("""
         function(params){
-            if (params.data.Applicable === 'Highly applicable') {
+            if (params.data.Applicable === 'Highly Applicable') {
                 return {
                     'backgroundColor': 'lightblue',
                 }
@@ -87,7 +87,7 @@ def s3vc_Page():
             }
         }
         """)
-        pandas_2_AgGrid(df, cellstyle_jscode=cellstyle_jscode, height=None, pagination=None)
+        pandas_2_AgGrid(df, cellstyle_jscode=cellstyle_jscode, height=None, pagination=None) # bruh fk the web cache 
 
         if st.form_submit_button('Reset settings'):
           del state['s3_settings']
@@ -102,15 +102,15 @@ def s3vc_Page():
       with st.expander('Show help', expanded=True):
         download_desc = 'Click on the links in Table of Contents to redirect you to the recommended tables to fill. Download the example forms. Each transaction counts as a row.'
         fill_desc = 'Each form is represented as CSV, each row is one transaction. Example 1: in "S3C15_ListedEquity" file, each holding company counts as one row. Example 2: In "S3C7_EmployeeCommute", each employee journey counts as one row (If employee uses multiple transport method, submit multiple rows for the same employee). Details at "More help" and "Visual help"'
-        upload_desc = 'In "Submit & Review" tab, drag and drop your csv files in the upload window.'
-        validate_desc = 'In "Submit & Review" tab, go to "Analyze uploads" to verify your uploaded files. From there, our AI validator will simulate the results of your submitted files.'
+        upload_desc = 'In "Submit and Review" tab, drag and drop your csv files in the upload window.'
+        validate_desc = 'In "Submit and Review" tab, go to "Analyze uploads" to verify your uploaded files. From there, our AI validator will simulate the results of your submitted files.'
 
         sac.steps(
           items=[
             sac.StepsItem(title='Download relevant forms', subtitle='', description=download_desc),
             sac.StepsItem(title='Fill relevant forms', subtitle='', description=fill_desc),
             sac.StepsItem(title='Upload relevant forms', subtitle='', description=upload_desc),
-            sac.StepsItem(title='Validate & submit forms', subtitle='', description=validate_desc),
+            sac.StepsItem(title='Validate and submit forms', subtitle='', description=validate_desc),
           ], 
           format_func='title',
           direction='vertical',
@@ -129,16 +129,16 @@ def s3vc_Page():
 
       t1, t2, t3, t4 = st.tabs(['Category 1-5', 'Category 6-10', 'Category 11-14', 'Category 15: Investments'])
       with t1:
-        st.subheader("Category 1 : Purchased goods & services", anchor='S3C1_PurchasedGoods')
-        show_example_form(S3C1_PurchasedGoods, key='c1', title='Show example form (S3-C1: Purchased goods & services)', button_text='Get example form', filename='s3-c1-purchased_goods-example.csv', markdown=footer_md)
+        st.subheader("Category 1 : Purchased goods and services", anchor='S3C1_PurchasedGoods')
+        show_example_form(S3C1_PurchasedGoods, key='c1', title='Show example form (S3-C1: Purchased goods and services)', button_text='Get example form', filename='s3-c1-purchased_goods-example.csv', markdown=footer_md)
 
         st.subheader("Category 2 : Capital goods", anchor='S3C2_CapitalGoods')
         show_example_form(S3C2_CapitalGoods, key='c2', title='Show example form (S3-C2: Capital Goods)', button_text='Get example form', filename='s3-c2-capital_goods-example.csv', markdown=footer_md)
 
-        st.subheader("Category 3 : Fuel- & energy-related activities (excluded in Scope 1 & 2)", anchor='S3C3_EnergyRelated')
+        st.subheader("Category 3 : Fuel and energy-related activities (excluded in Scope 1 and 2)", anchor='S3C3_EnergyRelated')
         show_example_form(S3C3_EnergyRelated, key='c3', title='Show example form (S3-C3: Energy-related activities)', button_text='Get example form', filename='s3-c3-energy_related-example.csv', markdown=footer_md)
 
-        st.subheader("Category 4 : Upstream transportation & distribution", anchor='S3C4_UpstreamTransport')
+        st.subheader("Category 4 : Upstream transportation and distribution", anchor='S3C4_UpstreamTransport')
         show_example_form(S3C4_UpstreamTransport, key='c4', title='Show example form (S3-C4: Upstream transportation and distribution)', button_text='Get example form', filename='s3-c4-upstream_transport-example.csv', markdown=footer_md)
         
         st.subheader("Category 5 : Waste generated in operations", anchor='S3C5_WasteGenerated')
@@ -219,7 +219,7 @@ def s3vc_Page():
           st.subheader("Category 15-5: Sovereign Debt / Government Bonds", anchor='S3C15_5_SovereignDebt')
           show_example_form(S3C15_5_SovereignDebt, title='Show example form (S3-C15-5: Sovereign Debt)', button_text='Get example form', filename='s3-c15-5-sovereign_debt-example.csv', markdown=footer_md)
 
-          st.subheader("Category 15-6: Managed Investments & Client's Portfolios", anchor='S3C15_6_ManagedInvestments')
+          st.subheader("Category 15-6: Managed Investments and Client's Portfolios", anchor='S3C15_6_ManagedInvestments')
           show_example_form(S3C15_6_ManagedInvestments, title='Show example form (S3-C15-6: Managed Investments)', button_text='Get example form', filename='s3-c15-6-managed_investments-example.csv', markdown=footer_md)
 
 
@@ -229,129 +229,132 @@ def s3vc_Page():
       with t1:        
         st.info('*(For best results, upload only csv files containing matching fields from examples and keep edits to recommended default fields to minimum)*')
 
-        with st.form('Upload CSV files'):
-          uploaded_files = st.file_uploader("Upload CSV files (accepts multiple files)", type=["csv"], accept_multiple_files=True, help='CSV containing any relevant Scope 3 data. Categories are automatically inferred')
+        if user_level >=10:
+          st.error('File upload feature not available for demo accounts')
+        else:
+          with st.form('Upload CSV files'):
+            uploaded_files = st.file_uploader("Upload CSV files (accepts multiple files)", type=["csv"], accept_multiple_files=True, help='CSV containing any relevant Scope 3 data. Categories are automatically inferred')
 
-          if st.form_submit_button('Upload'):
-            s3_inits = {
-              's3vc_warnings': {},
-              's3vc_invalid_indices': {},
-              's3vc_original_dfs': {},
-              's3vc_result_dfs': {},
-              's3vc_calc_results': {},
-            }
+            if st.form_submit_button('Upload'):
+              s3_inits = {
+                's3vc_warnings': {},
+                's3vc_invalid_indices': {},
+                's3vc_original_dfs': {},
+                's3vc_result_dfs': {},
+                's3vc_calc_results': {},
+              }
 
-            # Loop to initialize variables in state if not present
-            for var_name, default_value in s3_inits.items(): 
-              state[var_name] = default_value # reset everything if button is clicked
+              # Loop to initialize variables in state if not present
+              for var_name, default_value in s3_inits.items(): 
+                state[var_name] = default_value # reset everything if button is clicked
 
-            # Inferencer and df inits
-            modinf = ModelInferencer()
-            gl = state['geolocator']
-            cache = state['S3VC_Lookup_Cache']
+              # Inferencer and df inits
+              modinf = ModelInferencer()
+              gl = state['geolocator']
+              cache = state['S3VC_Lookup_Cache']
 
-            s1_models = [
-              'S1_FugitiveEmission', 'S1_MobileCombustion', 'S1_StationaryCombustion'
-            ]
+              s1_models = [
+                'S1_FugitiveEmission', 'S1_MobileCombustion', 'S1_StationaryCombustion'
+              ]
 
-            # available models
-            c15_models = [
-              'S3C15_BaseAsset','S3C15_1A_ListedEquity','S3C15_1B_UnlistedEquity','S3C15_1C_CorporateBonds','S3C15_1D_BusinessLoans','S3C15_1E_CommercialRealEstate',
-              'S3C15_2A_Mortgage','S3C15_2B_VehicleLoans',
-              'S3C15_3_ProjectFinance','S3C15_4_EmissionRemovals','S3C15_5_SovereignDebt', 'S3C15_6_ManagedInvestments',
-            ]
+              # available models
+              c15_models = [
+                'S3C15_BaseAsset','S3C15_1A_ListedEquity','S3C15_1B_UnlistedEquity','S3C15_1C_CorporateBonds','S3C15_1D_BusinessLoans','S3C15_1E_CommercialRealEstate',
+                'S3C15_2A_Mortgage','S3C15_2B_VehicleLoans',
+                'S3C15_3_ProjectFinance','S3C15_4_EmissionRemovals','S3C15_5_SovereignDebt', 'S3C15_6_ManagedInvestments',
+              ]
 
-            # Loop through the uploaded files and convert to models
-            progress_bar = st.progress(0)
-            nfiles = len(uploaded_files)
-            progress_idx = 1
-            
-            for uploaded_file in uploaded_files:
-              data = pd.read_csv(uploaded_file)
-              if data is not None:
-                df = get_dataframe(data)
+              # Loop through the uploaded files and convert to models
+              progress_bar = st.progress(0)
+              nfiles = len(uploaded_files)
+              progress_idx = 1
+              
+              for uploaded_file in uploaded_files:
+                data = pd.read_csv(uploaded_file)
+                if data is not None:
+                  df = get_dataframe(data)
 
-                # infer model from df
-                inferred_model = modinf.infer_model_from_df(df=df)
-                if inferred_model is None:
-                  st.error(f'Uploaded file "{uploaded_file.name}" with columns {list(df.columns)} has no reliable matches. Please make sure you are submitting a file that closely resemble the examples.')
-                  continue
+                  # infer model from df
+                  inferred_model = modinf.infer_model_from_df(df=df)
+                  if inferred_model is None:
+                    st.error(f'Uploaded file "{uploaded_file.name}" with columns {list(df.columns)} has no reliable matches. Please make sure you are submitting a file that closely resemble the examples.')
+                    continue
 
-                model_name = inferred_model['model']
-                Model = modinf.available_models[model_name]
+                  model_name = inferred_model['model']
+                  Model = modinf.available_models[model_name]
 
-                # Store the filename with the model name
-                if 'model_filenames' not in state:
-                  state['model_filenames'] = {}
-                state['model_filenames'][model_name] = uploaded_file.name
-            
-                # Choose calculator based on inferred model
-                if model_name in s1_models:
-                  st.error(f'Uploaded file "{uploaded_file.name}" with columns {list(df.columns)} should be submitted to Scope 1. Skipping...')
-                  continue
+                  # Store the filename with the model name
+                  if 'model_filenames' not in state:
+                    state['model_filenames'] = {}
+                  state['model_filenames'][model_name] = uploaded_file.name
+              
+                  # Choose calculator based on inferred model
+                  if model_name in s1_models:
+                    st.error(f'Uploaded file "{uploaded_file.name}" with columns {list(df.columns)} should be submitted to Scope 1. Skipping...')
+                    continue
 
-                if model_name in c15_models:
-                  calc = S3C15_Calculator()
-                  creator = partial(create_s3c15_data, Model=Model) # creator function to pass df rows as Pydantic Models to Calculator
+                  if model_name in c15_models:
+                    calc = S3C15_Calculator()
+                    creator = partial(create_s3c15_data, Model=Model) # creator function to pass df rows as Pydantic Models to Calculator
 
-                else:
-                  CREATOR_FUNCTIONS = {
-                      'S3C1_PurchasedGoods': partial( create_s3c1_data, Model=Model, cache=cache ),
-                      'S3C2_CapitalGoods': partial( create_s3c2_data, Model=Model, cache=cache ),
-                      'S3C3_EnergyRelated': partial( create_s3c3_data, Model=Model, cache=cache ),
-                      'S3C4_UpstreamTransport': partial( create_s3c4_data, Model=Model, cache=cache ),
-                      'S3C5_WasteGenerated': partial( create_s3c5_data, Model=Model, cache=cache ),
+                  else:
+                    CREATOR_FUNCTIONS = {
+                        'S3C1_PurchasedGoods': partial( create_s3c1_data, Model=Model, cache=cache ),
+                        'S3C2_CapitalGoods': partial( create_s3c2_data, Model=Model, cache=cache ),
+                        'S3C3_EnergyRelated': partial( create_s3c3_data, Model=Model, cache=cache ),
+                        'S3C4_UpstreamTransport': partial( create_s3c4_data, Model=Model, cache=cache ),
+                        'S3C5_WasteGenerated': partial( create_s3c5_data, Model=Model, cache=cache ),
+                        
+                        'S3C6_1_BusinessTravel': partial( create_s3c6_1_data, Model=Model, cache=cache ),
+                        'S3C6_2_BusinessStay': partial( create_s3c6_2_data, Model=Model, cache=cache ),
+                        
+                        'S3C7_EmployeeCommute': partial( create_s3c7_data, Model=Model, cache=cache ),
                       
-                      'S3C6_1_BusinessTravel': partial( create_s3c6_1_data, Model=Model, cache=cache ),
-                      'S3C6_2_BusinessStay': partial( create_s3c6_2_data, Model=Model, cache=cache ),
-                      
-                      'S3C7_EmployeeCommute': partial( create_s3c7_data, Model=Model, cache=cache ),
+                        'S3C8_1_UpstreamLeasedEstate': partial( create_s3c8_1_data, Model=Model, cache=cache, geolocator=gl ),
+                        'S3C8_2_UpstreamLeasedAuto': partial( create_s3c8_2_data, Model=Model, cache=cache ),
+
+                        'S3C9_DownstreamTransport':partial( create_s3c9_data, Model=Model, cache=cache ),
+                        'S3C10_ProcessingProducts': partial( create_s3c10_data, Model=Model, cache=cache ),
+                        'S3C11_UseOfSold': partial( create_s3c11_data, Model=Model, cache=cache ),
+                        'S3C12_EOLTreatment': partial( create_s3c12_data, Model=Model, cache=cache ),
+
+                        'S3C13_1_DownstreamLeasedEstate': partial( create_s3c13_1_data, Model=Model, cache=cache, geolocator=gl ),
+                        'S3C13_2_DownstreamLeasedAuto': partial( create_s3c13_2_data, Model=Model, cache=cache ),             
+                        
+                        'S3C14_Franchise': partial( create_s3c14_data, Model=Model, cache=cache, geolocator=gl ),
+                    }
+                    calc = S3_Calculator(cache=cache)
+                    creator = CREATOR_FUNCTIONS[model_name]
                     
-                      'S3C8_1_UpstreamLeasedEstate': partial( create_s3c8_1_data, Model=Model, cache=cache, geolocator=gl ),
-                      'S3C8_2_UpstreamLeasedAuto': partial( create_s3c8_2_data, Model=Model, cache=cache ),
+                  try:
+                    calc, warning_list, invalid_indices = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False, return_invalid_indices=True)
+                    result_df = calculator_to_df(calc)
 
-                      'S3C9_DownstreamTransport':partial( create_s3c9_data, Model=Model, cache=cache ),
-                      'S3C10_ProcessingProducts': partial( create_s3c10_data, Model=Model, cache=cache ),
-                      'S3C11_UseOfSold': partial( create_s3c11_data, Model=Model, cache=cache ),
-                      'S3C12_EOLTreatment': partial( create_s3c12_data, Model=Model, cache=cache ),
-
-                      'S3C13_1_DownstreamLeasedEstate': partial( create_s3c13_1_data, Model=Model, cache=cache, geolocator=gl ),
-                      'S3C13_2_DownstreamLeasedAuto': partial( create_s3c13_2_data, Model=Model, cache=cache ),             
-                      
-                      'S3C14_Franchise': partial( create_s3c14_data, Model=Model, cache=cache, geolocator=gl ),
-                  }
-                  calc = S3_Calculator(cache=cache)
-                  creator = CREATOR_FUNCTIONS[model_name]
+                    if len(warning_list) > 0:
+                      state['s3vc_warnings'][model_name] = warning_list
+                      state['s3vc_invalid_indices'][model_name] = invalid_indices
+                    state['s3vc_original_dfs'][model_name] = df
+                    state['s3vc_result_dfs'][model_name] = result_df
+                    state['s3vc_calc_results'][model_name] = calc
                   
-                try:
-                  calc, warning_list, invalid_indices = df_to_calculator(df, calculator=calc, creator=creator, progress_bar=False, return_invalid_indices=True)
-                  result_df = calculator_to_df(calc)
-
-                  if len(warning_list) > 0:
-                    state['s3vc_warnings'][model_name] = warning_list
-                    state['s3vc_invalid_indices'][model_name] = invalid_indices
-                  state['s3vc_original_dfs'][model_name] = df
-                  state['s3vc_result_dfs'][model_name] = result_df
-                  state['s3vc_calc_results'][model_name] = calc
-                
-                except Exception as e:
-                  raise
-        
-                # update progress bar
-                progress_pct = progress_idx / nfiles
-                progress_bar.progress(progress_pct)
-                progress_idx += 1
-
-        #-Show uploaded dfs-#
-        if state['s3vc_original_dfs'] not in [{}]:
-          st.subheader('Review uploaded files')
-
-          for name, df in state['s3vc_original_dfs'].items(): # works
-            if len(df) > 0:
-              with st.expander(f'Show uploaded table ({name})'):
-                pandas_2_AgGrid(df, theme='balham', key=f's3_{name}_aggrid')
+                  except Exception as e:
+                    raise
           
-          st.info('If there are no issues with your uploaded files, you may proceed to **Analyze uploads** tab')
+                  # update progress bar
+                  progress_pct = progress_idx / nfiles
+                  progress_bar.progress(progress_pct)
+                  progress_idx += 1
+
+          #-Show uploaded dfs-#
+          if state['s3vc_original_dfs'] not in [{}]:
+            st.subheader('Review uploaded files')
+
+            for name, df in state['s3vc_original_dfs'].items(): # works
+              if len(df) > 0:
+                with st.expander(f'Show uploaded table ({name})'):
+                  pandas_2_AgGrid(df, theme='balham', key=f's3_{name}_aggrid')
+            
+            st.info('If there are no issues with your uploaded files, you may proceed to **Analyze uploads** tab')
 
 
       with t2:
@@ -394,7 +397,7 @@ def s3vc_Page():
     with tab4:
       st.subheader('Executive Insights')
       if 's3vc_calc_results' not in state or state['s3vc_calc_results'] == {}:
-        st.error('Nothing to display here. Have you uploaded or analyzed your uploaded files?')
+        st.error('No display available. Have you uploaded and analyzed your uploaded files?')
 
       if 's3vc_calc_results' in state and state['s3vc_calc_results'] != {}:
         res_df = state['s3vc_calc_results'] # key: Model name, val: Calculator
@@ -536,15 +539,15 @@ general_guide_md = """
 """
 
 table_of_contents_md="""
-- [**Category 1 : Purchased goods & services**](#S3C1_PurchasedGoods)
+- [**Category 1 : Purchased goods and services**](#S3C1_PurchasedGoods)
 - [**Category 2 : Capital goods**](#S3C2_CapitalGoods)
-- [**Category 3 : Fuel- & energy-related activities (excluded in Scope 1 & 2)**](#S3C3_EnergyRelated)
-- [**Category 4 : Upstream transportation & distribution**](#S3C4_UpstreamTransport)
+- [**Category 3 : Fuel and energy-related activities (excluded in Scope 1 and 2)**](#S3C3_EnergyRelated)
+- [**Category 4 : Upstream transportation and distribution**](#S3C4_UpstreamTransport)
 - [**Category 5 : Waste generated in operations**](#S3C5_WasteGenerated)
 - [**Category 6 : Business and air travel**](#S3C6_BusinessTravel)
 - [**Category 7 : Employee commuting**](#S3C7_EmployeeCommute)
 - [**Category 8 : Upstream leased assets**](#S3C8_UpstreamLeased)
-- [**Category 9 : Transportation & distribution of sold products**](#S3C9_DownstreamTransport)
+- [**Category 9 : Transportation and distribution of sold products**](#S3C9_DownstreamTransport)
 - [**Category 10 : Processing of sold products**](#S3C10_ProcessingProducts)
 - [**Category 11 : Use of sold products**](#S3C11_UseOfSold)
 - [**Category 12 : End-of-life treatment of sold products**](#S3C12_EOLTreatment)
@@ -566,4 +569,4 @@ table_of_contents_md="""
   - [6. Managed Investments](#S3C15_6_ManagedInvestments)
 """
 
-footer_md = """*(<Blank> and <To fill> are optional. <To fill> indicates optional fields that can affect calculations. Blue indicates REQUIRED fields with recommended default values. Orange indicates REQUIRED fields.)*"""
+footer_md = """"""

@@ -1,0 +1,6 @@
+date,description,waste_type,waste_quantity,waste_state,waste_unit,waste_treatment_method,waste_treatment_provider
+1/1/2023,<Blank>,flatpanel displays,1272.286389,solid,kg,Landfilled,EXAMPLE_abc
+<Blank>,<Blank>,plastic,72.20218614,solid,kg,Recycled,EXAMPLE_abc
+<Blank>,<Blank>,aluminium cans,620.6056896,solid,kg,Recycled,EXAMPLE_abc
+<Blank>,for office,plastic,640.6402874,solid,kg,Recycled,<Blank>
+1/1/2023,for office,food waste,9900.137103,solid,kg,Combusted,<Blank>
