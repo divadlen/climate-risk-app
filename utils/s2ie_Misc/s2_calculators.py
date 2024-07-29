@@ -6,7 +6,6 @@ from typing import Optional, Dict, Union, Any
 from utils.utility import clamp
 from utils.ghg_utils import get_relevant_factors
 from utils.s2ie_Misc.s2_models import S2_PurchasedPower, S2_BaseModel
-from utils.s3vc_Misc.s3_cache import S3_Lookup_Cache
 
 
 #----------

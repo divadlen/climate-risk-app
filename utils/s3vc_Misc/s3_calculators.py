@@ -9,10 +9,7 @@ from pydantic import model_validator
 from typing import Optional, Dict, Union, Any
 
 from supabase import create_client
-
-from utils.utility import find_closest_category, supabase_query_v2
 from utils.ghg_utils import get_relevant_factors, calculate_co2e
-from utils.geolocator import GeoLocator
 from utils.s3vc_Misc.s3_models import *
 from utils.s3vc_Misc.s3_creators import *
 from utils.s3vc_Misc.s3_cache import S3_Lookup_Cache

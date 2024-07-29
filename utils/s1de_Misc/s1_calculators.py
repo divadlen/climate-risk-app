@@ -1,21 +1,9 @@
-import streamlit as st
 
-from datetime import datetime
-from uuid import uuid4
 import random
-
-from pydantic import BaseModel, Field
-from pydantic import model_validator
 from typing import Optional, Dict, Union, Any
 
-from supabase import create_client
-
-from utils.utility import find_closest_category, supabase_query_v2
 from utils.ghg_utils import get_relevant_factors, calculate_co2e
-
 from utils.s1de_Misc.s1_models import *
-from utils.s3vc_Misc.s3_cache import S3_Lookup_Cache
-
 
 #----------
 # Calculator
