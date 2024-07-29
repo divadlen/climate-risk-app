@@ -605,9 +605,14 @@ def timeseriesPart(df):
   temp = pd.merge(all_cats_for_freq, temp, on=['date', cdata], how='left')
   temp[ydata] = temp[ydata].fillna(0)
 
-  # print(temp)
-
-  fig = px.histogram(temp, x='date', y=ydata, color=cdata, barmode='overlay', template='plotly_dark')
+  fig = px.histogram(
+    temp, 
+    x='date', 
+    y=ydata, 
+    color=cdata, 
+    barmode='overlay', 
+  )
+  fig.update_traces(hovertemplate ='%{y:.2f} kg')
   st.plotly_chart(fig, use_container_width=True)
 
 
@@ -647,7 +652,8 @@ def yoyPart(df):
           y=cat_data[ydata],
           mode='lines',
           name=humanize_field(cat),
-          line=dict(color=color_map[cat])
+          line=dict(color=color_map[cat]),
+          hovertemplate ='%{y:.2f} kg',
       ), row=1, col=1)
   
   # Bar chart for YoY change
@@ -657,7 +663,8 @@ def yoyPart(df):
           x=cat_data['year'],
           y=cat_data['yoy_change'],
           name=humanize_field(cat),
-          marker=dict(color=color_map[cat])
+          marker=dict(color=color_map[cat]),
+          hovertemplate ='%{y:.2f} %',
       ), row=2, col=1)
   
   fig.update_layout(
