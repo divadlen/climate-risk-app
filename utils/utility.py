@@ -19,9 +19,6 @@ from supabase.lib.client_options import ClientOptions
 
 from utils.globals import COLUMN_SORT_ORDER
 
-supabase_url= st.secrets['supabase_url']
-supabase_anon_key= st.secrets['supabase_anon_key']
-
 #-----
 # Text formatting
 #-----
@@ -161,8 +158,12 @@ def supabase_query_v2(table, schema: Optional[str]=None, limit: Optional[int]=10
     
     supabase_query_v2(TABLE, **kwargs)
     """
+    supabase_url= st.secrets['supabase_url']
+    supabase_anon_key= st.secrets['supabase_anon_key']
+
     url = supabase_url
     key = supabase_anon_key
+    
     if schema:
         opts = ClientOptions().replace(schema=schema)
         supabase = create_client(url, key, options=opts)
@@ -198,6 +199,8 @@ def get_lookup(
       get_lookup(table='s1mc_v2', filters={'id': 38}) >> [{'id': '38', ... ]
       get_lookup(table='s1mc_v2', distinct='year) >> [2020, 2019...]
     """
+    supabase_url= st.secrets['supabase_url']
+    supabase_anon_key= st.secrets['supabase_anon_key']
     url = supabase_url
     key = supabase_anon_key
     supabase = create_client(url, key)
