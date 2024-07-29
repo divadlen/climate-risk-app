@@ -11,12 +11,17 @@ from PIL import Image
 
 import plotly.express as px
 import plotly.graph_objs as go
+from plotly.subplots import make_subplots
 
 from utils.utility import format_metric, convert_df, humanize_field
 from utils.display_utility import pandas_2_AgGrid
 from utils.model_df_utility import calculators_2_df
 from utils.charting import make_donut_chart, sort_str_column_numeric
 
+
+#  pandas warning so annoying
+import warnings
+warnings.filterwarnings("ignore")
 
 
 def main_dash_Page():
@@ -69,6 +74,15 @@ def main_dash_Page():
     # Data quality
     dataQualityPart(df)
 
+
+    with st.expander('Show Timeseries'):
+      timeseriesPart(df)
+
+
+    with st.expander('Show Year-on-Year Change'):
+      yoyPart(df)
+
+
     # table export
     with st.expander('Download calculation results'):
       cols = [
@@ -85,6 +99,9 @@ def main_dash_Page():
         file_name=f'calculation_results.csv',
         mime='text/csv'
       )
+
+
+
         
 
   else:
@@ -548,6 +565,111 @@ def dataQualityPart(df):
 
 
 
+
+def timeseriesPart(df):
+  # Get only categorical or object columns
+  categorical_columns = set(df.select_dtypes(include=['category', 'object']).columns)
+  exclude_columns = {'uuid', 'date', 'category'}
+  categorical_columns = list(categorical_columns - exclude_columns)
+  humanize_categorical_columns = [humanize_field(col) for col in categorical_columns]
+
+  c1, c2 = st.columns([1,1])
+  with c1:
+    selected_cat = st.selectbox('Select category', options=humanize_categorical_columns, key='ts_select_cat')
+  with c2:
+    selected_frequency = st.selectbox('Select frequency', options=['Monthly', 'Quarterly', 'Yearly'], key='ts_select_freq')
+
+  # Map selected frequency to pandas offset aliases
+  freq_map = {
+    'Monthly': 'ME',
+    'Quarterly': 'QE',
+    'Yearly': 'YE'
+  }
+
+  xdata = 'date'
+  ydata = 'emission_result'
+  cdata = humanize_field(selected_cat, invert=True)
+  freq = freq_map.get(selected_frequency, 'ME')
+
+  temp = df.copy()
+  temp['date'] = pd.to_datetime(temp['date'])  # Ensure 'date' column is datetime type
+
+  # Group by end of month and selected category, summing emission_result
+  temp = temp.groupby([pd.Grouper(key='date', freq=freq), cdata])[ydata].sum().reset_index()
+
+  # Create a complete date range for all months/quarters/years, then create a DataFrame with all combinations of dates and categories
+  all_freq = pd.date_range(start=temp['date'].min(), end=temp['date'].max(), freq=freq)
+  all_cats_for_freq = pd.MultiIndex.from_product([all_freq, temp[cdata].unique()], names=['date', cdata]).to_frame(index=False)
+
+  # Merge with filtered groupby
+  temp = pd.merge(all_cats_for_freq, temp, on=['date', cdata], how='left')
+  temp[ydata] = temp[ydata].fillna(0)
+
+  # print(temp)
+
+  fig = px.histogram(temp, x='date', y=ydata, color=cdata, barmode='overlay', template='plotly_dark')
+  st.plotly_chart(fig, use_container_width=True)
+
+
+def yoyPart(df):
+  # Get only categorical or object columns
+  categorical_columns = set(df.select_dtypes(include=['category', 'object']).columns)
+  exclude_columns = {'uuid', 'date', 'category'}
+  categorical_columns = list(categorical_columns - exclude_columns)
+  humanized_categorical_columns = [humanize_field(col) for col in categorical_columns]
+
+  c1, c2 = st.columns([1,1])
+  with c1:
+    selected_cat = st.selectbox('Select category', options=humanized_categorical_columns, key='yoy_select_cat')
+
+  ydata = 'emission_result'
+  cdata = humanize_field(selected_cat, invert=True)
+
+  # ensure 'year' column exists
+  temp = df.copy()
+  temp['year'] = pd.to_datetime(temp['date']).dt.year
+  
+  temp = temp.groupby(['year', cdata]).agg({ydata: 'sum'}).reset_index()  
+  temp['yoy_change'] = temp.groupby(cdata)[ydata].pct_change() * 100  # Percentage change
+
+  # Charting
+  unique_categories = temp[cdata].unique()
+  colors = px.colors.qualitative.Plotly  # Use default color palette
+  color_map = {cat: colors[i % len(colors)] for i, cat in enumerate(unique_categories)}
+    
+  fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1, row_heights=[0.8, 0.2])
+    
+  # Line chart for emissions
+  for cat in unique_categories:
+      cat_data = temp[temp[cdata] == cat].sort_values('year')
+      fig.add_trace(go.Scatter(
+          x=cat_data['year'],
+          y=cat_data[ydata],
+          mode='lines',
+          name=humanize_field(cat),
+          line=dict(color=color_map[cat])
+      ), row=1, col=1)
+  
+  # Bar chart for YoY change
+  for cat in unique_categories:
+      cat_data = temp[temp[cdata] == cat].sort_values('year')
+      fig.add_trace(go.Bar(
+          x=cat_data['year'],
+          y=cat_data['yoy_change'],
+          name=humanize_field(cat),
+          marker=dict(color=color_map[cat])
+      ), row=2, col=1)
+  
+  fig.update_layout(
+      height=700,
+      title='<b>Year on Year Change</b>',
+      xaxis_title='Year',
+      yaxis_title='Emissions',
+      barmode='group',
+      showlegend=True
+  )
+  
+  st.plotly_chart(fig, use_container_width=True)
 
 
 
