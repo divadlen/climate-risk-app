@@ -127,6 +127,17 @@ def reconcile_theme_config():
 #-----------------------
 # Helper functions
 #-----------------------
+def get_supabase_secrets():
+    try:
+        url = st.secrets['supabase_url']
+        key = st.secrets['supabase_anon_key']
+    except Exception:
+        from dotenv import load_dotenv
+        load_dotenv()
+        url = os.getenv('supabase_url')
+        key = os.getenv('supabase_anon_key')
+    return url, key
+
 def supabase_query(table:str, url:str, key:str,  schema: Optional[str]=None, limit: Optional[int]=10000):
     if schema:
         opts = ClientOptions().replace(schema=schema)
@@ -158,11 +169,7 @@ def supabase_query_v2(table, schema: Optional[str]=None, limit: Optional[int]=10
     
     supabase_query_v2(TABLE, **kwargs)
     """
-    supabase_url= st.secrets['supabase_url']
-    supabase_anon_key= st.secrets['supabase_anon_key']
-
-    url = supabase_url
-    key = supabase_anon_key
+    url, key = get_supabase_secrets()
     
     if schema:
         opts = ClientOptions().replace(schema=schema)
