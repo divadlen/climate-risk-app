@@ -16,17 +16,21 @@ gl = Geolocator()
 location_row = gl.get_fields_from_latlon(1, 3)
 """
 
-supabase_url= st.secrets['supabase_url']
-supabase_anon_key= st.secrets['supabase_anon_key']
-supabase = create_client(supabase_url, supabase_anon_key)
-
 class GeoLocator:
     def __init__(self, df=None): 
         if df is None:
             print('Building KDTree...')
-            TABLE = 'locations_states'
-            data = pd.DataFrame(supabase_query(TABLE, supabase_url, supabase_anon_key))
-            self.df = data[ data['lat'].notna() & data['lon'].notna() ]
+            try:
+                supabase_url= st.secrets['supabase_url']
+                supabase_anon_key= st.secrets['supabase_anon_key']
+                supabase = create_client(supabase_url, supabase_anon_key)
+
+                TABLE = 'locations_states'
+                data = pd.DataFrame(supabase_query(TABLE, supabase_url, supabase_anon_key))
+                self.df = data[ data['lat'].notna() & data['lon'].notna() ]
+            except Exception as e:
+                raise e
+            
         else:
             self.df = df[ df['lat'].notna() & df['lon'].notna() ]
         self.kdtree = KDTree(self.df[['lat', 'lon']])
