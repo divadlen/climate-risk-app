@@ -14,13 +14,7 @@ from utils.s3vc_Misc.s3_models import *
 from utils.s3vc_Misc.s3_creators import *
 from utils.s3vc_Misc.s3_cache import S3_Lookup_Cache
 
-#-------------
-# Supabase
-#-------------
 
-supabase_url= st.secrets['supabase_url']
-supabase_anon_key= st.secrets['supabase_anon_key']
-supabase = create_client(supabase_url, supabase_anon_key)
 
 #----------
 # Calculator
