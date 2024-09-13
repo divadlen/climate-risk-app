@@ -79,8 +79,8 @@ def main_dash_Page():
       timeseriesPart(df)
 
 
-    with st.expander('Show Year-on-Year Change'):
-      yoyPart(df)
+    with st.expander('Show Trailing-12-Month'):
+      ttmPart(df)
 
 
     # table export
@@ -597,6 +597,12 @@ def timeseriesPart(df):
   # Group by end of month and selected category, summing emission_result
   temp = temp.groupby([pd.Grouper(key='date', freq=freq), cdata])[ydata].sum().reset_index()
 
+  # Find the top 10 categories by sum of emission_result
+  top_10_categories = temp.groupby(cdata)[ydata].sum().nlargest(10).index.tolist()
+
+  # Filter DataFrame to include only top 10 categories
+  temp = temp[temp[cdata].isin(top_10_categories)]
+
   # Create a complete date range for all months/quarters/years, then create a DataFrame with all combinations of dates and categories
   all_freq = pd.date_range(start=temp['date'].min(), end=temp['date'].max(), freq=freq)
   all_cats_for_freq = pd.MultiIndex.from_product([all_freq, temp[cdata].unique()], names=['date', cdata]).to_frame(index=False)
@@ -605,18 +611,64 @@ def timeseriesPart(df):
   temp = pd.merge(all_cats_for_freq, temp, on=['date', cdata], how='left')
   temp[ydata] = temp[ydata].fillna(0)
 
+  # get only the last 24 time observation
+  temp_sorted = temp.sort_values(by='date', ascending=True)
+  unique_dates = temp_sorted['date'].drop_duplicates()
+  last_dates = unique_dates.tail(36)
+  recent_df = temp_sorted[temp_sorted['date'].isin(last_dates)]
+  tickvals = recent_df['date'].tolist()
+  ticktext = [d.strftime("%b %Y") for d in pd.to_datetime(tickvals)]
+
   fig = px.histogram(
-    temp, 
+    recent_df, 
     x='date', 
     y=ydata, 
     color=cdata, 
     barmode='overlay', 
   )
+
+  # Set x-axis to treat the date as discrete categories instead of continuous time values
+  fig.update_xaxes(
+    title='',
+    tickangle=-45,
+    type='category', 
+    tickvals=tickvals,
+    ticktext=ticktext 
+  )
+  fig.update_yaxes(title='Total Emissions')
   fig.update_traces(hovertemplate ='%{y:.2f} kg')
   st.plotly_chart(fig, use_container_width=True)
 
 
-def yoyPart(df):
+
+
+
+
+
+def ttmPart(df):
+  def process_subgroup(df, ydata, periods):
+    df['rolling_12_period'] = df[ydata].rolling(window=periods, min_periods=1).sum()
+    df['yoy_change'] = df['rolling_12_period'].pct_change(periods=periods) * 100
+    return df
+  
+  def split_and_process(df, cdata, ydata, periods):
+    # Split the DataFrame into smaller subsets based on unique category values
+    result_df_list = []
+    unique_combinations = df[cdata].drop_duplicates() # pd.series obj
+
+    for unique_value in unique_combinations:
+        # Filter the DataFrame for this unique combination of category values
+        subset = df[df[cdata] == unique_value].copy()
+        subset = subset.sort_values('date')
+        
+        # Apply rolling and YoY calculations to this subset
+        processed_subset = process_subgroup(subset, ydata, periods)
+        result_df_list.append(processed_subset)
+
+    # Concatenate all processed subsets back into a single DataFrame
+    final_df = pd.concat(result_df_list, axis=0)
+    return final_df
+
   # Get only categorical or object columns
   categorical_columns = set(df.select_dtypes(include=['category', 'object']).columns)
   exclude_columns = {'uuid', 'date', 'category'}
@@ -625,31 +677,56 @@ def yoyPart(df):
 
   c1, c2 = st.columns([1,1])
   with c1:
-    selected_cat = st.selectbox('Select category', options=humanized_categorical_columns, key='yoy_select_cat')
+    selected_cat = st.selectbox('Select category', options=humanized_categorical_columns, key='ttm_select_cat')
+  with c2: 
+    selected_frequency = st.selectbox('Select frequency', options=['Monthly', 'Quarterly', 'Yearly'], key='ttm_select_freq')
+
+  # Set aggregation frequency based on user selection
+  if selected_frequency == 'Monthly':
+      freq = 'ME'
+      periods = 12  # yoy = 12/1
+  elif selected_frequency == 'Quarterly':
+      freq = 'QE'
+      periods = 4  # 12/3
+  elif selected_frequency == 'Yearly':
+      freq = 'YE'
+      periods = 1 # 12/12
 
   ydata = 'emission_result'
   cdata = humanize_field(selected_cat, invert=True)
-
-  # ensure 'year' column exists
   temp = df.copy()
-  temp['year'] = pd.to_datetime(temp['date']).dt.year
+  temp['date'] = pd.to_datetime(temp['date'])
+
+  # Aggregate emissions
+  temp = temp.groupby([pd.Grouper(key='date', freq=freq), cdata])[ydata].sum().reset_index()
+
+  # Find the top 10 categories by sum of emission_result
+  top_10_categories = temp.groupby(cdata)[ydata].sum().nlargest(10).index.tolist()
+
+  # Filter DataFrame to include only top 10 categories
+  top_10_df = temp[temp[cdata].isin(top_10_categories)]
   
-  temp = temp.groupby(['year', cdata]).agg({ydata: 'sum'}).reset_index()  
-  temp['yoy_change'] = temp.groupby(cdata)[ydata].pct_change() * 100  # Percentage change
+  # Split and process the top 10 categories and rename back to temp
+  temp = split_and_process(top_10_df, cdata, ydata, periods=periods)
+  temp.reset_index(inplace=True)
+
+  # restrict dates to last 36 obs
+  unique_dates = temp['date'].drop_duplicates()
+  last_dates = unique_dates.tail(60)
+  temp = temp[temp['date'].isin(last_dates)]
 
   # Charting
   unique_categories = temp[cdata].unique()
   colors = px.colors.qualitative.Plotly  # Use default color palette
   color_map = {cat: colors[i % len(colors)] for i, cat in enumerate(unique_categories)}
-    
-  fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1, row_heights=[0.8, 0.2])
+  fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1, row_heights=[0.65, 0.35])
     
   # Line chart for emissions
   for cat in unique_categories:
-      cat_data = temp[temp[cdata] == cat].sort_values('year')
+      cat_data = temp[temp[cdata] == cat].sort_values('date')
       fig.add_trace(go.Scatter(
-          x=cat_data['year'],
-          y=cat_data[ydata],
+          x=cat_data['date'],
+          y=cat_data['rolling_12_period'],
           mode='lines',
           name=humanize_field(cat),
           line=dict(color=color_map[cat]),
@@ -658,9 +735,9 @@ def yoyPart(df):
   
   # Bar chart for YoY change
   for cat in unique_categories:
-      cat_data = temp[temp[cdata] == cat].sort_values('year')
+      cat_data = temp[temp[cdata] == cat].sort_values('date')
       fig.add_trace(go.Bar(
-          x=cat_data['year'],
+          x=cat_data['date'],
           y=cat_data['yoy_change'],
           name=humanize_field(cat),
           marker=dict(color=color_map[cat]),
@@ -669,17 +746,14 @@ def yoyPart(df):
   
   fig.update_layout(
       height=700,
-      title='<b>Year on Year Change</b>',
-      xaxis_title='Year',
+      title=f'<b>Emissions Growth Trend (period={selected_frequency} End)</b>',
       yaxis_title='Emissions',
+      yaxis2_title='YoY Change (%)',
       barmode='group',
       showlegend=True
   )
   
   st.plotly_chart(fig, use_container_width=True)
-
-
-
 
 
 
