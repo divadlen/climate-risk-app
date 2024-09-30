@@ -385,7 +385,7 @@ def calc_S3C8_UpstreamLeased(data: Union[S3C8_1_UpstreamLeasedEstate, S3C8_2_Ups
                 # Additional calculations for refrigerant, if applicable
                 if all(getattr(data, field, None) is not None for field in ['refrigerant_use', 'refrigerant_type']):
                     factors = cache.get_refrigerant_gwp(refrigerant_type=data.refrigerant_type)
-                    refrigerant_gwp = factors['gwp_100yr']
+                    refrigerant_gwp = factors['gwp_100']
                     refrigerant_co2e = data.refrigerant_use * refrigerant_gwp
                     total_co2e += refrigerant_co2e
                 
@@ -420,7 +420,7 @@ def calc_S3C8_UpstreamLeased(data: Union[S3C8_1_UpstreamLeasedEstate, S3C8_2_Ups
         if all(getattr(data, field, None) is not None for field in f2): 
             physical_available = True
             factors = cache.get_refrigerant_gwp(refrigerant_type=data.refrigerant_type)
-            refrigerant_gwp = factors['gwp_100yr']
+            refrigerant_gwp = factors['gwp_100']
             refrigerant_co2e = data.refrigerant_use * refrigerant_gwp
             fields += f2
             total_co2e += refrigerant_co2e
@@ -501,7 +501,7 @@ def calc_S3C10_ProcessingProducts(data: S3C10_ProcessingProducts, cache):
     if all(getattr(data, field, None) is not None for field in f2): 
         physical_available = True
         factors = cache.get_refrigerant_gwp(refrigerant_type=data.refrigerant_type)
-        refrigerant_gwp = factors['gwp_100yr']
+        refrigerant_gwp = factors['gwp_100']
         refrigerant_co2e = data.refrigerant_use * refrigerant_gwp
         fields += f2
         total_co2e += refrigerant_co2e
@@ -564,7 +564,7 @@ def calc_S3C11_UseOfSold(data:S3C11_UseOfSold, cache):
         if all(getattr(data, field, None) is not None for field in f4): 
             physical_available = True
             factors = cache.get_refrigerant_gwp(refrigerant_type=data.refrigerant_type)
-            refrigerant_gwp = factors['gwp_100yr']
+            refrigerant_gwp = factors['gwp_100']
             co2e = sum_use * data.refrigerant_per_use * refrigerant_gwp
             fields += f4
             total_co2e += co2e
@@ -627,7 +627,7 @@ def calc_S3C13_DownstreamLeased(data: Union[S3C13_1_DownstreamLeasedEstate, S3C1
                 # Additional calculations for refrigerant, if applicable
                 if all(getattr(data, field, None) is not None for field in ['refrigerant_use', 'refrigerant_type']):
                     factors = cache.get_refrigerant_gwp(refrigerant_type=data.refrigerant_type)
-                    refrigerant_gwp = factors['gwp_100yr']
+                    refrigerant_gwp = factors['gwp_100']
                     refrigerant_co2e = data.refrigerant_use * refrigerant_gwp
                     total_co2e += refrigerant_co2e
                 
@@ -662,7 +662,7 @@ def calc_S3C13_DownstreamLeased(data: Union[S3C13_1_DownstreamLeasedEstate, S3C1
         if all(getattr(data, field, None) is not None for field in f2): 
             physical_available = True
             factors = cache.get_refrigerant_gwp(refrigerant_type=data.refrigerant_type)
-            refrigerant_gwp = factors['gwp_100yr']
+            refrigerant_gwp = factors['gwp_100']
             refrigerant_co2e = data.refrigerant_use * refrigerant_gwp
             fields += f2
             total_co2e += refrigerant_co2e
@@ -712,7 +712,7 @@ def calc_S3C14_Franchise(data: S3C14_Franchise, cache):
             # Additional calculations for refrigerant, if applicable
             if all(getattr(data, field, None) is not None for field in ['refrigerant_use', 'refrigerant_type']):
                 factors = cache.get_refrigerant_gwp(refrigerant_type=data.refrigerant_type)
-                refrigerant_gwp = factors['gwp_100yr']
+                refrigerant_gwp = factors['gwp_100']
                 refrigerant_co2e = data.refrigerant_use * refrigerant_gwp
                 total_co2e += refrigerant_co2e
             
@@ -724,7 +724,7 @@ def calc_S3C14_Franchise(data: S3C14_Franchise, cache):
     f2 = ['refrigerant_use',  'refrigerant_type']
     if all(getattr(data, field, None) is not None for field in f2): 
         factors = cache.get_refrigerant_gwp(refrigerant_type=data.refrigerant_type)
-        refrigerant_gwp = factors['gwp_100yr']
+        refrigerant_gwp = factors['gwp_100']
         co2e = data.refrigerant_use * refrigerant_gwp
 
         physical_available = True

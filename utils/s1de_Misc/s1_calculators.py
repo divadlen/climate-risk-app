@@ -175,7 +175,7 @@ def calc_S1_FugitiveEmission(data: S1_FugitiveEmission, cache):
     f1 = ['refrigerant_use',  'refrigerant_type']
     if all(getattr(data, field, None) is not None for field in f1): 
         factors = cache.get_refrigerant_gwp(refrigerant_type=data.refrigerant_type)
-        refrigerant_gwp = factors['gwp_100yr']
+        refrigerant_gwp = factors['gwp_100']
         refrigerant_co2e = data.refrigerant_use * refrigerant_gwp
         data_quality -= 2
 
@@ -189,7 +189,7 @@ def calc_S1_FugitiveEmission(data: S1_FugitiveEmission, cache):
     # Check for refrigerant_type
     if getattr(data, 'refrigerant_type', None) is not None:
         factors = cache.get_refrigerant_gwp(refrigerant_type=data.refrigerant_type)
-        refrigerant_gwp = factors['gwp_100yr']
+        refrigerant_gwp = factors['gwp_100']
         fields.append('refrigerant_type')
 
         # Check for refrigerant_capacity

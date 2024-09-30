@@ -116,8 +116,8 @@ class S3_Lookup_Cache(BaseModel):
     
     def get_allowed_refrigerants(self):
         CACHE_KEY = 'allowed_refrigerants'
-        TABLE = 'ghg_refrigerants_gwp'
-        REFRIGERANT_COL = 'refrigerant_ASHRAE'
+        TABLE = 'ghg_refrigerants_gwp_v2'
+        REFRIGERANT_COL = 'ashrae_number'
         
         result = self._query_and_cache_uniques(CACHE_KEY, TABLE, REFRIGERANT_COL)
         return result
@@ -242,15 +242,15 @@ class S3_Lookup_Cache(BaseModel):
         Refrigerants are often mixture of gases. 
         ASHRAE is also not intuitive for lay people. 
         """
-        TABLE='ghg_refrigerants_gwp'
-        CACHE_KEY = self._generate_cache_key(table=TABLE, refrigerant_ASHRAE=refrigerant_type, **kwargs)
+        TABLE='ghg_refrigerants_gwp_v2'
+        CACHE_KEY = self._generate_cache_key(table=TABLE, ashrae_number=refrigerant_type, **kwargs)
         
         if CACHE_KEY in self.cache:
             print(f"{CACHE_KEY} discovered, skipping database query")
             return self.cache[CACHE_KEY]
         
         else:
-            records = supabase_query_v2(table=TABLE, refrigerant_ASHRAE=refrigerant_type, **kwargs)
+            records = supabase_query_v2(table=TABLE, ashrae_number=refrigerant_type, **kwargs)
             first_record = records[0]
             self.cache[CACHE_KEY] = first_record
             return first_record
