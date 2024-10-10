@@ -75,11 +75,11 @@ def main_dash_Page():
     dataQualityPart(df)
 
 
-    with st.expander('Show Timeseries'):
+    with st.expander('Show Timeseries (limit 36 observations)'):
       timeseriesPart(df)
 
 
-    with st.expander('Show Trailing-12-Month'):
+    with st.expander('Show Trailing-12-Month (limit 60 observations)'):
       ttmPart(df)
 
 
@@ -572,12 +572,16 @@ def timeseriesPart(df):
   exclude_columns = {'uuid', 'date', 'category'}
   categorical_columns = list(categorical_columns - exclude_columns)
   humanize_categorical_columns = [humanize_field(col) for col in categorical_columns]
+  min_date = pd.to_datetime(df['date'].min())
+  max_date = pd.to_datetime(df['date'].max())
 
   c1, c2 = st.columns([1,1])
   with c1:
     selected_cat = st.selectbox('Select category', options=humanize_categorical_columns, key='ts_select_cat')
+    start_date = st.date_input('Start date', value=min_date, min_value=min_date, max_value=max_date, key='ts_select_start_date')
   with c2:
     selected_frequency = st.selectbox('Select frequency', options=['Monthly', 'Quarterly', 'Yearly'], key='ts_select_freq')
+    end_date = st.date_input('End date', value=max_date, min_value=min_date, max_value=max_date, key='ts_select_end_date')
 
   # Map selected frequency to pandas offset aliases
   freq_map = {
@@ -595,6 +599,7 @@ def timeseriesPart(df):
   temp['date'] = pd.to_datetime(temp['date'])  # Ensure 'date' column is datetime type
 
   # Group by end of month and selected category, summing emission_result
+  temp = temp[(temp['date'] >= pd.Timestamp(start_date)) & (temp['date'] <= pd.Timestamp(end_date))]
   temp = temp.groupby([pd.Grouper(key='date', freq=freq), cdata])[ydata].sum().reset_index()
 
   # Find the top 10 categories by sum of emission_result
@@ -675,11 +680,17 @@ def ttmPart(df):
   categorical_columns = list(categorical_columns - exclude_columns)
   humanized_categorical_columns = [humanize_field(col) for col in categorical_columns]
 
+  # get min max date
+  min_date = pd.to_datetime(df['date'].min())
+  max_date = pd.to_datetime(df['date'].max())
+
   c1, c2 = st.columns([1,1])
   with c1:
     selected_cat = st.selectbox('Select category', options=humanized_categorical_columns, key='ttm_select_cat')
+    start_date = st.date_input('Start date', value=min_date, min_value=min_date, max_value=max_date, key='ttm_select_start_date')
   with c2: 
     selected_frequency = st.selectbox('Select frequency', options=['Monthly', 'Quarterly', 'Yearly'], key='ttm_select_freq')
+    end_date = st.date_input('End date', value=max_date, min_value=min_date, max_value=max_date, key='ttm_select_end_date')
 
   # Set aggregation frequency based on user selection
   if selected_frequency == 'Monthly':
@@ -698,6 +709,7 @@ def ttmPart(df):
   temp['date'] = pd.to_datetime(temp['date'])
 
   # Aggregate emissions
+  temp = temp[(temp['date'] >= pd.Timestamp(start_date)) & (temp['date'] <= pd.Timestamp(end_date))]
   temp = temp.groupby([pd.Grouper(key='date', freq=freq), cdata])[ydata].sum().reset_index()
 
   # Find the top 10 categories by sum of emission_result
@@ -746,7 +758,7 @@ def ttmPart(df):
   
   fig.update_layout(
       height=700,
-      title=f'<b>Emissions Growth Trend (period={selected_frequency} End)</b>',
+      title=f'<b>Emissions Growth Trend ({selected_frequency})</b>',
       yaxis_title='Emissions',
       yaxis2_title='YoY Change (%)',
       barmode='group',
